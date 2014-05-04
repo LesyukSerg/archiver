@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404221313');
+	define('VERSION', '201429042352');
 	date_default_timezone_set('Europe/Kiev');
 	session_start();
 	//set_time_limit(2);
@@ -76,7 +76,7 @@
 			'shots' => 'Залишилось',
 			'left' => 'спроб',
 			'check_new_vers_err' => 'Не вдалось перевірити нову версію',
-			'develop' => 'Розроблено',
+			'develop' => 'Розробив',
 			'settings_saved' => 'Налаштування збережені',
 			'settings' => 'Налаштування',
 			'create_arch' => 'Створити Архів',
@@ -1109,7 +1109,7 @@
 					form.zip:hover { background:#E8E2D2; }
 					.right { float:right; margin-left:20px; }
 					.clear { clear:both; }
-					.logo { color:#888888; display:block; font-size:28px; text-decoration:none; text-shadow:0 0 1px #888888; transition:all .4s ease 0; float:left; padding:20px 20px 10px 0; transition: all 0.3s ease 0s; }
+					.logo { color:#888888; display:block; font-size:28px; text-decoration:none; text-shadow:0 0 1px #888888; transition:all .4s ease 0; float:left; padding:20px 10px 10px 0; transition: all 0.3s ease 0s; }
 					.logo:hover { color: #F1F1FF; text-shadow: 0 0 8px #FFFFFF; }
 					h1 { line-height: 50px; }
 					h2 { margin-bottom:20px; }
@@ -1126,7 +1126,7 @@
 					input[type="submit"]:hover { background:linear-gradient(#A4DF68,#95DA50); }
 					input[type="submit"]:active { box-shadow:0 0 0!important; background: #85CA40; }
 					input[type="submit"][disabled="disabled"] { background: none repeat scroll 0 0 #888888; box-shadow: 0 0 0; }
-					.nav { float:right; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:-36px 0 20px; background-color: #646F81; }
+					.nav { float:right; box-shadow:0 5px 10px rgba(0,0,0,0.2); background-color: #646F81; margin-top: 10px; }
 					.nav li { float:left; list-style:none; cursor:pointer; border-left:1px solid #515D6D; box-shadow:inset -1px 1px #6B7787; }
 					.nav li a,.nav li span { display:block; color:#E7EAED; text-decoration:none; padding:8px 12px; }
 					.nav li:first-child { border-left:none; }
@@ -1136,7 +1136,7 @@
 					.row:first-child { margin-top:0; }
 					.row:last-child { margin-bottom:0; }
 					.row { margin:10px 0; }
-					.messages { margin-top: 20px; }
+					.messages { padding-top: 20px; }
 					.msg.w { background-color: #F13921; }
 					.msg.i { background-color: #4FC0E8; }
 					.msg.ok { background-color: #94CF58; }
@@ -1150,7 +1150,7 @@
 					.footer { bottom:0; color:#AEB4BB; font-size:11px; left:0; width:100%; padding:8px 0; background:#2E333D; opacity:0.6; }
 					.footer a { color:#AEB4BB; }
 					.footer a:hover { color:#FFF; }
-					div.login { position:absolute; width:300px; margin:10% 0 0 10%; }
+					.login { position:absolute; width:300px; margin:10% 0 0 10%; }
 					input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: right; margin: 8px; }
 					.page_gen { position:absolute; margin-top:-30px; }
 					.section__headline.exeption > span { cursor:pointer; }
@@ -1165,21 +1165,26 @@
 			</head>
 			<body>
 				<div class="wrapper">
-					<a class="logo" href="<?=$url?>">ARCHIVER</a>
-					<div class="clear"></div>
 <?
 					if($_SESSION['psswrd'] == $pass){
 						check_permission($pathname, $log_file);
 						check_new_vers(VERSION);
 						$archive_exist = check_for_archive($pathname."/", $dirs);
 ?>
-						<ul class="nav">
-							<li id="createar" <?=(!$_GET['section'] || $_GET['section'] == 'createar')?'class="active"':''?> ><span><?=trnslt('create_arch')?></span></li>
-							<li id="extractar" <?=($_GET['section'] == 'extractar')?'class="active"':''?> ><span><?=trnslt('extract_arch')?></span></li>
-							<li id="filemanager" <?=($_GET['section'] == 'filemanager')?'class="active"':''?> ><span><?=trnslt('file_manager')?></span></li>
-							<li id="options" <?=($_GET['section'] == 'options')?'class="active"':''?> ><span><?=trnslt('settings')?></span></li>
-							<li><a href="<?=$url?>?logout=ok"><?=trnslt('exit')?></a></li>
-						</ul>
+						<header>
+							<a class="logo" href="<?=$url?>">ARCHIVER</a>
+						
+							<nav>
+								<menu class="nav">
+									<li id="createar" <?=(!$_GET['section'] || $_GET['section'] == 'createar')?'class="active"':''?> ><span><?=trnslt('create_arch')?></span></li>
+									<li id="extractar" <?=($_GET['section'] == 'extractar')?'class="active"':''?> ><span><?=trnslt('extract_arch')?></span></li>
+									<li id="filemanager" <?=($_GET['section'] == 'filemanager')?'class="active"':''?> ><span><?=trnslt('file_manager')?></span></li>
+									<li id="options" <?=($_GET['section'] == 'options')?'class="active"':''?> ><span><?=trnslt('settings')?></span></li>
+									<li><a href="<?=$url?>?logout=ok"><?=trnslt('exit')?></a></li>
+								</menu>
+							</nav>
+							<div class="clear"></div>
+						</header>
 						
 						<div id="form_block">
 							<div class="messages"><?=show_messages();?></div>
@@ -1191,7 +1196,7 @@
 <?
 									if(count($_SESSION['history'])){
 ?>
-										<div class="section">
+										<section class="section las_archive_log">
 											<div class="section__headline"><?=trnslt('zip_log')?>:</div>
 											<div class="section__inner">
 												<div class="row archivelog">
@@ -1205,11 +1210,11 @@
 													</div>
 												</div>
 											</div>
-										</div>
+										</section>
 <?
 									}
 ?>
-									<div class="section">
+									<section class="section count_files">
 										<div class="section__headline"><?=trnslt('count_files')?>:</div>
 										<div class="section__inner">
 											<div class="row">
@@ -1218,10 +1223,10 @@
 												<?=trnslt('show_full_count_files')?>
 											</div>
 										</div>
-									</div>
+									</section>
 									
 									<form action="<?=$url?>" method="POST">
-										<div class="section">
+										<section class="section choose_zip">
 											<div class="section__headline"><?=trnslt('choose_zip')?>:</div>
 											<div class="section__inner">
 												<div class="row">
@@ -1241,9 +1246,9 @@
 ?>
 												</div>
 											</div>
-										</div>
+										</section>
 										
-										<div class="section">
+										<section class="section choose_dir">
 											<div class="section__headline"><?=trnslt('choose_dir')?>:</div>
 											<div class="section__inner">
 												<div class="row">
@@ -1253,9 +1258,9 @@
 													<input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%" /> <br />
 												</div>
 											</div>
-										</div>
-
-										<div class="section">
+										</section>
+										
+										<section class="section dir_exeption">
 											<div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
 											<div class="section__inner exeption">
 												("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")
@@ -1263,7 +1268,8 @@
 													<input type="text" name="exept" value="<?=implode("|",$_POST['exept'])?>" style="width:99%" />
 												</div>
 											</div>
-										</div>
+										</section>
+										
 										<div class="clear"></div>
 										
 										<!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
@@ -1275,7 +1281,7 @@
 ?>
 								<div class="tab extractar">
 									<h2><?=trnslt('unziper')?></h2>
-									<div class="section extractar">
+									<section class="section extractar zip_found">
 										<div class="section__headline"><?=trnslt('zip_found')?>:</div>
 										<div class="section__inner">
 											<div class="row">
@@ -1298,7 +1304,7 @@
 ?>
 											</div>
 										</div>
-									</div>
+									</section>
 								</div>
 <?
 							}elseif($_GET['section'] == 'filemanager'){
@@ -1306,7 +1312,7 @@
 								<div class="tab filemanager">
 									<h2><?=trnslt('file_manager')?></h2>
 									
-									<div class="section">
+									<section class="section size_files">
 										<div class="section__headline"><?=trnslt('size_files')?>:</div>
 										<div class="section__inner">
 											<div class="row">
@@ -1319,23 +1325,23 @@
 												<?=(!$_GET['get_size'])?"<script>document.getElementById('get_size').checked = false;</script>":''?>
 											</div>
 										</div>
-									</div>
+									</section>
 									
-									<div class="section">
+									<section class="section file_manager">
 										<div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?="/".$_GET['fmdir']?>:</div>
 										<div class="section__inner">
 											<div class="row">
 												<?=show_root_dir_and_files($pathname.($_GET['fmdir']?("/".$_GET['fmdir']):'')."/", $_GET['fmdir']);?>
 											</div>
 										</div>
-									</div>
+									</section>
 								</div>
 <?
 							}elseif($_GET['section'] == 'options'){
 ?>
 								<div class="tab options">
 									<h2><?=trnslt('settings')?></h2>
-									<div class="section">
+									<section class="section language">
 										<div class="section__headline"><?=trnslt('language')?>:</div>
 										<div class="section__inner">
 											<div class="row">
@@ -1349,49 +1355,50 @@
 												</form>
 											</div>
 										</div>
-									</div>
+									</section>
 								
 									<form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-										<div class="section">
+										<section class="section show_log_options">
 											<div class="section__headline"><?=trnslt('show_log')?>:</div>
 											<div class="section__inner">
 												<div class="row">
-														<input type="checkbox" name="show_ok" value='1' <?if($_SESSION['hist']['OK']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_ok')?> |
-														<input type="checkbox" name="show_notice" value='1' <?if($_SESSION['hist']['NOTICE']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_notice')?> |
-														<input type="checkbox" name="show_error" value='1' <?if($_SESSION['hist']['ERROR']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_error')?>
+													<input type="checkbox" name="show_ok" value='1' <?if($_SESSION['hist']['OK']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_ok')?> |
+													<input type="checkbox" name="show_notice" value='1' <?if($_SESSION['hist']['NOTICE']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_notice')?> |
+													<input type="checkbox" name="show_error" value='1' <?if($_SESSION['hist']['ERROR']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_error')?>
 													<div class="clear"></div>
 												</div>
 											</div>
-										</div>
+										</section>
 										
-										<div class="section">
+										<section class="section confirm_window_options">
 											<div class="section__headline"><?=trnslt('show_confirm_window')?>:</div>
 											<div class="section__inner">
 												<div class="row">
-														<input type="checkbox" name="confirm_unzip" value='1' <?if($_SESSION['options']['confirm_unzip']):?>checked="checked"<?endif;?> /> <?=trnslt('unziping_arch')?> |
-														<input type="checkbox" name="confirm_delzip" value='1' <?if($_SESSION['options']['confirm_delzip']):?>checked="checked"<?endif;?> /> <?=trnslt('deleting_arch')?>
+													<input type="checkbox" name="confirm_unzip" value='1' <?if($_SESSION['options']['confirm_unzip']):?>checked="checked"<?endif;?> /> <?=trnslt('unziping_arch')?> |
+													<input type="checkbox" name="confirm_delzip" value='1' <?if($_SESSION['options']['confirm_delzip']):?>checked="checked"<?endif;?> /> <?=trnslt('deleting_arch')?>
 													<div class="clear"></div>
 												</div>
 											</div>
-										</div>
-									
-										<div class="section">
+										</section>
+										
+										<section class="section dont_zip_file_more_than">
 											<div class="section__headline"><?=trnslt('dont_zip_more')?>:</div>
 											<div class="section__inner">
 												<div class="row">
-													<input type="text" name="max_size" value="<?=$_SESSION['options']['max_size']?>" /> кб
+													<input type="number" min="1" max="512000" name="max_size" value="<?=$_SESSION['options']['max_size']?>" required /> кб
 												</div>
 											</div>
-										</div>
+										</section>
 										
-										<div class="section">
+										<section class="section zip_max_files_count">
 											<div class="section__headline"><?=trnslt('zip_max_files_count')?>:</div>
 											<div class="section__inner">
 												<div class="row">
-													<?=trnslt('limit')?> <input type="text" name="files_for_iteration" value="<?=$_SESSION['options']['files_for_iteration']?>" /> <?=trnslt('ajax_load_step')?>
+													<?=trnslt('limit')?> <input type="number" min="1" max="20000" name="files_for_iteration" value="<?=$_SESSION['options']['files_for_iteration']?>" required /> <?=trnslt('ajax_load_step')?>
 												</div>
 											</div>
-										</div>
+										</section>
+										
 										<input class="right " type="submit" name="log_submit" value='<?=trnslt('show_log_save')?>' />
 										<div class="clear"></div>
 									</form>
@@ -1403,6 +1410,12 @@
 <?
 					}else{
 						if (class_exists('ZipArchive')){
+?>
+							<header>
+								<a class="logo" href="<?=$url?>">ARCHIVER</a>
+								<div class="clear"></div>
+							</header>
+<?
 							if($_SESSION['pass_count'] > 0){
 								check_new_vers(VERSION);
 								if($_POST['pswrd'])
@@ -1410,7 +1423,7 @@
 							
 								show_messages();
 ?>
-								<div class="section login">
+								<section class="section login login_form">
 									<div class="section__headline"><?=trnslt('enter_pass')?>:</div>
 									<div class="section__inner">
 										<div class="row">
@@ -1430,7 +1443,7 @@
 											</form>
 										</div>
 									</div>
-								</div>
+								</section>
 <?
 							} else {
 								echo show_log("ERROR", trnslt('access_denied'));
@@ -1441,7 +1454,7 @@
 					}
 ?>
 				</div>
-				<div class="footer" style='position:absolute'>
+				<footer class="footer" style='position:absolute'>
 					<div class="page_gen">
 						<?=trnslt('page_gen')." ".round(microtime(1)-$timestart, 4)." ".trnslt('sec').".<br />"?>
 					</div>
@@ -1452,7 +1465,7 @@
 						<span style="float: right;"><?=trnslt('your_vers')?> <?=VERSION?></span>
 						<div class="clear"></div>
 					</div>
-				</div>
+				</footer>
 			</body>
 		</html>
 <?
