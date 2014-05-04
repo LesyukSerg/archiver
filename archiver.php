@@ -28,8 +28,12 @@
 	-archiver_201308131230
 		вернув старый лог архівації
 		
-	-archiver_201308131230
+	-archiver_201309251606
 		виправив баг стосовно opendir i closedir
+		
+	-archiver_201310021205
+		додав перелік файлів
+		виправив архівацію вписаної теки
 		
 */
 	set_time_limit(0);
@@ -60,7 +64,6 @@
 <?
 	# тека в якій буде размішено архів
 	$archive_dir = dirname(__FILE__);
-	var_dump($archive_dir);
 	$dirs = scandir($archive_dir);
 	$count = 0;
 	$archive_dir = $archive_dir."/";
@@ -75,6 +78,10 @@
 	}
 	# Підрахунок всіх файлів в корені -------------
 	function addFolderCount($dir, &$cnt){
+		if(!$_GET['get_count'] && $cnt> 999){
+			return;
+		}
+		
 		if ($dh = opendir($dir)) {
 			while (($file = readdir($dh)) !== false) {
 				if(is_dir($dir . $file)){
@@ -226,8 +233,12 @@
 <?
 						foreach($dirs as $dir){
 							if (is_dir($archive_dir.$dir) && $dir != "." && $dir != "..") {
+								if(!$_POST){
+									$all_count = 0;
+									addFolderCount($src_dir.$dir.'/', $all_count);
+								}
 ?>
-								<input class="selecteddir" type="checkbox" name="dir[<?=$dir?>]" value="<?=$dir?>" onclick="alldir.checked=false" /> <?=$dir?><br />
+								<input class="selecteddir" type="checkbox" name="dir[<?=$dir?>]" value="<?=$dir?>" onclick="alldir.checked=false" /> <?=$dir?> (<?=($all_count>1000)?'більше 999 файлів':$all_count?>)<br />
 <?
 							}
 						}
@@ -307,7 +318,7 @@
 										addFolderToZip($src_dir, $zip, $onedir."/", $count, $fp);
 									}
 								} else {
-									$src_dir = dirname(__FILE__)."/".$_POST['dir']."";
+									$src_dir = dirname(__FILE__)."/".$_POST['dir']."/";
 									addFolderToZip($src_dir, $zip, '', $count, $fp);
 								}
 								fclose($fp);
