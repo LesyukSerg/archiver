@@ -27,6 +27,10 @@
 		
 	-archiver_201308131230
 		вернув старый лог архівації
+		
+	-archiver_201308131230
+		виправив баг стосовно opendir i closedir
+		
 */
 	set_time_limit(0);
 ?>
@@ -56,7 +60,7 @@
 <?
 	# тека в якій буде размішено архів
 	$archive_dir = dirname(__FILE__);
-
+	var_dump($archive_dir);
 	$dirs = scandir($archive_dir);
 	$count = 0;
 	$archive_dir = $archive_dir."/";
@@ -81,6 +85,7 @@
 					$cnt++;
 				}
 			}
+			closedir($dh);
 		}
 	}
 
@@ -89,7 +94,7 @@
 		if (is_dir($dir)) {
 			fwrite($fp, $dir."\n");
 
-			if ($dh = opendir($dir)) {
+			if ($dh = opendir($dir)){
 				# Додаємо порожню директорію
 				if(!empty($zipdir)){
 					if($zipArchive->addEmptyDir($zipdir) === false){
@@ -129,6 +134,7 @@
 						}
 					}
 				}
+				closedir($dh);
 			}
 		}
 	}
@@ -284,6 +290,7 @@
 									$archname = $_POST['addtozip'];
 								}
 								$fileName = $archive_dir.$archname;
+								
 								if ($zip->open($fileName, ZIPARCHIVE::CREATE) !== true) {
 									fwrite(STDERR, "Error while creating archive file");
 									echo "zip не установлен";
