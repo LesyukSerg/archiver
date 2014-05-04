@@ -5,13 +5,6 @@
 		<META http-equiv="content-type" content="text/html; charset=utf-8" />
 		<META NAME="Author" CONTENT="Lesyuk Sergiy">
 		<title>Archiver</title>
-		<style>
-			/*
-			fieldset.left { float:left; width: 47%; }
-			fieldset.right { float:right; width: 47%; }
-			.clear { clear:both; }
-			*/
-		</style>
 	</head>
 <?	
 	# папка в которой будет размещен архив
@@ -88,25 +81,28 @@
 					<fieldset class="right">
 						<legend title="">Кількість файлів:</legend>
 						Всього файлів <b><?=$all_count?></b>
-						<input type="checkbox" id="get_count" name="get_count" value='1' checked="checked" onclick="if(get_count.checked)window.location=window.location.href+'/?get_count=1'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" /> Показати кількість файлів.(Це займе деякий час...)<br />
+						<input type="checkbox" id="get_count" name="get_count" value='1' checked="checked" onclick="if(this.checked)window.location=window.location.href+'/?get_count=1'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" /> Показати кількість файлів.(Це займе деякий час...)<br />
 					</fieldset>
 					
 					<fieldset class="left">
 						<legend title="">Виберіть директорію для архівування:</legend>
 						<script>
+						var get_count = document.getElementById('get_count');
 							<?if(!$_GET['get_count']):?>
-								get_count.checked = false;
+								document.getElementById('get_count').checked = false;
 							<?endif;?>
 							
-							function turn_of(){
+							function turn_of(alldir){
 								if(alldir.checked) {
-									var f1 = document.getElementsByClassName('selecteddir')
-									for (var i=0; i<f1.length; i++)
+									var f1 = document.getElementsByTagName('input');
+									for (var i=0; i<f1.length; i++) {
+										if (f1[i].className == 'selecteddir')
 										f1[i].checked = false;
+									}
 								}
 							}
 						</script>
-						<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of()" /> <b>Усі файли та теки</b><br />
+						<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of(this)" /> <b>Усі файли та теки</b><br />
 <?
 						foreach($dirs as $dir){
 							if (is_dir($archive_dir.$dir) && $dir != "." && $dir != "..") {
