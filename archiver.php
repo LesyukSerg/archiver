@@ -1,9 +1,9 @@
 <?
 error_reporting(E_ALL);
 $timestart = microtime(1);
-define('VERSION', '201401271040');
+define('VERSION', '201402051642');
 session_start();
-set_time_limit(300);
+//set_time_limit(300);
 ?>
 <? #--- массив перекладів -------------------------------------------------------
 $lang = array(
@@ -134,7 +134,7 @@ $lang = array(
 		'arch' => 'Архив',
 		'unzip_ok' => 'успешно извлечен в директорию',
 		'unzip_err' => 'Поврежден архив',
-		'unzip_not' => 'Архив не найдено',
+		'unzip_not' => 'Архив не найден',
 		'unzip_choose' => 'Выберите файл для разархивирования',
 		'unzip' => 'Разархивировать',
 		'unzip_log' => 'Ход выполнения',
@@ -546,12 +546,16 @@ if(!isset($_SESSION['log']['error'])) $_SESSION['log']['error'] = 1;
 			.right { float: right; margin-left: 20px; }
 			.left { float: left; }
 			.clear { clear:both; }
+			.logo { color: #888888; display: block; font-size: 28px; padding: 10px 20px 10px 0px; text-decoration: none; text-shadow: 0 0 1px #888888; transition: all 0.4s ease 0s; float: left;}
+			.logo:hover {color: #666666; text-shadow: 0 0 1px #000000; }
+			#wpapper > form.lang_form { padding: 16px 0 0; }
 		</style>
 	</head>
 	<body>
 		<div id="wpapper">
 			<div class="right"><?=VERSION?></div>
-			<form action="<?=$_SERVER['REQUEST_URI']?>" method="GET">
+			<a class="logo" href="<?=$_SERVER['REQUEST_URI']?>">ARCHIVER</a>
+			<form class="lang_form" action="<?=$_SERVER['REQUEST_URI']?>" method="GET">
 				<?=trnslt('language')?>:
 				<select name="lang" onchange="this.form.submit()">
 					<option value="ua" <?=($l=='ua')?'selected="selected"':''?>>Українська</option>
@@ -559,6 +563,7 @@ if(!isset($_SESSION['log']['error'])) $_SESSION['log']['error'] = 1;
 					<option value="ru" <?=($l=='ru')?'selected="selected"':''?>>Русский</option>
 				</select>
 			</form>
+			<div class="clear"></div>
 <?
 			if($_SESSION['psswrd'] == $pass){
 				if(!$_POST['max_size']) $_POST['max_size'] = 1024;
