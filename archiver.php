@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404111133');
+	define('VERSION', '201404141145');
 	date_default_timezone_set("Europe/Kiev");
 	session_start();
 	//set_time_limit(0);
@@ -542,7 +542,7 @@
 					if(!$sub)
 						continue;
 				
-				$dirname = "<a href='?section=filemananer&fmdir=".$up."'>".$dir."</a>";
+				$dirname = "<a href='?section=filemanager&fmdir=".$up."'>".$dir."</a>";
 			} else {
 				$all_count = (!$_GET['get_size'])?getFolderCount($src_dir.$dir.'/'):0;
 				$fsize = 0;
@@ -550,7 +550,7 @@
 					$fsize = getFolderSize($src_dir.$dir.'/', $all_count);
 					
 				$dir = iconv('cp1251', 'UTF-8', $dir);
-				$dirname = "<a href='?section=filemananer&fmdir=".($sub?($sub."/"):'').$dir."'>".$dir."</a>";
+				$dirname = "<a href='?section=filemanager&fmdir=".($sub?($sub."/"):'').$dir."'>".$dir."</a>";
 			}
 		
 			$total_count += $all_count;
@@ -692,7 +692,8 @@
 				if(chmod($pathname, 0777)){
 					fwrite($fp, $fileName."\n");
 				} else {
-					echo "<span class='red'>".trnslt('permission')." ".$dirperm."</span>";
+					$_SESSION['message']['ERROR'][] = trnslt('permission')." ".$dirperm;
+					fwrite(STDERR, trnslt('permission')." ".$dirperm);
 					return;
 				}
 			}
@@ -783,6 +784,19 @@
 		$_SESSION['options']['confirm_delzip'] = $_POST['confirm_delzip']?1:0;
 		
 		$_SESSION['message']['OK'][] = trnslt('settings_saved');
+	}
+
+	# функція перевірки прав на запис ------------------------------------
+	function check_permission($pathname, $log_file){
+		if($fp = fopen($log_file, 'w')){
+			fclose($fp);
+			unlink($log_file);
+		} else {
+			$dirperm = substr(sprintf('%o', fileperms($pathname)), -4);
+			if(!chmod($pathname, 0777)){
+				$_SESSION['message']['ERROR'][] = trnslt('permission')." ".$dirperm;
+			}
+		}
 	}
 ?>
 <?
@@ -1027,72 +1041,72 @@
 				}
 ?>
 				<style>
-* { margin:0; padding:0; }
-body { font:13px/18px Verdana, Arial, Tahoma, sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; color:#FFF; width:100%; background:#39404C; overflow-y: scroll; }
-input.archivatorstart { display: block; width:30%; }
-legend { font-weight:bold; font-size:medium; }
-.archivelog div { max-height:394px; overflow:auto; }
-.progress { height:40px; width:100%; transition:all 2s ease 0; }
-.kamicadze { color:#888888; margin-top:-30px; position:absolute; right:10px; text-decoration:none; }
-.kamicadze:hover { text-decoration:underline; }
-.kamicadze:active { color:#444444; }
-.red { color:red; }
-.green { color:green; }
-.zip.clear { line-height: 52px; }
-form.zip:hover { background:#E8E2D2; }
-.right { float:right; margin-left:20px; }
-.clear { clear:both; }
-.logo { color:#888888; display:block; font-size:28px; text-decoration:none; text-shadow:0 0 1px #888888; transition:all .4s ease 0; float:left; padding:20px 20px 10px 0; transition: all 0.3s ease 0s; }
-.logo:hover { color: #F1F1FF; text-shadow: 0 0 8px #FFFFFF; }
-h1 { line-height: 50px; }
-h2 { margin-bottom:20px; }
-.section { clear:both; position:relative; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:0 0 20px; }
-.section__headline { background: #E05C50; background: linear-gradient(#EF705F, #E05C50) repeat scroll 0 0 rgba(0, 0, 0, 0); box-shadow: 0 1px #F08C75 inset; font-size: 16px; padding: 8px 14px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); }
-.section__headline.exeption > span:hover { cursor:pointer; text-shadow:0 0 0; }
-.section__inner { color:#444444; padding:15px; background:#EFEFEF; }
-.wrapper { max-width:894px; position:relative; margin:0 auto; }
-label { cursor:pointer; display:inline-block; line-height:22px; }
-select,input[type="text"],input[type="password"] { border:1px solid #C4C9D0; color:#646F81; padding:2px 5px; }
-select { padding: 2px; }
-select:focus,input[type="text"]:focus,input[type="password"]:focus { border:1px solid #8891A2; }
-input[type="submit"] { height:34px; cursor:pointer; font:16px Verdana, Arial, sans-serif; border:none; color:#FFF; box-shadow:0 5px 10px rgba(0,0,0,0.3); text-shadow:1px 1px 1px rgba(0,0,0,0.2); padding:0 15px; background:#94CF58; background:linear-gradient(#94CF58,#85CA40); margin: 10px auto; }
-input[type="submit"]:hover { background:linear-gradient(#A4DF68,#95DA50); }
-input[type="submit"]:active { box-shadow:0 0 0!important; background: #85CA40; }
-input[type="submit"][disabled="disabled"] { background: none repeat scroll 0 0 #888888; box-shadow: 0 0 0; }
-.nav { float:right; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:-36px 0 20px; background-color: #646F81; }
-.nav li { float:left; list-style:none; cursor:pointer; border-left:1px solid #515D6D; box-shadow:inset -1px 1px #6B7787; }
-.nav li a,.nav li span { display:block; color:#E7EAED; text-decoration:none; padding:8px 12px; }
-.nav li:first-child { border-left:none; }
-.nav li:hover { color:#FFF; box-shadow:inset 0 1px #F08C75; background:#EF705F; background:linear-gradient(#EF705F,#E05C50); }
-.nav li:active { box-shadow:inset 0 1px #F08C75; background:#E04C40; }
-.nav li.active { box-shadow:inset 0 1px #6B7787; background:#4B525F; background:linear-gradient(#5B6475,#4B525F); }
-.row:first-child { margin-top:0; }
-.row:last-child { margin-bottom:0; }
-.row { margin:10px 0; }
-.messages { margin-top: 20px; }
-.msg.w { background-color: #F13921; }
-.msg.i { background-color: #4FC0E8; }
-.msg.ok { background-color: #94CF58; }
-.msg i { color:#FFF; line-height:15px; font-size:11px; text-align:center; position:absolute; left:12px; top:12px; display:inline-block; width:16px; height:16px; border:1px solid #FFF; }
-.msg { box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); line-height: 20px; margin: 0 0 20px; padding: 10px 0 10px 45px; position: relative; white-space: nowrap; }
-.msg.process { padding: 6px; text-align: center; }
-.msg.process > div { background-color: #62C4BF; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset; }
-.msg.ok.progress { margin: 0; padding: 0; transition: all 4s ease 0s; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset; }
-.flytext { font-size: 13px; margin: -29px auto; position: absolute; width: 100%; }
-.tab.createar { padding-bottom: 40px; }
-.footer { bottom:0; color:#AEB4BB; font-size:11px; left:0; width:100%; padding:8px 0; background:#2E333D; opacity:0.6; }
-.footer a { color:#AEB4BB; }
-.footer a:hover { color:#FFF; }
-div.login { position:absolute; width:300px; margin:10% 0 0 10%; }
-input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: right; margin: 8px; }
-.page_gen { position:absolute; margin-top:-30px; }
-.section__headline.exeption > span { cursor:pointer; }
-.grey { color:grey; }
-.file_mamger_table { width: 100%; }
-.file_mamger_table tr td { padding: 2px 4px; }
-.file_mamger_table tr:nth-child(even) td{ background-color: #E0E0E0; }
-.file_mamger_table tr:hover td { background-color: #D0D0D0; }
-.file_mamger_table .count, .file_mamger_table .size { width: 20%; text-align: right; }
+					* { margin:0; padding:0; }
+					body { font:13px/18px Verdana, Arial, Tahoma, sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; color:#FFF; width:100%; background:#39404C; overflow-y: scroll; }
+					input.archivatorstart { display: block; width:30%; }
+					legend { font-weight:bold; font-size:medium; }
+					.archivelog div { max-height:394px; overflow:auto; }
+					.progress { height:40px; width:100%; transition:all 2s ease 0; }
+					.kamicadze { color:#888888; margin-top:-30px; position:absolute; right:10px; text-decoration:none; }
+					.kamicadze:hover { text-decoration:underline; }
+					.kamicadze:active { color:#444444; }
+					.red { color:red; }
+					.green { color:green; }
+					.zip.clear { line-height: 52px; }
+					form.zip:hover { background:#E8E2D2; }
+					.right { float:right; margin-left:20px; }
+					.clear { clear:both; }
+					.logo { color:#888888; display:block; font-size:28px; text-decoration:none; text-shadow:0 0 1px #888888; transition:all .4s ease 0; float:left; padding:20px 20px 10px 0; transition: all 0.3s ease 0s; }
+					.logo:hover { color: #F1F1FF; text-shadow: 0 0 8px #FFFFFF; }
+					h1 { line-height: 50px; }
+					h2 { margin-bottom:20px; }
+					.section { clear:both; position:relative; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:0 0 20px; }
+					.section__headline { background: #E05C50; background: linear-gradient(#EF705F, #E05C50) repeat scroll 0 0 rgba(0, 0, 0, 0); box-shadow: 0 1px #F08C75 inset; font-size: 16px; padding: 8px 14px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); }
+					.section__headline.exeption > span:hover { cursor:pointer; text-shadow:0 0 0; }
+					.section__inner { color:#444444; padding:15px; background:#EFEFEF; }
+					.wrapper { max-width:894px; position:relative; margin:0 auto; }
+					label { cursor:pointer; display:inline-block; line-height:22px; }
+					select,input[type="text"],input[type="password"] { border:1px solid #C4C9D0; color:#646F81; padding:2px 5px; }
+					select { padding: 2px; }
+					select:focus,input[type="text"]:focus,input[type="password"]:focus { border:1px solid #8891A2; }
+					input[type="submit"] { height:34px; cursor:pointer; font:16px Verdana, Arial, sans-serif; border:none; color:#FFF; box-shadow:0 5px 10px rgba(0,0,0,0.3); text-shadow:1px 1px 1px rgba(0,0,0,0.2); padding:0 15px; background:#94CF58; background:linear-gradient(#94CF58,#85CA40); margin: 10px auto; }
+					input[type="submit"]:hover { background:linear-gradient(#A4DF68,#95DA50); }
+					input[type="submit"]:active { box-shadow:0 0 0!important; background: #85CA40; }
+					input[type="submit"][disabled="disabled"] { background: none repeat scroll 0 0 #888888; box-shadow: 0 0 0; }
+					.nav { float:right; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:-36px 0 20px; background-color: #646F81; }
+					.nav li { float:left; list-style:none; cursor:pointer; border-left:1px solid #515D6D; box-shadow:inset -1px 1px #6B7787; }
+					.nav li a,.nav li span { display:block; color:#E7EAED; text-decoration:none; padding:8px 12px; }
+					.nav li:first-child { border-left:none; }
+					.nav li:hover { color:#FFF; box-shadow:inset 0 1px #F08C75; background:#EF705F; background:linear-gradient(#EF705F,#E05C50); }
+					.nav li:active { box-shadow:inset 0 1px #F08C75; background:#E04C40; }
+					.nav li.active { box-shadow:inset 0 1px #6B7787; background:#4B525F; background:linear-gradient(#5B6475,#4B525F); }
+					.row:first-child { margin-top:0; }
+					.row:last-child { margin-bottom:0; }
+					.row { margin:10px 0; }
+					.messages { margin-top: 20px; }
+					.msg.w { background-color: #F13921; }
+					.msg.i { background-color: #4FC0E8; }
+					.msg.ok { background-color: #94CF58; }
+					.msg i { color:#FFF; line-height:15px; font-size:11px; text-align:center; position:absolute; left:12px; top:12px; display:inline-block; width:16px; height:16px; border:1px solid #FFF; }
+					.msg { box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); line-height: 20px; margin: 0 0 20px; padding: 10px 0 10px 45px; position: relative; white-space: nowrap; }
+					.msg.process { padding: 6px; text-align: center; }
+					.msg.process > div { background-color: #62C4BF; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset; }
+					.msg.ok.progress { margin: 0; padding: 0; transition: all 4s ease 0s; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset; }
+					.flytext { font-size: 13px; margin: -29px auto; position: absolute; width: 100%; }
+					.tab.createar { padding-bottom: 40px; }
+					.footer { bottom:0; color:#AEB4BB; font-size:11px; left:0; width:100%; padding:8px 0; background:#2E333D; opacity:0.6; }
+					.footer a { color:#AEB4BB; }
+					.footer a:hover { color:#FFF; }
+					div.login { position:absolute; width:300px; margin:10% 0 0 10%; }
+					input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: right; margin: 8px; }
+					.page_gen { position:absolute; margin-top:-30px; }
+					.section__headline.exeption > span { cursor:pointer; }
+					.grey { color:grey; }
+					.file_mamger_table { width: 100%; }
+					.file_mamger_table tr td { padding: 2px 4px; }
+					.file_mamger_table tr:nth-child(even) td{ background-color: #E0E0E0; }
+					.file_mamger_table tr:hover td { background-color: #D0D0D0; }
+					.file_mamger_table .count, .file_mamger_table .size { width: 20%; text-align: right; }
 				</style>
 				<title>Archiver</title>
 			</head>
@@ -1102,13 +1116,14 @@ input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: r
 					<div class="clear"></div>
 <?
 					if($_SESSION['psswrd'] == $pass){
+						check_permission($pathname, $log_file);
 						check_new_vers(VERSION);
 						$archive_exist = check_for_archive($pathname."/", $dirs);
 ?>
 						<ul class="nav">
 							<li id="createar" <?=(!$_GET['section'] || $_GET['section'] == 'createar')?'class="active"':''?> ><span><?=trnslt('create_arch')?></span></li>
 							<li id="extractar" <?=($_GET['section'] == 'extractar')?'class="active"':''?> ><span><?=trnslt('extract_arch')?></span></li>
-							<li id="filemananer" <?=($_GET['section'] == 'filemananer')?'class="active"':''?> ><span><?=trnslt('file_manager')?></span></li>
+							<li id="filemanager" <?=($_GET['section'] == 'filemanager')?'class="active"':''?> ><span><?=trnslt('file_manager')?></span></li>
 							<li id="options" <?=($_GET['section'] == 'options')?'class="active"':''?> ><span><?=trnslt('settings')?></span></li>
 							<li><a href="<?=$url?>?logout=ok"><?=trnslt('exit')?></a></li>
 						</ul>
@@ -1232,9 +1247,9 @@ input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: r
 									</div>
 								</div>
 <?
-							}elseif($_GET['section'] == 'filemananer'){
+							}elseif($_GET['section'] == 'filemanager'){
 ?>
-								<div class="tab filemananer">
+								<div class="tab filemanager">
 									<h2><?=trnslt('file_manager')?></h2>
 									
 									<div class="section">
