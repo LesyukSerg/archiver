@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404030942');
+	define('VERSION', '201404081542');
 	date_default_timezone_set("Europe/Kiev");
 	session_start();
 	set_time_limit(0);
@@ -40,8 +40,8 @@
 			'zip_added_files' => 'До архіву додано файлів',
 			'many' => ' багацько',
 			'choose_folder' => 'Виберіть теку',
-			'count_files' => 'Кількість файлів',
 			'full_files' => 'Всього файлів',
+			'count_files' => 'Кількість файлів',
 			'show_full_count_files' => 'Показати кількість файлів.(Це займе деякий час...)',
 			'unziper' => 'Розархіватор сайту',
 			'zip_found' => 'Знайдені архіви (тільки zip формату)',
@@ -90,6 +90,8 @@
 			'fm_t_name' => 'Назва',
 			'fm_t_count' => 'Кількість',
 			'fm_t_size' => 'Розмір',
+			'show_full_size_dir' => 'Показати точний розмір тек.(Це займе деякий час...)',
+			'size_files' => 'Підрахунок розміру тек',
 		),
 		'en' => array(
 			'language' => 'Language',
@@ -272,6 +274,7 @@
 	}
 	
 	if(!isset($_GET['get_count'])) $_GET['get_count'] = null;
+	if(!isset($_GET['get_size'])) $_GET['get_size'] = null;
 	if(!isset($_GET['logout'])) $_GET['logout'] = null;
 	if(!isset($_GET['section'])) $_GET['section'] = null;
 	if(!isset($_GET['fmdir'])) $_GET['fmdir'] = null;
@@ -346,6 +349,27 @@
 			}
 		}
 		return $cnt;
+	}
+	
+	# Підрахунок всіх розмірів файлів в теках ----------------------------
+	function getFolderSize($dir, &$cnt = 0){
+		if(!$_GET['get_size'] && $cnt>9) return $cnt;
+		
+		if($dirs = scandir($dir)){
+			unset($dirs[array_search(".",$dirs)],$dirs[array_search("..",$dirs)],$dirs[array_search(".git",$dirs)],$dirs[array_search("archive.log",$dirs)]);
+			$size = 0;
+			if(current($dirs)){
+				do{
+					if (is_file($dir."/".current($dirs))){
+						$size += filesize($dir."/".current($dirs));
+						$cnt++;
+					}else{
+						$size += getFolderSize($dir."/".current($dirs), $cnt);
+					}
+				}while(next($dirs));
+			}
+		}
+		return $size;
 	}
 	
 	# Підрахунок файлів для архівації ------------------------------------
@@ -495,6 +519,7 @@
 		$up = "";
 		foreach($dirs_out as $dir){
 			$all_count = 0;
+			$fsize = 0;
 			if($dir == '..'){
 				$pos = strrpos($sub, '/');
 				if ($pos)
@@ -503,28 +528,29 @@
 					if(!$sub)
 						continue;
 				
-				$dirname = "<a href='?section=filemananer&dir=".$up."'>".$dir."</a>";
+				$dirname = "<a href='?section=filemananer&fmdir=".$up."'>".$dir."</a>";
 			} else {
 				$all_count = getFolderCount($src_dir.$dir.'/');
+				$fsize = getFolderSize($src_dir.$dir.'/');
 				$dir = iconv('cp1251', 'UTF-8', $dir);
 				$dirname = "<a href='?section=filemananer&fmdir=".($sub?($sub."/"):'').$dir."'>".$dir."</a>";
 			}
 		
 			
 			$count = ($all_count>1000 && $_GET['get_count']!='all')?trnslt('more_999'):$all_count;
+			$fsize = (($all_count>1000 && !$_GET['get_size'])?'> ':'').number_format($fsize, 0, ',', ' ');
 			
 			$out .= "
 				<tr>
 					<td>".$dirname."</td>
 					<td class='count'>".$count."</td>
-					<td class='size'></td>
+					<td class='size'>".$fsize." b</td>
 				</tr>
 			";
 		}
 		
-		
 		foreach($files_out as $file){
-			$size = filesize($src_dir.$file);
+			$size = number_format(filesize($src_dir.$file), 0, ',', ' ');
 			$file = iconv('cp1251', 'UTF-8', $file);
 			
 			$out .= "
@@ -550,10 +576,6 @@
 					# Додаємо порожню директорію
 					if(!empty($zipdir)){
 						$zdir = $zipdir;
-						//echo $zipdir.mb_detect_encoding($zipdir)."<br />";
-						//$zdir = iconv('windows-1251', 'utf-8', $zipdir);
-						//$zdir = iconv('windows-1251', 'CP866//TRANSLIT//IGNORE', $zipdir);
-						//$edir = iconv("cp1251","utf-8",$zipdir);
 						if($zipArchive->addEmptyDir($zdir) === false){
 							if($_SESSION['log']['ERROR'])
 								$_SESSION['history'][] = "<span class='red'>".trnslt('add_folder_err')." - ".$zdir."</span><br />\n";
@@ -566,26 +588,23 @@
 
 				#  цикл по всім файлам
 				while(($file = readdir($dh))){
-					# якщо це тека - запускаємо функцію
 					if(is_dir($dir.$file)){
 						# пропуск директорій '.' і '..'
 						if(!in_array($file, $_POST['exept']) && $file != '.git'){
 							$zfile = $file;
-							//$zfile = iconv(mb_detect_encoding($file), 'CP866//TRANSLIT//IGNORE', $file);
 							addFolderToZip($dir.$file."/", $zipArchive, $zipdir.$zfile . "/", $cnt, $fp);
 						}
 					}else{
-						# Додаємо файли в архів
+						# якщо cnt більше max то зупинка 
+						if($cnt >= $_SESSION['options']['max']){
+							break;
+						}
+						# якщо cnt більше max то зупинка 
 						if($file !== basename(__FILE__)){
-							if($cnt >= $_SESSION['options']['max'])
-								break;
-
-							//$except = array('zip', 'rar', 'tar', 'gz', '7z');
 							if($cnt > $_SESSION['options']['min']){
-								if(filesize($dir.$file) < $_SESSION['options']['max_size']*1024 && $file != basename(__FILE__) && $file != 'archive.log'){
+								if(filesize($dir.$file) < $_SESSION['options']['max_size']*1024 && $file != 'archive.log'){
 									$zfile = iconv(mb_detect_encoding($file), 'CP866//TRANSLIT//IGNORE', $file);
 
-									//$dir = iconv('windows-1251', 'utf-8', $dir);
 									if($zipArchive->addFile($dir.$file, $zipdir.$zfile)){
 										if($_SESSION['log']['OK'])
 											$_SESSION['history'][] = "<span class='green'>".(1000000+$cnt)." - ".$dir.$file." OK</span><br />\n";
@@ -596,7 +615,6 @@
 									
 									fwrite($fp, (1000000+$cnt)." - ".$dir.$file." OK\n");
 								}else{
-									//$dir = iconv('windows-1251', 'utf-8', $dir);
 									if($_SESSION['log']['NOTICE'])
 										$_SESSION['history'][] = "<span class='grey'>".$dir.$file." - ".trnslt('skip')."</span><br />\n";
 									
@@ -742,7 +760,7 @@
 	}
 	
 	if(md5($_POST['pswrd']) == $pass) $_SESSION['psswrd'] = $pass;
-	//$_SESSION['psswrd'] = "b59c67bf196a4758191e42f76670ceba";
+	$_SESSION['psswrd'] = "b59c67bf196a4758191e42f76670ceba";
 	if($_SESSION['psswrd'] == $pass){
 		$log_file = "archive.log";
 		# тека в якій буде размішено архів
@@ -939,8 +957,8 @@ input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: r
 										<div class="section__inner">
 											<div class="row">
 												<?=trnslt('full_files')?> <b><?=$all_count?></b>
-												<input type="checkbox" id="get_count" name="get_count" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_count.checked)window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'+'/?get_count=1'; else window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" />
-												<?=trnslt('show_full_count_files')?><br />
+												<input type="checkbox" id="get_count" name="get_count" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_count.checked)window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&get_count=1'?>'; else window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section']?>'" />
+												<?=trnslt('show_full_count_files')?>
 											</div>
 										</div>
 									</div>
@@ -1037,6 +1055,21 @@ input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: r
 <?
 							}elseif($_GET['section'] == 'filemananer'){
 ?>
+								<div class="section">
+									<div class="section__headline"><?=trnslt('size_files')?>:</div>
+									<div class="section__inner">
+										<div class="row">
+<?
+											$set_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'].'&get_size=1';
+											$no_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'];
+?>
+											<input type="checkbox" id="get_size" name="get_size" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'" />
+											<?=trnslt('show_full_size_dir')?>
+											<?=(!$_GET['get_size'])?"<script>document.getElementById('get_size').checked = false;</script>":''?>
+										</div>
+									</div>
+								</div>
+
 								<div class="tab filemananer">
 									<h2><?=trnslt('file_manager')?></h2>
 									<div class="section">
