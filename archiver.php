@@ -34,6 +34,9 @@
 	-archiver_201310021205
 		додав перелік файлів
 		виправив архівацію вписаної теки
+	
+	-archiver_201310081020
+		Виправив повний перелік файлів
 		
 */
 	set_time_limit(0);
@@ -71,14 +74,14 @@
 	
 	$log_file = "archive_log.txt";
 
-	if($_GET['get_count']) {
+	if($_GET['get_count'] == 1) {
 		addFolderCount($src_dir, $all_count);
 	} else {
 		$all_count = " багацько";
 	}
 	# Підрахунок всіх файлів в корені -------------
 	function addFolderCount($dir, &$cnt){
-		if(!$_GET['get_count'] && $cnt> 999){
+		if($_GET['get_count']!='all' && $cnt> 999){
 			return;
 		}
 		
@@ -119,6 +122,8 @@
 						# пропуск директорій '.' і '..'
 						if( ($file !== ".") && $file !== ".." && !in_array($file, explode("|",$_POST['exept'])) ){
 							addFolderToZip($dir . $file . "/", $zipArchive, $zipdir . $file . "/", $cnt, $fp);
+						} else {
+							echo "Пропущена тека - <b>$dir</b><br />";
 						}
 					}else{
 						# Додаємо файли в архів
@@ -128,15 +133,18 @@
 								break;
 							}
 
-							if($cnt > $_POST['min'] && filesize($dir.$file) < $_POST['max_size']*1024 && $file != basename(__FILE__) && !strstr($file, "zip")){
+							if($cnt > $_POST['min'] && filesize($dir.$file) < $_POST['max_size']*1024 && $file != basename(__FILE__) && !in_array(pathinfo($file, PATHINFO_EXTENSION), $except)){
 								if($zipArchive->addFile($dir . $file, $zipdir . $file)){
-									echo (1000000+$cnt)." - ".$dir.$file." OK <br />";
+									echo (1000000+$cnt)." - ".$dir.$file." OK<br />";
 									//echo "<span title='".$dir.$file."'> . </span>";
 								} else {
 									echo "Помилка архівації: файл $dir.$file<br />";
 								}
 								flush();
 								fwrite($fp, (1000000+$cnt)." - $dir.$file OK\n");
+							} else {
+								fwrite($fp, "$dir.$file - Пропущений\n");
+								echo "$dir.$file - Пропущений<br />";
 							}
 						}
 					}
@@ -229,7 +237,7 @@
 								}
 							}
 						</script>
-						<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of(this)" /> <b>Усі файли та теки</b><br />
+						<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of(this)" /> <b>Усі файли та теки</b> <input type="checkbox" id="get_count" name="get_count" value='all' <?if($_GET['get_count']=='all'):?>checked="checked"<?endif;?> onclick="if(get_count.checked)window.location=window.location.href+'/?get_count=all'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" /> Показати точну кількість файлів у теках.(Це займе деякий час...)<br />
 <?
 						foreach($dirs as $dir){
 							if (is_dir($archive_dir.$dir) && $dir != "." && $dir != "..") {
@@ -238,13 +246,13 @@
 									addFolderCount($src_dir.$dir.'/', $all_count);
 								}
 ?>
-								<input class="selecteddir" type="checkbox" name="dir[<?=$dir?>]" value="<?=$dir?>" onclick="alldir.checked=false" /> <?=$dir?> (<?=($all_count>1000)?'більше 999 файлів':$all_count?>)<br />
+								<input class="selecteddir" type="checkbox" name="dir[<?=$dir?>]" value="<?=$dir?>" onclick="alldir.checked=false" /> <?=$dir?> (<?=($all_count>1000 && $_GET['get_count']!='all')?'більше 999 файлів':$all_count?>)<br />
 <?
 							}
 						}
 ?>
 						<fieldset>
-							<legend title="">Або впишіть шлях до вкладеної теки:</legend>
+							<legend title="">Або впишіть шлях до вкладеної теки: (Наприклад: "bitrix/admin")</legend>
 							<input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%" /> <br />
 						</fieldset>
 					</fieldset>
