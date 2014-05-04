@@ -14,9 +14,12 @@
 	$count = 0;
 	$archive_dir = $archive_dir."/";
 	$src_dir = dirname(__FILE__)."/";
-	
-	addFolderCount($src_dir, $all_count);
-	
+
+	if($_GET['get_count']) {
+		addFolderCount($src_dir, $all_count);
+	} else {
+		$all_count = " багацько";
+	}
 	# Подсчет всех файлов в корне -------------
 	function addFolderCount($dir, &$cnt){
 		if ($dh = opendir($dir)) {
@@ -47,18 +50,18 @@
 					# если это папка запускаем функцию опять
 					if(is_dir($dir . $file)){
 						# пропуск директорий '.' и '..'
-						if( ($file !== ".") && $file !== ".." && !in_array($file, explode("|",$_GET['exept'])) ){
+						if( ($file !== ".") && $file !== ".." && !in_array($file, explode("|",$_POST['exept'])) ){
 							addFolderToZip($dir . $file . "/", $zipArchive, $zipdir . $file . "/", $cnt);
 						}
 					}else{
 						# Добавляем файлы в архив
 						if($file !==__FILE__){
 							$cnt++;
-							if($cnt > $_GET['max']){
+							if($cnt > $_POST['max']){
 								break;
 							}
 							
-							if($cnt > $_GET['min'] && filesize($dir.$file) < $_GET['max_size']*1048576 ){
+							if($cnt > $_POST['min'] && filesize($dir.$file) < $_POST['max_size']*1024 ){
 								$zipArchive->addFile($dir . $file, $zipdir . $file);
 								echo "<span title='".$dir.$file."'> . </span>";
 								// echo (1000000+$cnt)." - ".$dir.$file." OK <br />";
@@ -75,32 +78,41 @@
 			<h1>Архіватор сайту</h1>
 			Всього файлів <b><?=$all_count?></b>
 			<div id="form_block">
-				<form enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="GET">
+				<form enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
 					<fieldset>
 						<legend title="">Виберіть директорію для архівування:</legend>
-						<input id="alldir" type="checkbox" name="dir" value="" onclick="" /> Усі файли та теки<br />
+						<script>
+							function turn_of(){
+								if(alldir.checked) {
+									var f1 = document.getElementsByClassName('selecteddir')
+									for (var i=0; i<f1.length; i++)
+										f1[i].checked = false;
+								}
+							}
+						</script>
+						<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of()" /> Усі файли та теки<br />
 <?
 						foreach($dirs as $dir){
 							if (is_dir($archive_dir.$dir) && $dir != "." && $dir != "..") {
 ?>
-								<input class="selecteddir" type="checkbox" name="dir[<?=$dir?>]" value="<?=$dir?>" /> <?=$dir?><br />
+								<input class="selecteddir" type="checkbox" name="dir[<?=$dir?>]" value="<?=$dir?>" onclick="alldir.checked=false" /> <?=$dir?><br />
 <?
 							}
 						}
 ?>
 						<fieldset>
 							<legend title="">Або впишіть шлях до вкладеної теки:</legend>
-							<input type="text" name="dir_write" value="<?=$_GET['dir_write']?>" size="100"/> <br />
+							<input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" size="100"/> <br />
 						</fieldset>
 					</fieldset>
 					
 					<fieldset>
 						<legend title="" >Які теки слід виключити: вводити через "|"</legend>
-						<input type="text" name="exept" value="<?=$_GET['exept']?>" size="100" />
+						<input type="text" name="exept" value="<?=$_POST['exept']?>" size="100" />
 					</fieldset>
 					<fieldset>
 						<legend title="" >Не архівувати файли більше ніж:</legend>
-						<input type="text" name="max_size" value="100" /> мб
+						<input type="text" name="max_size" value="1024" /> кб
 					</fieldset>
 					<fieldset>
 						<legend title="" >Обмеження за кількістю файлів:</legend>
@@ -114,21 +126,20 @@
 					<legend title="" >Хід виконання архівації:</legend>
 					<div>
 <?
-						if($_GET['submit']){
-							
-							if($_GET['dir_write']){
-								unset($_GET['dir']);
-								$_GET['dir'] = $_GET['dir_write'];
+						if($_POST['submit']){
+							if($_POST['dir_write']){
+								unset($_POST['dir']);
+								$_POST['dir'] = $_POST['dir_write'];
 							}
 							
-							if(isset($_GET['dir'])){
+							if(isset($_POST['dir'])){
 								# создание zip архива
 								$zip = new ZipArchive();
 								# имя файла архива
-								if(is_array($_GET['dir'])) {
-									$archname = implode("-",$_GET['dir'])."-backup_".date('Y_m_d_H_i_s').".zip";
-								} elseif($_GET['dir_write']) {
-									$archname = $_GET['dir_write']."-backup_".date('Y_m_d_H_i_s').".zip";
+								if(is_array($_POST['dir'])) {
+									$archname = implode("-",$_POST['dir'])."-backup_".date('Y_m_d_H_i_s').".zip";
+								} elseif($_POST['dir_write']) {
+									$archname = $_POST['dir_write']."-backup_".date('Y_m_d_H_i_s').".zip";
 								} else {
 									$archname = "all-backup_".date('Y_m_d_H_i_s').".zip";
 								}
@@ -140,14 +151,14 @@
 								}
 
 								# добавляем файлы в архив все файлы из папки src_dir								
-								if(is_array($_GET['dir'])) {
-									foreach($_GET['dir'] as $onedir){
+								if(is_array($_POST['dir'])) {
+									foreach($_POST['dir'] as $onedir){
 										# папка с исходными файлами
 										$src_dir = dirname(__FILE__)."/".$onedir."/";
 										addFolderToZip($src_dir, $zip, $onedir."/", $count);
 									}
 								} else {
-									$src_dir = dirname(__FILE__)."/".$_GET['dir']."/";
+									$src_dir = dirname(__FILE__)."/".$_POST['dir']."/";
 									addFolderToZip($src_dir, $zip, '', $count);
 								}
 								
