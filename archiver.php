@@ -5,6 +5,13 @@
 		<META http-equiv="content-type" content="text/html; charset=utf-8" />
 		<META NAME="Author" CONTENT="Lesyuk Sergiy">
 		<title>Archiver</title>
+		<style>
+			/*
+			fieldset.left { float:left; width: 47%; }
+			fieldset.right { float:right; width: 47%; }
+			.clear { clear:both; }
+			*/
+		</style>
 	</head>
 <?	
 	# папка в которой будет размещен архив
@@ -76,12 +83,21 @@
 	<body>
 		<div id="wpapper">
 			<h1>Архіватор сайту</h1>
-			Всього файлів <b><?=$all_count?></b>
 			<div id="form_block">
 				<form enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-					<fieldset>
+					<fieldset class="right">
+						<legend title="">Кількість файлів:</legend>
+						Всього файлів <b><?=$all_count?></b>
+						<input type="checkbox" id="get_count" name="get_count" value='1' checked="checked" onclick="if(get_count.checked)window.location=window.location.href+'/?get_count=1'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" /> Показати кількість файлів.(Це займе деякий час...)<br />
+					</fieldset>
+					
+					<fieldset class="left">
 						<legend title="">Виберіть директорію для архівування:</legend>
 						<script>
+							<?if(!$_GET['get_count']):?>
+								get_count.checked = false;
+							<?endif;?>
+							
 							function turn_of(){
 								if(alldir.checked) {
 									var f1 = document.getElementsByClassName('selecteddir')
@@ -90,7 +106,7 @@
 								}
 							}
 						</script>
-						<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of()" /> Усі файли та теки<br />
+						<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of()" /> <b>Усі файли та теки</b><br />
 <?
 						foreach($dirs as $dir){
 							if (is_dir($archive_dir.$dir) && $dir != "." && $dir != "..") {
@@ -102,26 +118,35 @@
 ?>
 						<fieldset>
 							<legend title="">Або впишіть шлях до вкладеної теки:</legend>
-							<input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" size="100"/> <br />
+							<input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%" /> <br />
 						</fieldset>
 					</fieldset>
-					
-					<fieldset>
+				
+					<fieldset class="right">
 						<legend title="" >Які теки слід виключити: вводити через "|"</legend>
-						<input type="text" name="exept" value="<?=$_POST['exept']?>" size="100" />
+						<textarea cols="10" rows="4" name="exept" style="resize:none; width: 99%"><?=$_POST['exept']?></textarea>
 					</fieldset>
-					<fieldset>
+				
+					<fieldset class="right">
 						<legend title="" >Не архівувати файли більше ніж:</legend>
-						<input type="text" name="max_size" value="1024" /> кб
-					</fieldset>
-					<fieldset>
-						<legend title="" >Обмеження за кількістю файлів:</legend>
-						от <input type="text" name="min" value="0" /> до <input type="text" name="max" value="14000" />
+<?
+						if(!$_POST['max_size']) $_POST['max_size'] = 10240;
+?>
+						<input type="text" name="max_size" value="<?=$_POST['max_size']?>"  /> кб
 					</fieldset>
 					
+					<fieldset class="right">
+						<legend title="" >Обмеження за кількістю файлів:</legend>
+<?
+						if(!$_POST['max']) $_POST['min'] = 0;
+						if(!$_POST['max']) $_POST['max'] = 14000;
+?>
+						від <input type="text" name="min" value="<?=$_POST['min']?>" /> до <input type="text" name="max" value="<?=$_POST['max']?>" />
+					</fieldset>
+					<div class="clear"></div>
 					<input type="submit" name="submit" value="РОЗПОЧАТИ АРХІВАЦІЮ" />
 				</form>
-				
+				<div class="clear"></div>
 				<fieldset>
 					<legend title="" >Хід виконання архівації:</legend>
 					<div>
