@@ -24,9 +24,11 @@
 	
 	-archiver_201308121800
 		додано доповнення архіву
+		
+	-archiver_201308131230
+		вернув старый лог архівації
 */
 	set_time_limit(0);
-	echo ini_get(upload_max_filesize);
 ?>
 <!DOCTYPE html>
 <html>
@@ -40,6 +42,15 @@
 			fieldset.right { float:right; width: 47%; }
 			.clear { clear:both; }
 			*/
+			
+			input.archivatorstart {
+				font-size: 20px;
+				margin: 8px 0 4px;
+				width: 100%;
+				cursor: pointer;
+			}
+			
+			.archivelog div { max-height: 394px; overflow: auto; }
 		</style>
 	</head>
 <?
@@ -76,15 +87,16 @@
 	# Рекурсивна функція архівації вкладених файлів і тек
 	function addFolderToZip($dir, &$zipArchive, $zipdir = '', &$cnt, &$fp){
 		if (is_dir($dir)) {
-			echo "<b><span title='".$dir."'> * </span></b>";
 			fwrite($fp, $dir."\n");
-			flush();
 
 			if ($dh = opendir($dir)) {
 				# Додаємо порожню директорію
 				if(!empty($zipdir)){
 					if($zipArchive->addEmptyDir($zipdir) === false){
-						echo "Помилка при додаванні порожної теки - $zipdir";
+						echo "Помилка при додаванні порожної теки - $zipdir<br />";
+					} else {
+						//echo "<b><span title='".$dir."'> * </span></b>";
+						echo "<b>$dir</b><br />";
 					}
 				}
 
@@ -106,13 +118,13 @@
 
 							if($cnt > $_POST['min'] && filesize($dir.$file) < $_POST['max_size']*1024 && $file != basename(__FILE__) && !strstr($file, "zip")){
 								if($zipArchive->addFile($dir . $file, $zipdir . $file)){
-									echo "<span title='".$dir.$file."'> . </span>";
+									echo (1000000+$cnt)." - ".$dir.$file." OK <br />";
+									//echo "<span title='".$dir.$file."'> . </span>";
 								} else {
-									echo "Помилка архівації: файл $dir.$file";
+									echo "Помилка архівації: файл $dir.$file<br />";
 								}
 								flush();
 								fwrite($fp, (1000000+$cnt)." - $dir.$file OK\n");
-								// echo (1000000+$cnt)." - ".$dir.$file." OK <br />";
 							}
 						}
 					}
@@ -237,15 +249,15 @@
 						<legend title="" >Обмеження за кількістю файлів:</legend>
 <?
 						if(!$_POST['max']) $_POST['min'] = 0;
-						if(!$_POST['max']) $_POST['max'] = 14000;
+						if(!$_POST['max']) $_POST['max'] = 20000;
 ?>
 						від <input type="text" name="min" value="<?=$_POST['min']?>" /> до <input type="text" name="max" value="<?=$_POST['max']?>" />
 					</fieldset>
 					<div class="clear"></div>
-					<input type="submit" name="submit" value="РОЗПОЧАТИ АРХІВАЦІЮ" />
+					<input class="archivatorstart" type="submit" name="submit" value="РОЗПОЧАТИ АРХІВАЦІЮ" />
 				</form>
 				<div class="clear"></div>
-				<fieldset>
+				<fieldset class="archivelog">
 					<legend title="" >Хід виконання архівації:</legend>
 					<div>
 <?
@@ -296,7 +308,7 @@
 								$zip->close();
 								unlink($log_file);
 
-								echo "<br />Архів <a href='$archname'>".$archname."</a> створено. Він вміщує ".$count." файлів";
+								echo "<br />Архів <a href='/$archname'>".$archname."</a> створено. Він вміщує ".$count." файлів";
 							} else {
 								echo "Виберіть теку";
 							}
