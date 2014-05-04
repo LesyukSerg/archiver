@@ -1,7 +1,7 @@
 <?
 error_reporting(E_ALL);
 $timestart = microtime(1);
-define('VERSION', '201312161202');
+define('VERSION', '201401271040');
 session_start();
 set_time_limit(300);
 ?>
@@ -20,7 +20,7 @@ $lang = array(
 		'unzip_not' => 'Архів не знайдено',
 		'unzip_choose' => 'Виберіть файл для розархівування',
 		'unzip' => 'Розархівувати',
-		'unzip_log' => 'Хід виконання розархівації',
+		'unzip_log' => 'Хід виконання',
 		'dell' => 'Видалити',
 		'delzip_ok' => 'Успішно видалено архів.',
 		'delzip_err' => 'Не видалено архів',
@@ -34,7 +34,6 @@ $lang = array(
 		'permission' => 'Архів не створено. Немає прав на запис',
 		'zip_created' => 'Створено архів',
 		'zip_added_files' => 'До архіву додано файлів',
-		'again' => 'заново',
 		'many' => ' багацько',
 		'choose_folder' => 'Виберіть теку',
 		'count_files' => 'Кількість файлів',
@@ -59,7 +58,12 @@ $lang = array(
 		'sec' => 'секунд',
 		'enter_pass' => 'Введіть пароль',
 		'login' => 'вхід',
-		'zip_sorry' => 'Шановний користувач архіватору.<br /> На жаль на цьому хостингу не встановлений ZIP архіватор.'
+		'zip_sorry' => 'Шановний користувач архіватору.<br /> На жаль на цьому хостингу не встановлений ZIP архіватор.',
+		'show_log' => 'Відображення повідомлень',
+		'show_log_ok' => 'Успішні',
+		'show_log_notice' => 'Пропущені',
+		'show_log_error' => 'Помилки',
+		'show_log_save' => 'Зберегти'
 	),
 	'en' => array(
 		'language' => 'Language',
@@ -74,7 +78,7 @@ $lang = array(
 		'unzip_not' => 'Archive not found',
 		'unzip_choose' => 'Choose file to extract',
 		'unzip' => 'Extract',
-		'unzip_log' => 'Log extraction',
+		'unzip_log' => 'Log',
 		'dell' => 'Delete',
 		'delzip_ok' => 'Successfully deleted archive.',
 		'delzip_err' => 'Archive was not deleted',
@@ -88,7 +92,6 @@ $lang = array(
 		'permission' => 'Archive will not created. Permission denied',
 		'zip_created' => 'Archive will created',
 		'zip_added_files' => 'filed added',
-		'again' => 'new',
 		'many' => ' many',
 		'choose_folder' => 'Choose directory',
 		'count_files' => 'Count files',
@@ -114,7 +117,12 @@ $lang = array(
 		'sec' => 'second',
 		'enter_pass' => 'Enter password',
 		'login' => 'enter',
-		'zip_sorry' => 'Dear user archiver. <br /> Unfortunately this host is not established ZIP archive.'
+		'zip_sorry' => 'Dear user archiver. <br /> Unfortunately this host is not established ZIP archive.',
+		'show_log' => 'Show log settings',
+		'show_log_ok' => 'Success',
+		'show_log_notice' => 'Skiped',
+		'show_log_error' => 'Error',
+		'show_log_save' => 'Сохранить'
 	),
 	'ru' => array(
 		'language' => 'Язык',
@@ -128,8 +136,8 @@ $lang = array(
 		'unzip_err' => 'Поврежден архив',
 		'unzip_not' => 'Архив не найдено',
 		'unzip_choose' => 'Выберите файл для разархивирования',
-		'unzip' => '',
-		'unzip_log' => 'Ход выполнения разархивации',
+		'unzip' => 'Разархивировать',
+		'unzip_log' => 'Ход выполнения',
 		'dell' => 'Удалить',
 		'delzip_ok' => 'Успешно удалено архив.',
 		'delzip_err' => 'Не было удалено архив',
@@ -143,7 +151,6 @@ $lang = array(
 		'permission' => 'Архив не создан. Нет прав на запись',
 		'zip_created' => 'Создан архив',
 		'zip_added_files' => 'В архив добавлено файлов',
-		'again' => '',
 		'many' => 'множество',
 		'choose_folder' => 'Выберите папку',
 		'count_files' => 'Количество файлов',
@@ -168,7 +175,12 @@ $lang = array(
 		'sec' => 'секунд',
 		'enter_pass' => 'Введите пароль',
 		'login' => 'вход',
-		'zip_sorry' => 'Уважаемый пользователь архиватора. <br /> К сожалению на этом хостинге не установлен ZIP архиватор.'
+		'zip_sorry' => 'Уважаемый пользователь архиватора. <br /> К сожалению на этом хостинге не установлен ZIP архиватор.',
+		'show_log' => 'Отображение уведомлений',
+		'show_log_ok' => 'Успешные',
+		'show_log_notice' => 'Пропущеные',
+		'show_log_error' => 'Ошибки',
+		'show_log_save' => 'Save'
 	)
 );
 #--- /массив перекладів -------------------------------------------------------
@@ -198,12 +210,26 @@ if(!isset($_POST['unzip'])) $_POST['unzip'] = null;
 if(!isset($_POST['delzip'])) $_POST['delzip'] = null;
 if(!isset($_POST['pswrd'])) $_POST['pswrd'] = null;
 if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
+if(!isset($_POST['log_submit'])) $_POST['log_submit'] = null;
+if(!isset($_POST['show_ok'])) $_POST['show_ok'] = null;
+if(!isset($_POST['show_notice'])) $_POST['show_notice'] = null;
+if(!isset($_POST['show_error'])) $_POST['show_error'] = null;
+if(!isset($_SESSION['log']['ok'])) $_SESSION['log']['ok'] = 1;
+if(!isset($_SESSION['log']['notice'])) $_SESSION['log']['notice'] = 1;
+if(!isset($_SESSION['log']['error'])) $_SESSION['log']['error'] = 1;
 
 	$pass = "238a0fa7c18cd78ca1f8d14c260ee02b";
 	$pass = "b59c67bf196a4758191e42f76670ceba";
 
 	if(md5($_POST['pswrd']) == $pass)
 		$_SESSION['psswrd'] = $pass;
+	
+	# налаштування логування --------------------------------------------------
+	if($_POST['log_submit']){
+		$_SESSION['log']['ok'] = $_POST['show_ok']?1:0;
+		$_SESSION['log']['notice'] = $_POST['show_notice']?1:0;
+		$_SESSION['log']['error'] = $_POST['show_error']?1:0;
+	}
 	
 	# функція перекладу --------------------------------------------------
 	function trnslt($key){
@@ -254,9 +280,12 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 
 		# перевірка в root каталозі на zip файли -------------------------
 		function check_for_archive($archive_dir, $dirs){
+			$deleted_zip = "";
+			if($_POST['delzip']) $deleted_zip = $_POST['zipfile'];
+			
 			$zips = array();
 			foreach($dirs as $dir){
-				if (!is_dir($archive_dir.$dir) && strstr($dir, "zip")){
+				if (!is_dir($archive_dir.$dir) && strstr($dir, "zip") && $dir != $deleted_zip){
 					$zips[] = $dir;
 				}
 			}
@@ -265,6 +294,8 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 
 		# функція розархівації -------------------------------------------
 		function unzippp($archive_dir, $zpfl){
+			global $l, $lang;
+			
 			if($zpfl){
 				$zipfile = $archive_dir."/".$zpfl;
 
@@ -276,7 +307,7 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 						$zip->extractTo($archive_dir);
 						$zip->close();
 						echo "";
-						return "<span class='green'>".$lang[$l]['arch']." <b>".$zpfl."</b> ".trnslt('unzip_ok')." $archive_dir.</span>";
+						return "<span class='green'>".$lang[$l]['arch']." <b>".$zpfl."</b> ".trnslt('unzip_ok')." ".$archive_dir.".</span>";
 					}else{
 						return "<span class='red'>".$lang[$l]['unzip_err']." <b>".$zpfl."</b></span>";
 					}
@@ -324,7 +355,7 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 					}
 				}";
 			$out .= "</script>";
-			$out .= "<input id='alldir' type='checkbox' name='dir' value='' onclick='turn_of(this)' /> <b>".trnslt('all_files')."</b> <input type='checkbox' name='get_count' value='all' ".(($_GET['get_count']=='all')?"checked='checked'":"")." onclick='if(get_count.checked)window.location=\"".preg_replace("/\?.*/","",$_SERVER['REQUEST_URI'])."?get_count=all\"; else window.location=\"".$_SERVER['SCRIPT_NAME']."\"' />".trnslt('show_dir_count_files')."<br />";
+			$out .= "<input id='alldir' type='checkbox' name='dir' value='' onclick='turn_of(this)' /> <b>".trnslt('all_files')."</b> <input type='checkbox' name='get_count' value='all' ".(($_GET['get_count']=='all' && !$_POST['submit'])?"checked='checked'":"")." onclick='if(get_count.checked)window.location=\"".preg_replace("/\?.*/","",$_SERVER['REQUEST_URI'])."?get_count=all\"; else window.location=\"".$_SERVER['SCRIPT_NAME']."\"' />".trnslt('show_dir_count_files')."<br />";
 
 			foreach($dirs as $dir){
 				if (is_dir($src_dir.$dir)){
@@ -350,10 +381,13 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 						$zdir = iconv('windows-1251', 'CP866//TRANSLIT//IGNORE', $zipdir);
 						//$edir = iconv("cp1251","utf-8",$zipdir);
 						if($zipArchive->addEmptyDir($zdir) === false){
-							echo "<span class='red'>".trnslt('add_folder_err')." - $zipdir</span><br />\n";
+							//$_SESSION['log']['ok']
+							//$_SESSION['log']['notice']
+							if($_SESSION['log']['error'])
+								echo "<span class='red'>".trnslt('add_folder_err')." - $zipdir</span><br />\n";
 						}else{
-							//echo "<b><span title='".$dir."'> * </span></b>";
-							echo "<b>$zipdir</b><br />";
+							if($_SESSION['log']['ok'])
+								echo "<b>$zipdir</b><br />";
 						}
 					}
 
@@ -373,21 +407,23 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 									break;
 
 								//$except = array('zip', 'rar', 'tar', 'gz', '7z');
-								if($cnt > $_POST['min'] && filesize($dir.$file) < $_POST['max_size']*1024 && $file != basename(__FILE__)){
+								if($cnt > $_POST['min'] && filesize($dir.$file) < $_POST['max_size']*1024 && $file != basename(__FILE__) && $file != 'archive_log.txt'){
 									$zfile = iconv(mb_detect_encoding($file), 'CP866//TRANSLIT//IGNORE', $file);
 
 									if($zipArchive->addFile($dir . $file, $zipdir . $zfile)){
-										//echo mb_detect_encoding($file)."-";
-										echo "<span class='green'>".(1000000+$cnt)." - ".$dir.$file." OK</span><br />\n";
-										//echo "<span title='".$dir.$file."'> . </span>"; filesize
+										if($_SESSION['log']['ok'])
+											echo "<span class='green'>".(1000000+$cnt)." - ".$dir.$file." OK</span><br />\n";
 									}else{
-										echo "<span class='red'>".trnslt('add_file_err')." ".$dir.$file."</span><br />\n";
+										if($_SESSION['log']['error'])
+											echo "<span class='red'>".trnslt('add_file_err')." ".$dir.$file."</span><br />\n";
 									}
-
-									fwrite($fp, (1000000+$cnt)." - ".$dir.$file." OK\n");
+									if($_SESSION['log']['error'])
+										fwrite($fp, (1000000+$cnt)." - ".$dir.$file." OK\n");
 								}else{
 									fwrite($fp, $dir.$file." - ".trnslt('skip')."\n");
-									echo "<span class='grey'>".$dir.$file." - ".trnslt('skip')."</span><br />\n";
+									
+									if($_SESSION['log']['notice'])
+										echo "<span class='grey'>".$dir.$file." - ".trnslt('skip')."</span><br />\n";
 								}
 							}
 						}
@@ -451,7 +487,7 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 				}
 
 				# додаємо файли в архів всі файли із теки src_dir
-
+				
 				if(is_array($_POST['dir'])){
 					foreach($_POST['dir'] as $onedir){
 						addFolderToZip($pathname."/".$onedir."/", $zip, $onedir."/", $count, $fp);
@@ -469,11 +505,11 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 				$zip->close();
 				unlink($log_file);
 				
-				$download = preg_replace("/\/".basename(__FILE__).".+/","",$_SERVER['REQUEST_URI']).$archname;
+				$download = preg_replace("/\/".basename(__FILE__).".*/","",$_SERVER['REQUEST_URI']).$archname;
 				echo "<br />".trnslt('zip_created')." <a href='".$download."'>".$archname."</a>. ".trnslt('zip_added_files')." ".$count;
-				echo "<br /><input type='button' value='".trnslt('again')."' onclick='window.location=\""."http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."\"' />";
+				echo "<br />";
 			}else{
-				echo "Виберіть теку"."<br /><input type='button' value='".trnslt('again')."' onclick='window.location=\""."http://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']."\"' />";
+				echo "Виберіть теку"."<br />";
 			}
 		}
 
@@ -506,8 +542,9 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 			.grey { color: grey; }
 			.green { color: green; }
 			form.zip:hover{ background-color: #E8E2D2; }
-			.copyright { float: right; margin: -18px 4px 0 0; opacity: 0.2; position: relative; text-transform: lowercase; }
+			.copyright { margin: -18px 4px 0 0; opacity: 0.2; position: relative; text-align: center; text-transform: lowercase; width: 100%; }
 			.right { float: right; margin-left: 20px; }
+			.left { float: left; }
 			.clear { clear:both; }
 		</style>
 	</head>
@@ -529,12 +566,23 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 				if(!$_POST['max']) $_POST['max'] = 20000;
 ?>
 				<div id="form_block">
-					<fieldset>
+					<fieldset class="left">
 						<legend title=""><?=trnslt('count_files')?>:</legend>
 						<?=trnslt('full_files')?> <b><?=$all_count?></b>
-						<input type="checkbox" id="get_count" name="get_count" value='1' checked="checked" onclick="if(get_count.checked)window.location=window.location.href+'/?get_count=1'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" />
+						<input type="checkbox" id="get_count" name="get_count" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_count.checked)window.location=window.location.href+'/?get_count=1'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" />
 						<?=trnslt('show_full_count_files')?><br />
 					</fieldset>
+					
+					<fieldset class="right">
+						<legend title=""><?=trnslt('show_log')?>:</legend>
+						<form class="zip clear" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+							<input type="checkbox" name="show_ok" value='1' <?if($_SESSION['log']['ok']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_ok')?> |
+							<input type="checkbox" name="show_notice" value='1' <?if($_SESSION['log']['notice']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_notice')?> |
+							<input type="checkbox" name="show_error" value='1' <?if($_SESSION['log']['error']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_error')?>
+							<input type="submit" name="log_submit" value='<?=trnslt('show_log_save')?>' />
+						</form>
+					</fieldset>
+					<div class="clear"></div>
 <?
 					$rez_zip = "";
 					if($_POST['unzip']){
