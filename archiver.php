@@ -5,6 +5,13 @@
 		<META http-equiv="content-type" content="text/html; charset=utf-8" />
 		<META NAME="Author" CONTENT="Lesyuk Sergiy">
 		<title>Archiver</title>
+		<style>
+			/*
+			fieldset.left { float:left; width: 47%; }
+			fieldset.right { float:right; width: 47%; }
+			.clear { clear:both; }
+			*/
+		</style>
 	</head>
 <?	
 	# папка в которой будет размещен архив
@@ -81,13 +88,54 @@
 					<fieldset class="right">
 						<legend title="">Кількість файлів:</legend>
 						Всього файлів <b><?=$all_count?></b>
-						<input type="checkbox" id="get_count" name="get_count" value='1' checked="checked" onclick="if(this.checked)window.location=window.location.href+'/?get_count=1'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" /> Показати кількість файлів.(Це займе деякий час...)<br />
+						<input type="checkbox" id="get_count" name="get_count" value='1' checked="checked" onclick="if(get_count.checked)window.location=window.location.href+'/?get_count=1'; else window.location='<?='http://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']?>'" /> Показати кількість файлів.(Це займе деякий час...)<br />
 					</fieldset>
-					
+					<fieldset>
+						<legend title="" >Знайдені архіви:</legend>
+<?
+							foreach($dirs as $dir){
+								if (!is_dir($archive_dir.$dir) && $dir != "." && $dir != ".." && strstr($dir, "zip")){
+?>
+									<form enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+										<input class="selectedzip" type="radio" name="zipfile" value="<?=$dir?>" checked="checked" /> <?=$dir?> <input type="submit" name="unzip" value="Видобути архів" />
+									</form>
+<?
+								}
+							}
+?>
+					</fieldset>
+					<fieldset>
+						<legend title="" >Хід виконання розархівації:</legend>
+						<div>
+<?
+							if($_POST['unzip']){
+								if($_POST['zipfile']) {
+									$zipfile = $archive_dir.$_POST['zipfile'];
+									
+									if(file_exists($zipfile)){
+										$zip = new ZipArchive;
+										$res = $zip->open($zipfile);
+										if ($res === TRUE) {
+											$zip->extractTo($archive_dir);
+											$zip->close();
+											echo "Ура! Архів <b>".$_POST['zipfile']."</b> успішно відобуто в директорію $archive_dir";
+										} else {
+											echo "Архів <b>".$_POST['zipfile']."</b> пожкоджено";
+										}
+									} else {
+										echo "Файл не знайдено";
+									}
+								} else {
+									echo "Виберіть файл для розархівування";
+								}
+							}
+	?>
+						</div>
+					</fieldset>
+					<hr /><hr /><hr />
 					<fieldset class="left">
 						<legend title="">Виберіть директорію для архівування:</legend>
 						<script>
-						var get_count = document.getElementById('get_count');
 							<?if(!$_GET['get_count']):?>
 								document.getElementById('get_count').checked = false;
 							<?endif;?>
@@ -95,10 +143,9 @@
 							function turn_of(alldir){
 								if(alldir.checked) {
 									var f1 = document.getElementsByTagName('input');
-									for (var i=0; i<f1.length; i++) {
+									for (var i=0; i<f1.length; i++)
 										if (f1[i].className == 'selecteddir')
-										f1[i].checked = false;
-									}
+											f1[i].checked = false;
 								}
 							}
 						</script>
