@@ -1,9 +1,9 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404092026');
+	define('VERSION', '201404111133');
 	date_default_timezone_set("Europe/Kiev");
 	session_start();
-	set_time_limit(0);
+	//set_time_limit(0);
 	$timestart = microtime(1);
 	//$pass = "238a0fa7c18cd78ca1f8d14c260ee02b";
 	$pass = "b59c67bf196a4758191e42f76670ceba";
@@ -309,9 +309,9 @@
 	if(!isset($_SESSION['options']['max_size'])) $_SESSION['options']['max_size'] = 1024;
 	if(!isset($_SESSION['pass_count'])) $_SESSION['pass_count'] = 3;
 	if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
-	if(!isset($_SESSION['log']['OK'])) $_SESSION['log']['OK'] = 1;
-	if(!isset($_SESSION['log']['NOTICE'])) $_SESSION['log']['NOTICE'] = 1;
-	if(!isset($_SESSION['log']['ERROR'])) $_SESSION['log']['ERROR'] = 1;
+	if(!isset($_SESSION['hist']['OK'])) $_SESSION['hist']['OK'] = 1;
+	if(!isset($_SESSION['hist']['NOTICE'])) $_SESSION['hist']['NOTICE'] = 1;
+	if(!isset($_SESSION['hist']['ERROR'])) $_SESSION['hist']['ERROR'] = 1;
 	if(!isset($_SESSION['message'])) $_SESSION['message'] = array("ERROR" => array(), "NOTICE" => array(), "OK" => array());
 	if(!isset($_SESSION['history'])) $_SESSION['history'] = array();
 	if(!isset($_SESSION['options']['min_orig'])) $_SESSION['options']['min_orig'] = null;
@@ -334,6 +334,8 @@
 	
 	# функція перевірки нової версії -------------------------------------
 	function check_new_vers($vers){
+		ini_set('default_socket_timeout', 2);
+		error_reporting(E_ERROR);
 		if($last_ver = file_get_contents("http://lesyuk-serg.w.pw/archiver/checker.php?curr=".$vers)){
 			if(strlen($last_ver) > strlen((int)$last_ver)+2)
 				$_SESSION['message']['NOTICE'][] = trnslt('download_new').$last_ver;
@@ -592,10 +594,10 @@
 					if(!empty($zipdir)){
 						$zdir = $zipdir;
 						if($zipArchive->addEmptyDir($zdir) === false){
-							if($_SESSION['log']['ERROR'])
+							if($_SESSION['hist']['ERROR'])
 								$_SESSION['history'][] = "<span class='red'>".trnslt('add_folder_err')." - ".$zdir."</span><br />\n";
 						}else{
-							if($_SESSION['log']['OK'])
+							if($_SESSION['hist']['OK'])
 								$_SESSION['history'][] = "<b>".$zdir."</b><br />";
 						}
 					}
@@ -621,16 +623,16 @@
 									$zfile = iconv(mb_detect_encoding($file), 'CP866//TRANSLIT//IGNORE', $file);
 
 									if($zipArchive->addFile($dir.$file, $zipdir.$zfile)){
-										if($_SESSION['log']['OK'])
+										if($_SESSION['hist']['OK'])
 											$_SESSION['history'][] = "<span class='green'>".(1000000+$cnt)." - ".$dir.$file." OK</span><br />\n";
 									}else{
-										if($_SESSION['log']['ERROR'])
+										if($_SESSION['hist']['ERROR'])
 											$_SESSION['history'][] = "<span class='red'>".trnslt('add_file_err')." ".$dir.$file."</span><br />\n";
 									}
 									
 									fwrite($fp, (1000000+$cnt)." - ".$dir.$file." OK\n");
 								}else{
-									if($_SESSION['log']['NOTICE'])
+									if($_SESSION['hist']['NOTICE'])
 										$_SESSION['history'][] = "<span class='grey'>".$dir.$file." - ".trnslt('skip')."</span><br />\n";
 									
 									fwrite($fp, $dir.$file." - ".trnslt('skip')."\n");
@@ -770,11 +772,11 @@
 
 	# функція збереження налаштувань логування ---------------------------
 	function save_log(){
-		$_SESSION['log']['ok'] = $_POST['show_ok']?1:0;
-		$_SESSION['log']['notice'] = $_POST['show_notice']?1:0;
-		$_SESSION['log']['error'] = $_POST['show_error']?1:0;
-		$_SESSION['options']['min'] = $_POST['min'];
-		$_SESSION['options']['max'] = $_POST['max'];
+		$_SESSION['hist']['ok'] = $_POST['show_ok']?1:0;
+		$_SESSION['hist']['notice'] = $_POST['show_notice']?1:0;
+		$_SESSION['hist']['error'] = $_POST['show_error']?1:0;
+		//$_SESSION['options']['min'] = $_POST['min'];
+		//$_SESSION['options']['max'] = $_POST['max'];
 		$_SESSION['options']['max_size'] = $_POST['max_size'];
 		$_SESSION['options']['files_for_iteration'] = $_POST['files_for_iteration'];
 		$_SESSION['options']['confirm_unzip'] = $_POST['confirm_unzip']?1:0;
@@ -787,6 +789,7 @@
 	if($_GET['logout']){
 		$_SESSION['psswrd'] = 1;
 		$_SESSION['pass_count'] = 3;
+		unset($_SESSION['log']);
 	}
 	
 	if(md5($_POST['pswrd']) == $pass) $_SESSION['psswrd'] = $pass;
@@ -811,15 +814,16 @@
 		}
 		elseif($_POST['submit']){
 			if($_POST['ajax']){
-				if(isset($_POST['dir'])) {
+				if(isset($_POST['dir']) || isset($_POST['dir_write'])) {
 					$_SESSION['options']['min_orig'] = $_SESSION['options']['min'];
 					$_SESSION['options']['max_orig'] = $_SESSION['options']['max'];
+					
 					$_POST['dir'] = explode("|",substr($_POST['dir'],1, strlen($_POST['dir'])));
+					
 					$_SESSION['options']['min'] = $_POST['skipfiles'];
 					$_SESSION['options']['max'] = $_POST['skipfiles']+$_SESSION['options']['files_for_iteration'];
 				}
 			}
-			
 			start_archivation($pathname, $log_file);
 			
 			if($_POST['ajax']){
@@ -842,9 +846,12 @@
 				foreach($_POST['dir'] as $fldr){
 					$allfiles_ajax += getFolderCount_for_ajax($pathname."/".$fldr);
 				}
+				$_SESSION['all_count_files'] = $allfiles_ajax;
 			} else{
 				$allfiles_ajax += getFolderCount_for_ajax(($_POST['dir'])?($pathname."/".$_POST['dir']):$pathname);
+				$_SESSION['all_count_files'] = $allfiles_ajax;
 			}
+			
 			if($allfiles_ajax > $_SESSION['options']['files_for_iteration'])
 				echo "<div><span id='allfls'>".($allfiles_ajax-1)."</span></div>";
 		}
@@ -945,10 +952,26 @@
 						// Запуск аяксового запросу на архівацію ------------------------------------
 						function postgo(sendata){
 							if(!all_files){
-								$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('zip_added_files')?> <span id="cntfls">0</span></div><div></div>');
+								$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('zip_added_files')?> <span id="cntfls">0</span> [<span id="ldng">----------</span>]</div><div></div>');
 							}
 							
-							var intrvl = setInterval(function(){ $('.messages #cntfls').html($('.messages #cntfls').html()+"."); }, 2000);
+							var wait = [
+								"#---------",
+								"-#--------", 
+								"--#-------",
+								"---#------",
+								"----#-----",
+								"-----#----",
+								"------#---",
+								"-------#--",
+								"--------#-",
+								"---------#",
+							];
+							var i=0;
+							var intrvl = setInterval(function(){
+								if(i>=wait.length) i=0;	
+								$('.messages #ldng').html(wait[i++]);
+							}, 400);
 							
 							$.ajax({
 								type: "POST",
@@ -970,9 +993,10 @@
 								
 								if(skipfiles < all_files){
 									$('.messages .progress').css('width', (100*skipfiles/all_files)+'%');
-									$('.messages #cntfls').html(skipfiles);
+									$('.messages #cntfls').html(skipfiles+'/'+all_files);
 									postgo(sendata);
 								} else {
+									//$('.messages #ldng').remove();
 									$('.messages').html(data);
 									$('.archivatorstart').removeAttr('disabled');
 								}
@@ -1263,9 +1287,9 @@ input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: r
 											<div class="section__headline"><?=trnslt('show_log')?>:</div>
 											<div class="section__inner">
 												<div class="row">
-														<input type="checkbox" name="show_ok" value='1' <?if($_SESSION['log']['OK']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_ok')?> |
-														<input type="checkbox" name="show_notice" value='1' <?if($_SESSION['log']['NOTICE']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_notice')?> |
-														<input type="checkbox" name="show_error" value='1' <?if($_SESSION['log']['ERROR']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_error')?>
+														<input type="checkbox" name="show_ok" value='1' <?if($_SESSION['hist']['OK']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_ok')?> |
+														<input type="checkbox" name="show_notice" value='1' <?if($_SESSION['hist']['NOTICE']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_notice')?> |
+														<input type="checkbox" name="show_error" value='1' <?if($_SESSION['hist']['ERROR']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_error')?>
 													<div class="clear"></div>
 												</div>
 											</div>
