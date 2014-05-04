@@ -1,9 +1,9 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404161505');
+	define('VERSION', '201404221313');
 	date_default_timezone_set('Europe/Kiev');
 	session_start();
-	//set_time_limit(0);
+	//set_time_limit(2);
 	$timestart = microtime(1);
 	//$pass = '238a0fa7c18cd78ca1f8d14c260ee02b';
 	$pass = 'b59c67bf196a4758191e42f76670ceba';
@@ -537,12 +537,12 @@
 	# показ тек та файлів в $src_dir директорії --------------------------
 	function show_root_dir_and_files($src_dir, $sub){
 		global $lang, $l;
-		
+		/* 
 		if(strstr($sub, '..')){
 			$sub = '';
 			$src_dir = getcwd().'/';
 		}
-		
+		*/
 		$dirs = scandir($src_dir);
 		$out = '';
 		$total_count = 0;
@@ -943,7 +943,7 @@
 								if(!$(this).hasClass('active')){
 									window.location.href= '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>'+$(this).attr('id');
 								}
-							});								
+							});
 <?
 							if($_SESSION['options']['confirm_delzip']){
 ?>
@@ -1002,7 +1002,6 @@
 									dir = chk;
 								}
 							}
-
 							var dir_write = $('input[name=dir_write]').val();
 							var exept = $('input[name=exept]').val();
 							var submit = 'start';
@@ -1057,14 +1056,18 @@
 									$('.messages #cntfls').html(skipfiles+'/'+all_files);
 									postgo(sendata);
 								} else {
-									$('.messages').html(data);
+									if(data.indexOf('msg') > 0){
+										$('.messages').html(data);
+									} else {
+										data = data.replace(/<br \/>/, '');
+										$('.messages').html('<div class="msg w"><i>err</i><span style="">'+data+'</span></div>');
+									}
 									$('.archivatorstart').removeAttr('disabled');
 								}
-							}).error(function () {
+							}).error(function (){
+								$('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
 								console.log('Ошибка при получении данных');
 							});
-							
-							
 						}
 						
 						// Підготовка до архівації --------------------------------------------------
@@ -1076,8 +1079,12 @@
 							archive = '';
 							
 							var sendata = collectdata();
+							
 							if(sendata['dir'] == '0'){
 								delete sendata['dir'];
+							}
+							if(sendata['dir_write'].length == 0 || sendata['dir_write'] == ' '){
+								delete sendata['dir_write'];
 							}
 							
 							postgo(sendata);
