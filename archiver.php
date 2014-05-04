@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404081542');
+	define('VERSION', '201404091016');
 	date_default_timezone_set("Europe/Kiev");
 	session_start();
 	set_time_limit(0);
@@ -43,10 +43,10 @@
 			'full_files' => 'Всього файлів',
 			'count_files' => 'Кількість файлів',
 			'show_full_count_files' => 'Показати кількість файлів.(Це займе деякий час...)',
-			'unziper' => 'Розархіватор сайту',
+			'unziper' => 'Розархіватор',
 			'zip_found' => 'Знайдені архіви (тільки zip формату)',
 			'zip_not_found' => 'Не знайдено жодного zip архіву',
-			'zipsite' => 'Архіватор сайту',
+			'zipsite' => 'Архіватор',
 			'choose_zip' => 'Виберіть архів',
 			'create_new_zip' => 'Створити новий архів',
 			'add_to_zip' => 'Доповнити архів',
@@ -90,8 +90,9 @@
 			'fm_t_name' => 'Назва',
 			'fm_t_count' => 'Кількість',
 			'fm_t_size' => 'Розмір',
-			'show_full_size_dir' => 'Показати точний розмір тек.(Це займе деякий час...)',
+			'show_full_size_dir' => 'Показати розмір тек.(Це займе деякий час...)',
 			'size_files' => 'Підрахунок розміру тек',
+			'totally' => 'Загалом',
 		),
 		'en' => array(
 			'language' => 'Language',
@@ -173,6 +174,9 @@
 			'fm_t_name' => 'Name',
 			'fm_t_count' => 'Count',
 			'fm_t_size' => 'Size',
+			'show_full_size_dir' => 'Show full size dir',
+			'size_files' => 'Calculate file size',
+			'totally' => 'Totally',
 		),
 		'ru' => array(
 			'language' => 'Язык',
@@ -253,6 +257,9 @@
 			'fm_t_name' => 'Название',
 			'fm_t_count' => 'Количество',
 			'fm_t_size' => 'Размер',
+			'show_full_size_dir' => 'Показать точный размер папок(Это займет некоторое время ...)',
+			'size_files' => 'Подсчет размеров папок',
+			'totally' => 'Всего',
 		)
 	);
 	#--- /массив перекладів -------------------------------------------------------
@@ -353,7 +360,7 @@
 	
 	# Підрахунок всіх розмірів файлів в теках ----------------------------
 	function getFolderSize($dir, &$cnt = 0){
-		if(!$_GET['get_size'] && $cnt>9) return $cnt;
+		if(!$_GET['get_size'] && $cnt>9) return 0;
 		
 		if($dirs = scandir($dir)){
 			unset($dirs[array_search(".",$dirs)],$dirs[array_search("..",$dirs)],$dirs[array_search(".git",$dirs)],$dirs[array_search("archive.log",$dirs)]);
@@ -487,16 +494,18 @@
 	
 	# показ тек та файлів в $src_dir директорії --------------------------
 	function show_root_dir_and_files($src_dir, $sub){
+		global $lang, $l;
+		$dirs = scandir($src_dir);
+		$out = "";
+		$total_count = 0;
+		$total_size = 0;
+		unset($dirs[array_search(".",$dirs)]);
+		
 		if(strstr($sub, "..")){
 			$sub = "";
 			$src_dir = getcwd()."/";
 		}
 		
-		$dirs = scandir($src_dir);
-		unset($dirs[array_search(".",$dirs)]);
-		
-		global $lang, $l;
-		$out = "";
 
 		$dirs_out = array();
 		$files_out = array();
@@ -508,14 +517,8 @@
 			}
 		}
 		
-		$out = "
-			<table class='file_mamger_table'>
-				<tr>
-					<th>".trnslt('fm_t_name')."</th>
-					<th>".trnslt('fm_t_count')."</th>
-					<th>".trnslt('fm_t_size')."</th>
-				</tr>
-		";
+		$out = "<table class='file_mamger_table'>";
+		$out .= "<tr><th>".trnslt('fm_t_name')."</th><th>".trnslt('fm_t_count')."</th><th>".trnslt('fm_t_size')."</th></tr>";
 		$up = "";
 		foreach($dirs_out as $dir){
 			$all_count = 0;
@@ -530,37 +533,40 @@
 				
 				$dirname = "<a href='?section=filemananer&fmdir=".$up."'>".$dir."</a>";
 			} else {
-				$all_count = getFolderCount($src_dir.$dir.'/');
-				$fsize = getFolderSize($src_dir.$dir.'/');
+				$all_count = (!$_GET['get_size'])?getFolderCount($src_dir.$dir.'/'):0;
+				$fsize = 0;
+				if($_GET['get_size'])
+					$fsize = getFolderSize($src_dir.$dir.'/', $all_count);
+					
 				$dir = iconv('cp1251', 'UTF-8', $dir);
 				$dirname = "<a href='?section=filemananer&fmdir=".($sub?($sub."/"):'').$dir."'>".$dir."</a>";
 			}
 		
+			$total_count += $all_count;
+			$total_size += $fsize;
 			
-			$count = ($all_count>1000 && $_GET['get_count']!='all')?trnslt('more_999'):$all_count;
-			$fsize = (($all_count>1000 && !$_GET['get_size'])?'> ':'').number_format($fsize, 0, ',', ' ');
+			$count = ($all_count>1000 && !$_GET['get_size'])?trnslt('more_999'):$all_count;
+			$fsize = (!$_GET['get_size'])?'~~~':number_format($fsize, 0, ',', ' ');
 			
-			$out .= "
-				<tr>
-					<td>".$dirname."</td>
-					<td class='count'>".$count."</td>
-					<td class='size'>".$fsize." b</td>
-				</tr>
-			";
+			$out .= "<tr><td>".$dirname."</td><td class='count'>".$count."</td><td class='size'>".$fsize." b</td></tr>";
 		}
 		
 		foreach($files_out as $file){
-			$size = number_format(filesize($src_dir.$file), 0, ',', ' ');
+			$size = filesize($src_dir.$file);
+			$total_count++;
+			$total_size += $size;
+			
+			$size = number_format($size, 0, ',', ' ');
 			$file = iconv('cp1251', 'UTF-8', $file);
 			
-			$out .= "
-				<tr>
-					<td>".$file."</td>
-					<td class='count'></td>
-					<td class='size'>".$size." b</td>
-				</tr>
-			";
+			$out .= "<tr><td>".$file."</td><td class='count'></td><td class='size'>".$size." b</td></tr>";
 		}
+		$total_size = number_format($total_size, 0, ',', ' ');
+		$aprox = "";
+		if(!$_GET['get_size']) $aprox = ">";
+		
+		$out .= "<tr><td><hr /><hr /><hr /></td><td class='count'><hr /><hr /><hr /></td><td class='size'><hr /><hr /><hr /></td></tr>";
+		$out .= "<tr><td><b>".trnslt('totally')."</b></td><td class='count'><b>".$aprox." ".$total_count."</b></td><td class='size'><b>".$aprox." ".$total_size." b</b></td></tr>";
 		$out .= "</table>";
 		
 		return $out;
@@ -752,6 +758,21 @@
 			}
 		}
 	}
+
+	# функція збереження налаштувань логування ---------------------------
+	function save_log(){
+		$_SESSION['log']['ok'] = $_POST['show_ok']?1:0;
+		$_SESSION['log']['notice'] = $_POST['show_notice']?1:0;
+		$_SESSION['log']['error'] = $_POST['show_error']?1:0;
+		$_SESSION['options']['min'] = $_POST['min'];
+		$_SESSION['options']['max'] = $_POST['max'];
+		$_SESSION['options']['max_size'] = $_POST['max_size'];
+		$_SESSION['options']['files_for_iteration'] = $_POST['files_for_iteration'];
+		$_SESSION['options']['confirm_unzip'] = $_POST['confirm_unzip']?1:0;
+		$_SESSION['options']['confirm_delzip'] = $_POST['confirm_delzip']?1:0;
+		
+		$_SESSION['message']['OK'][] = trnslt('settings_saved');
+	}
 ?>
 <?
 	if($_GET['logout']){
@@ -770,19 +791,9 @@
 		sort($dirs);
 		$count = 0;
 
+		
 		if($_POST['log_submit']){
-			# налаштування логування ---------------------------------------------
-			$_SESSION['log']['ok'] = $_POST['show_ok']?1:0;
-			$_SESSION['log']['notice'] = $_POST['show_notice']?1:0;
-			$_SESSION['log']['error'] = $_POST['show_error']?1:0;
-			$_SESSION['options']['min'] = $_POST['min'];
-			$_SESSION['options']['max'] = $_POST['max'];
-			$_SESSION['options']['max_size'] = $_POST['max_size'];
-			$_SESSION['options']['files_for_iteration'] = $_POST['files_for_iteration'];
-			$_SESSION['message']['OK'][] = trnslt('settings_saved');
-			
-			$_SESSION['options']['confirm_unzip'] = $_POST['confirm_unzip']?1:0;
-			$_SESSION['options']['confirm_delzip'] = $_POST['confirm_delzip']?1:0;
+			save_log();
 		}
 		elseif($_POST['unzip']){
 			unzippp($pathname, $_POST['zipfile']);
@@ -1037,7 +1048,8 @@ input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: r
 													foreach($archive_exist as $dir){
 ?>
 														<form class="zip clear" enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-															<input class="selectedzip" type="radio" name="zipfile" value="<?=$dir?>" checked="checked" /> <span title="<?=number_format(filesize($pathname."/".$dir)/1024, 2, ".", " ")?> кб"><?=$dir?></span>
+															<input class="selectedzip" type="hidden" name="zipfile" value="<?=$dir?>" checked="checked" />
+															<span title="<?=number_format(filesize($pathname."/".$dir)/1024, 2, ".", " ")?> кб"><b><?=$dir?></b></span>
 															<input class="right inside" type="submit" name="delzip" value="<?=trnslt('dell')?>" />
 															<input class="right inside" type="submit" name="unzip" value="<?=trnslt('unzip')?>" />
 															<div class="clear"></div>
@@ -1055,23 +1067,24 @@ input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: r
 <?
 							}elseif($_GET['section'] == 'filemananer'){
 ?>
-								<div class="section">
-									<div class="section__headline"><?=trnslt('size_files')?>:</div>
-									<div class="section__inner">
-										<div class="row">
-<?
-											$set_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'].'&get_size=1';
-											$no_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'];
-?>
-											<input type="checkbox" id="get_size" name="get_size" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'" />
-											<?=trnslt('show_full_size_dir')?>
-											<?=(!$_GET['get_size'])?"<script>document.getElementById('get_size').checked = false;</script>":''?>
-										</div>
-									</div>
-								</div>
-
 								<div class="tab filemananer">
 									<h2><?=trnslt('file_manager')?></h2>
+									
+									<div class="section">
+										<div class="section__headline"><?=trnslt('size_files')?>:</div>
+										<div class="section__inner">
+											<div class="row">
+<?
+												$set_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'].'&get_size=1';
+												$no_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'];
+?>
+												<input type="checkbox" id="get_size" name="get_size" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'" />
+												<?=trnslt('show_full_size_dir')?>
+												<?=(!$_GET['get_size'])?"<script>document.getElementById('get_size').checked = false;</script>":''?>
+											</div>
+										</div>
+									</div>
+									
 									<div class="section">
 										<div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?="/".$_GET['fmdir']?>:</div>
 										<div class="section__inner">
