@@ -1,145 +1,7 @@
 <?
-/*	історія змін -------------------------------------------------------------
-	-archiver_201307311120
-		метод выдправки форми змінений на POST
-		змінена перевірка на розмір файлів
-
-	-archiver_201308021520
-		додана можливість обчислення кількості файлів
-		вибрані налаштування зберігаються після створення архіву
-		трохи змінений інтерфейс
-
-	-archiver_201308060806_edit_by_artem
-		виправлені помилки при роботы в браузері Opera
-
-	-archiver_201308061321
-		додана можливість розархівації
-
-	-archiver_201308071023
-		додано виключення файлу самого архіватора із архіву
-		додана функція flush, завдяки якій повинен точніше відображатись хід архівації
-
-	-archiver_201308081003
-		додано назва повного дампу буде складатися із назви серверу та дати створення
-		додано log файл, який залишаэться якщо архівацыя не дійшла до кінця
-
-	-archiver_201308121800
-		додано доповнення архіву
-
-	-archiver_201308131230
-		вернув старый лог архівації
-
-	-archiver_201309251606
-		виправив баг стосовно opendir i closedir
-
-	-archiver_201310021205
-		додав перелік файлів
-		виправив архівацію вписаної теки
-
-	-archiver_201310081020
-		Виправив повний перелік файлів
-
-	-archiver_201310151225
-		Виправив виключення архівів
-
-	-archiver_201310171150
-		Виправив архівування тек і файлів, назви яких мають кіриличні символи
-
-	-archiver_201310311130
-		Виправив підрахунок кількості файлів всього і по теках
-
-	-archiver_201310311512
-		Зручніше розташував блоки
-
-	-archiver_201311051614
-		Выправив всі NOTICE - некоректні звернення до змінної
-
-	-archiver_201311181116
-		Замінив dirname(__FILE__) на getcwd();
-		Виніс функціонал розархівації у функцію
-		Виніс функціонал архівації у функцію
-		Виніс функціонал показу тек у функцію
-
-	-archiver_201311191602
-		додав пароль на весь функціонал
-		додав перевірку можливості архівування
-
-	-archiver_201311201626
-		додана функція перевырки нової версії
-
-	-archiver_201311221530
-		додав вивід часу виконання архівації і розархівації
-
-	-archiver_201311261730
-		виправив хлях до завантаження файлу
-		виправив хлях для перезавантаження
-		скролл лог блоку донизу
-
-	-archiver_201311271530
-		виправив визначення функцій 
-
-	-archiver_201311281218
-		додав функцію самознищення
-
-	-archiver_201311291142
-		функція addFolderCount замінена швидшою getFolderCount(автор Армем)
-
-	-archiver_201311291240
-		додана перевірка скриття блоку вибору архіву
-		додана можливість автоматично додавати стандартні теки для виключення
-	
-	-archiver_201311292328
-		була проведена мала оптимізація коду
-		додана перревірка на можливість запису
-		відображення дозволів теки
-	
-	-archiver_201311301400
-		додана кольорове відображення дій
-	
-	-archiver_201312021608
-		виправлена функція unzip прибраний "//"
-	
-	-archiver_201312031532
-		додана перевірка не рахувати файли
-	
-	-archiver_201312041245
-		додана функція видалення архіву
-		показую розмір архіву при наведенні
-		
-	-archiver_201312041522
-		додана функція перекладу
-	
-	-archiver_201312051305
-		вилучено з массиву директорій "." і ".."
-		додана англійська мова
-	
-	-archiver_201312051600
-		додана російська мова
-	
-	-archiver_201312100950
-		змінена перевырка на выдображення блоку розархівації
-		додано повідомлення про незнаходження архіву
-		видалено не використовувані функції: google_translate, addFolderCount
-
-	#---Майбутні допрацьовки-------------------------------------------------------------
-		// архівація без перезавантаження
-		// додати кнопку "зупинити". (при ajax архивації)
-		// прогресс бар
-		// можливість прорахувати загальний об'єм данних чи об'єм данних тек
-		// можливість вибрати теку для розархівування
-	#---/Майбутні допрацьовки------------------------------------------------------------
-
-	#---Існуючі проблеми---------------------------------------------------------
-		// довго рахує кількість файлів
-		// не може архівувати великі об'єми даних
-		// залежить від того чи встановлено zip на хостинг
-		// максимальний розмір архіву залежить від налаштувань хостинга
-		// кірилічні файли та теки
-	#---/Існуючі проблеми--------------------------------------------------------
-*/
 error_reporting(E_ALL);
 $timestart = microtime(1);
-define('VERSION', '201312100950');
+define('VERSION', '201312161202');
 session_start();
 set_time_limit(300);
 ?>
@@ -368,7 +230,7 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 		# тека в якій буде размішено архів
 		$pathname = getcwd();
 		$dirs = scandir($pathname);
-		unset($dirs[0],$dirs[1]);
+		unset($dirs[array_search(".",$dirs)],$dirs[array_search("..",$dirs)]);
 		sort($dirs);
 		$count = 0;
 
@@ -555,7 +417,10 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 				# ім'я архіва
 				if($_POST['addtozip'] == 'new'){
 					if(is_array($_POST['dir'])){
-						$archname = implode("-",$_POST['dir'])."-".date('Y_m_d_His').".zip";
+						if(count($_POST['dir']) > 4)
+							$archname = "selected-".date('Y_m_d_His').".zip";
+						else
+							$archname = implode("-",$_POST['dir'])."-".date('Y_m_d_His').".zip";
 					}elseif($_POST['dir_write']){
 						$archname = $_POST['dir_write']."-".date('Y_m_d_His').".zip";
 					}else{
@@ -604,8 +469,8 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 				$zip->close();
 				unlink($log_file);
 				
-				$download = str_replace(basename(__FILE__),"",$_SERVER['REQUEST_URI']).$archname;
-				echo "<br />".trnslt('zip_created')." <a href='".$download."'>".$archname."</a>. ".trnslt('zip_added_files').$count;
+				$download = preg_replace("/\/".basename(__FILE__).".+/","",$_SERVER['REQUEST_URI']).$archname;
+				echo "<br />".trnslt('zip_created')." <a href='".$download."'>".$archname."</a>. ".trnslt('zip_added_files')." ".$count;
 				echo "<br /><input type='button' value='".trnslt('again')."' onclick='window.location=\""."http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."\"' />";
 			}else{
 				echo "Виберіть теку"."<br /><input type='button' value='".trnslt('again')."' onclick='window.location=\""."http://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']."\"' />";
@@ -641,6 +506,7 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 			.grey { color: grey; }
 			.green { color: green; }
 			form.zip:hover{ background-color: #E8E2D2; }
+			.copyright { float: right; margin: -18px 4px 0 0; opacity: 0.2; position: relative; text-transform: lowercase; }
 			.right { float: right; margin-left: 20px; }
 			.clear { clear:both; }
 		</style>
@@ -691,14 +557,16 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 									<input class="right" type="submit" name="unzip" value="<?=trnslt('unzip')?>" />
 								</form>
 								<div class="clear"></div>
-								<fieldset>
-									<legend title="" ><?=trnslt('unzip_log')?>:</legend>
-									<div>
-										<?=$rez_zip?>
-									</div>
-								</fieldset>
 <?
 							}
+?>
+							<fieldset>
+								<legend title="" ><?=trnslt('unzip_log')?>:</legend>
+								<div>
+									<?=$rez_zip?>
+								</div>
+							</fieldset>
+<?
 						} else {
 							echo trnslt('zip_not_found');
 						}
@@ -734,7 +602,7 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 						</fieldset>
 
 						<fieldset>
-							<legend title="" ><?=trnslt('dir_exeption')?> "<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>")</legend>
+							<legend title="" ><?=trnslt('dir_exeption')?> "<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")</legend>
 							<input type="text" name="exept" value="<?=$_POST['exept']?>" style="width:99%" />
 							<script>
 								function addEx(el){
@@ -835,5 +703,6 @@ if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
 ?>
 			<div id="gotobottom"></div>
 		</div>
+		<div class="copyright">&copy <?=date("Y")?> Lesyuk Sergiy</div>
 	</body>
 </html>
