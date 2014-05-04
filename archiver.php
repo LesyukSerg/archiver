@@ -1,16 +1,16 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404151109');
-	date_default_timezone_set("Europe/Kiev");
+	define('VERSION', '201404161505');
+	date_default_timezone_set('Europe/Kiev');
 	session_start();
 	//set_time_limit(0);
 	$timestart = microtime(1);
-	//$pass = "238a0fa7c18cd78ca1f8d14c260ee02b";
-	$pass = "b59c67bf196a4758191e42f76670ceba";
-	$url = preg_replace("/\?.*/","",$_SERVER['REQUEST_URI']);
+	//$pass = '238a0fa7c18cd78ca1f8d14c260ee02b';
+	$pass = 'b59c67bf196a4758191e42f76670ceba';
+	$url = preg_replace('/\?.*/','',$_SERVER['REQUEST_URI']);
 	if(isset($lastvers)) $_SESSION['message']['NOTICE'][] = $lastvers;
 	
-	$log_file = "archive.log";
+	$log_file = 'archive.log';
 	$pathname = getcwd();
 ?>
 <? #--- массив перекладів ------------------------------------------------
@@ -56,7 +56,7 @@
 			'add_to_zip' => 'Доповнити архів',
 			'choose_dir' => 'Виберіть директорію для архівування',
 			'enter_subdir' => 'Або впишіть шлях до вкладеної теки: (Наприклад: "bitrix/upload")',
-			'dir_exeption' => 'Які теки слід виключити: вводити через "|" (Наприклад',
+			'dir_exeption' => 'Які теки слід виключити: вводити через "|"',
 			'dont_zip_more' => 'Не архівувати файли більше ніж',
 			'zip_max_files_count' => 'Обмеження за кількістю файлів',
 			'start' => 'РОЗПОЧАТИ АРХІВАЦІЮ',
@@ -94,6 +94,7 @@
 			'fm_t_name' => 'Назва',
 			'fm_t_count' => 'Кількість',
 			'fm_t_size' => 'Розмір',
+			'fm_t_permission' => 'Атрибути',
 			'show_full_size_dir' => 'Показати розмір тек.(Це займе деякий час...)',
 			'size_files' => 'Підрахунок розміру тек',
 			'totally' => 'Загалом',
@@ -143,7 +144,7 @@
 			'add_to_zip' => 'Archive supplement',
 			'choose_dir' => 'Choose dir to archivation',
 			'enter_subdir' => 'Or enter path to subdir: (Example: "bitrix/upload")',
-			'dir_exeption' => 'Skiped dir: enter with delimiter "|" (Example',
+			'dir_exeption' => 'Skiped dir: enter with delimiter "|"',
 			'dont_zip_more' => 'Do not archive files bigger more than',
 			'zip_max_files_count' => 'Limit on the number of files',
 			'start' => 'START ARCHIVATION',
@@ -181,6 +182,7 @@
 			'fm_t_name' => 'Name',
 			'fm_t_count' => 'Count',
 			'fm_t_size' => 'Size',
+			'fm_t_permission' => 'Permission',
 			'show_full_size_dir' => 'Show full size dir',
 			'size_files' => 'Calculate file size',
 			'totally' => 'Totally',
@@ -229,7 +231,7 @@
 			'add_to_zip' => 'Дополнить архив',
 			'choose_dir' => 'Выберите директорию для архивирования',
 			'enter_subdir' => 'Или впишите путь к вложенной папки (Например: "bitrix / upload")',
-			'dir_exeption' => 'Какие папки следует исключить: вводить через "|" (например',
+			'dir_exeption' => 'Какие папки следует исключить: вводить через "|"',
 			'dont_zip_more' => 'Не архивировать файлы более',
 			'zip_max_files_count' => 'Ограничения по количеству файлов',
 			'start' => 'НАЧАТЬ АРХИВАЦИЮ',
@@ -267,6 +269,7 @@
 			'fm_t_name' => 'Название',
 			'fm_t_count' => 'Количество',
 			'fm_t_size' => 'Размер',
+			'fm_t_permission' => 'Атрибуты',
 			'show_full_size_dir' => 'Показать точный размер папок(Это займет некоторое время ...)',
 			'size_files' => 'Подсчет размеров папок',
 			'totally' => 'Всего',
@@ -289,7 +292,7 @@
 		if(!isset($_POST['gopass'])) $_POST['gopass'] = null;
 		if(!isset($_POST['dir'])) $_POST['dir'] = null;
 		if(!isset($_POST['dir_write'])) $_POST['dir_write'] = null;
-		if(!isset($_POST['exept'])) $_POST['exept'] = array("");
+		if(!isset($_POST['exept'])) $_POST['exept'] = array('');
 		if(!isset($_POST['submit'])) $_POST['submit'] = null;
 		if(!isset($_POST['unzip'])) $_POST['unzip'] = null;
 		if(!isset($_POST['delzip'])) $_POST['delzip'] = null;
@@ -310,7 +313,7 @@
 		if(!isset($_SESSION['hist']['OK'])) $_SESSION['hist']['OK'] = 1;
 		if(!isset($_SESSION['hist']['NOTICE'])) $_SESSION['hist']['NOTICE'] = 1;
 		if(!isset($_SESSION['hist']['ERROR'])) $_SESSION['hist']['ERROR'] = 1;
-		if(!isset($_SESSION['message'])) $_SESSION['message'] = array("ERROR" => array(), "NOTICE" => array(), "OK" => array());
+		if(!isset($_SESSION['message'])) $_SESSION['message'] = array('ERROR' => array(), 'NOTICE' => array(), 'OK' => array());
 		if(!isset($_SESSION['history'])) $_SESSION['history'] = array();
 		if(!isset($_SESSION['options']['min_orig'])) $_SESSION['options']['min_orig'] = null;
 		if(!isset($_SESSION['options']['max_orig'])) $_SESSION['options']['max_orig'] = null;
@@ -354,7 +357,7 @@
 	function check_new_vers($vers){
 		ini_set('default_socket_timeout', 2);
 		error_reporting(E_ERROR);
-		if($last_ver = file_get_contents("http://lesyuk-serg.w.pw/archiver/checker.php?curr=".$vers)){
+		if($last_ver = file_get_contents('http://lesyuk-serg.w.pw/archiver/checker.php?curr='.$vers)){
 			if(strlen($last_ver) > strlen((int)$last_ver)+2)
 				$_SESSION['message']['NOTICE'][] = trnslt('download_new').$last_ver;
 		} else {
@@ -367,13 +370,18 @@
 		if(!$_GET['get_count'] && $cnt>999) return $cnt;
 		
 		if($dirs = scandir($dir)){
-			unset($dirs[array_search(".",$dirs)],$dirs[array_search("..",$dirs)],$dirs[array_search(".git",$dirs)],$dirs[array_search("archive.log",$dirs)]);
+			unset(
+				$dirs[array_search('.',$dirs)],
+				$dirs[array_search('..',$dirs)],
+				$dirs[array_search('.git',$dirs)],
+				$dirs[array_search('archive.log',$dirs)]
+			);
 			if(current($dirs)){
 				do{
-					if (is_file($dir."/".current($dirs))){
+					if (is_file($dir.'/'.current($dirs))){
 						$cnt++;
 					}else{
-						getFolderCount($dir."/".current($dirs), $cnt);
+						getFolderCount($dir.'/'.current($dirs), $cnt);
 					}
 				}while(next($dirs));
 			}
@@ -386,15 +394,20 @@
 		if(!$_GET['get_size'] && $cnt>9) return 0;
 		
 		if($dirs = scandir($dir)){
-			unset($dirs[array_search(".",$dirs)],$dirs[array_search("..",$dirs)],$dirs[array_search(".git",$dirs)],$dirs[array_search("archive.log",$dirs)]);
+			unset(
+				$dirs[array_search('.',$dirs)],
+				$dirs[array_search('..',$dirs)],
+				$dirs[array_search('.git',$dirs)],
+				$dirs[array_search('archive.log',$dirs)]
+			);
 			$size = 0;
 			if(current($dirs)){
 				do{
-					if (is_file($dir."/".current($dirs))){
-						$size += filesize($dir."/".current($dirs));
+					if (is_file($dir.'/'.current($dirs))){
+						$size += filesize($dir.'/'.current($dirs));
 						$cnt++;
 					}else{
-						$size += getFolderSize($dir."/".current($dirs), $cnt);
+						$size += getFolderSize($dir.'/'.current($dirs), $cnt);
 					}
 				}while(next($dirs));
 			}
@@ -406,21 +419,21 @@
 	function getFolderCount_for_ajax($dir, &$cnt = 0){
 		if($dirs = scandir($dir)){
 			unset(
-				$dirs[array_search(".",$dirs)],
-				$dirs[array_search("..",$dirs)],
-				$dirs[array_search(".git",$dirs)],
-				$dirs[array_search("archive.log",$dirs)],
+				$dirs[array_search('.',$dirs)],
+				$dirs[array_search('..',$dirs)],
+				$dirs[array_search('.git',$dirs)],
+				$dirs[array_search('archive.log',$dirs)],
 				$dirs[array_search(basename(__FILE__),$dirs)]
 			);
 			if(current($dirs)){
 				do{
 					$file = current($dirs);
-					if (is_file($dir."/".$file)){
-						if(filesize($dir."/".$file) < $_SESSION['options']['max_size']*1024)
+					if (is_file($dir.'/'.$file)){
+						if(filesize($dir.'/'.$file) < $_SESSION['options']['max_size']*1024)
 							$cnt++;
 					}else{
 						if(!in_array($file, $_POST['exept']))
-							getFolderCount_for_ajax($dir."/".$file, $cnt);
+							getFolderCount_for_ajax($dir.'/'.$file, $cnt);
 					}
 				}while(next($dirs));
 			}
@@ -430,12 +443,12 @@
 
 	# перевірка в root каталозі на zip файли -----------------------------
 	function check_for_archive($archive_dir, $dirs){
-		$deleted_zip = "";
+		$deleted_zip = '';
 		if($_POST['delzip']) $deleted_zip = $_POST['zipfile'];
 		
 		$zips = array();
 		foreach($dirs as $dir){
-			if (!is_dir($archive_dir.$dir) && strstr($dir, "zip") && $dir != $deleted_zip){
+			if (!is_dir($archive_dir.$dir) && strstr($dir, 'zip') && $dir != $deleted_zip){
 				$zips[] = $dir;
 			}
 		}
@@ -447,7 +460,7 @@
 		global $l, $lang;
 		
 		if($zpfl){
-			$zipfile = $archive_dir."/".$zpfl;
+			$zipfile = $archive_dir.'/'.$zpfl;
 
 			if(file_exists($zipfile)){
 				$zip = new ZipArchive;
@@ -456,10 +469,10 @@
 					$num = $zip->numFiles;
 					$zip->extractTo($archive_dir);
 					$zip->close();
-					echo "";
-					$_SESSION['message']['OK'][] = trnslt('arch')." <b>".$zpfl."</b> ".trnslt('unzip_ok')." ".$archive_dir.".";
+					
+					$_SESSION['message']['OK'][] = trnslt('arch').' <b>'.$zpfl.'</b> '.trnslt('unzip_ok').' '.$archive_dir.'.';
 				}else{
-					$_SESSION['message']['ERROR'][] = trnslt('unzip_err')." <b>".$zpfl."</b>";
+					$_SESSION['message']['ERROR'][] = trnslt('unzip_err').' <b>'.$zpfl.'</b>';
 				}
 			}else{
 				$_SESSION['message']['ERROR'][] = trnslt('unzip_not');
@@ -472,13 +485,13 @@
 	# функція видалення архіву -------------------------------------------
 	function delzippp($archive_dir, $zpfl){
 		if($zpfl){
-			$zipfile = $archive_dir."/".$zpfl;
+			$zipfile = $archive_dir.'/'.$zpfl;
 
 			if(file_exists($zipfile)){
 				if (unlink($zipfile)){
-					$_SESSION['message']['OK'][] = trnslt('delzip_ok')." <b>".$zpfl."</b>";
+					$_SESSION['message']['OK'][] = trnslt('delzip_ok').' <b>'.$zpfl.'</b>';
 				}else{
-					$_SESSION['message']['ERROR'][] = trnslt('delzip_err')." <b>".$zpfl."</b>";
+					$_SESSION['message']['ERROR'][] = trnslt('delzip_err').' <b>'.$zpfl.'</b>';
 				}
 			}else{
 				$_SESSION['message']['ERROR'][] = trnslt('unzip_not');
@@ -491,9 +504,9 @@
 	# показ та функціонал вибору тек в root директорії -------------------
 	function show_root_dir($src_dir, $dirs){
 		global $lang, $l;
-		$out = "<script>";
+		$out = '<script>';
 		if(!$_GET['get_count'])
-			$out .= "document.getElementById('get_count').checked = false;";
+			$out .= 'document.getElementById("get_count").checked = false;';
 
 		$out .= "
 			function turn_of(alldir){
@@ -504,7 +517,7 @@
 							f1[i].checked = false;
 				}
 			}";
-		$out .= "</script>";
+		$out .= '</script>';
 		$out .= "<input id='alldir' type='checkbox' name='dir' value='' onclick='turn_of(this)' /> <b>".trnslt('all_files')."</b> <input type='checkbox' name='get_count' value='all' ".(($_GET['get_count']=='all' && !$_POST['submit'])?"checked='checked'":"")." onclick='if(get_count.checked)window.location=\"".preg_replace("/\?.*/","",$_SERVER['REQUEST_URI'])."?get_count=all\"; else window.location=\"".$_SERVER['SCRIPT_NAME']."\"' />".trnslt('show_dir_count_files')."<br />";
 
 		foreach($dirs as $dir){
@@ -515,7 +528,7 @@
 					//addFolderCount($src_dir.$dir.'/', $all_count);
 				}
 				$dir = iconv('cp1251', 'UTF-8', $dir);
-				$out .= "<input class='selecteddir' type='checkbox' name='dir[".$dir."]' value='".$dir."' onclick='alldir.checked=false' /> ".$dir." (".(($all_count>1000 && $_GET['get_count']!='all')?trnslt('more_999'):$all_count).")<br />";
+				$out .= '<input class="selecteddir" type="checkbox" name="dir['.$dir.']" value="'.$dir.'" onclick="alldir.checked=false" /> '.$dir.' ('.(($all_count>1000 && $_GET['get_count']!='all')?trnslt('more_999'):$all_count).')<br />';
 			}
 		}
 		return $out;
@@ -524,17 +537,17 @@
 	# показ тек та файлів в $src_dir директорії --------------------------
 	function show_root_dir_and_files($src_dir, $sub){
 		global $lang, $l;
-		$dirs = scandir($src_dir);
-		$out = "";
-		$total_count = 0;
-		$total_size = 0;
-		unset($dirs[array_search(".",$dirs)]);
 		
-		if(strstr($sub, "..")){
-			$sub = "";
-			$src_dir = getcwd()."/";
+		if(strstr($sub, '..')){
+			$sub = '';
+			$src_dir = getcwd().'/';
 		}
 		
+		$dirs = scandir($src_dir);
+		$out = '';
+		$total_count = 0;
+		$total_size = 0;
+		unset($dirs[array_search('.',$dirs)]);
 
 		$dirs_out = array();
 		$files_out = array();
@@ -546,10 +559,11 @@
 			}
 		}
 		
-		$out = "<table class='file_mamger_table'>";
-		$out .= "<tr><th>".trnslt('fm_t_name')."</th><th>".trnslt('fm_t_count')."</th><th>".trnslt('fm_t_size')."</th></tr>";
-		$up = "";
+		$out = '<table class="file_mamger_table">';
+		$out .= '<tr><th>'.trnslt('fm_t_name').'</th><th>'.trnslt('fm_t_count').'</th><th>'.trnslt('fm_t_size').'</th><th>'.trnslt('fm_t_permission').'</th></tr>';
+		$up = '';
 		foreach($dirs_out as $dir){
+			$dirperm = substr(sprintf('%o', fileperms($src_dir.'/'.$dir)), -4);
 			$all_count = 0;
 			$fsize = 0;
 			if($dir == '..'){
@@ -560,7 +574,7 @@
 					if(!$sub)
 						continue;
 				
-				$dirname = "<a href='?section=filemanager&fmdir=".$up."'>".$dir."</a>";
+				$dirname = '<a href="?section=filemanager&fmdir='.$up.'">'.$dir.'</a>';
 			} else {
 				$all_count = (!$_GET['get_size'])?getFolderCount($src_dir.$dir.'/'):0;
 				$fsize = 0;
@@ -568,7 +582,7 @@
 					$fsize = getFolderSize($src_dir.$dir.'/', $all_count);
 					
 				$dir = iconv('cp1251', 'UTF-8', $dir);
-				$dirname = "<a href='?section=filemanager&fmdir=".($sub?($sub."/"):'').$dir."'>".$dir."</a>";
+				$dirname = '<a href="?section=filemanager&fmdir='.($sub?($sub.'/'):'').$dir.'">'.$dir.'</a>';
 			}
 		
 			$total_count += $all_count;
@@ -577,10 +591,11 @@
 			$count = ($all_count>1000 && !$_GET['get_size'])?trnslt('more_999'):$all_count;
 			$fsize = (!$_GET['get_size'])?'~~~':number_format($fsize, 0, ',', ' ');
 			
-			$out .= "<tr><td>".$dirname."</td><td class='count'>".$count."</td><td class='size'>".$fsize." b</td></tr>";
+			$out .= '<tr><td>'.$dirname.'</td><td class="count">'.$count.'</td><td class="size">'.$fsize.' b</td><td class="size">'.$dirperm.'</td></tr>';
 		}
 		
 		foreach($files_out as $file){
+			$dirperm = substr(sprintf('%o', fileperms($src_dir."/".$dir)), -4);
 			$size = filesize($src_dir.$file);
 			$total_count++;
 			$total_size += $size;
@@ -588,15 +603,15 @@
 			$size = number_format($size, 0, ',', ' ');
 			$file = iconv('cp1251', 'UTF-8', $file);
 			
-			$out .= "<tr><td>".$file."</td><td class='count'></td><td class='size'>".$size." b</td></tr>";
+			$out .= '<tr><td>'.$file.'</td><td class="count"></td><td class="size">'.$size.' b</td><td class="size">'.$dirperm.'</td></tr>';
 		}
 		$total_size = number_format($total_size, 0, ',', ' ');
-		$aprox = "";
-		if(!$_GET['get_size']) $aprox = ">";
+		$aprox = '';
+		if(!$_GET['get_size']) $aprox = '>';
 		
-		$out .= "<tr><td><hr /><hr /><hr /></td><td class='count'><hr /><hr /><hr /></td><td class='size'><hr /><hr /><hr /></td></tr>";
-		$out .= "<tr><td><b>".trnslt('totally')."</b></td><td class='count'><b>".$aprox." ".$total_count."</b></td><td class='size'><b>".$aprox." ".$total_size." b</b></td></tr>";
-		$out .= "</table>";
+		$out .= '<tr><td colspan=4><hr /><hr /><hr /></td></tr>';
+		$out .= '<tr><td><b>'.trnslt('totally').'</b></td><td class="count"><b>'.$aprox.' '.$total_count.'</b></td><td class="size"><b>'.$aprox.' '.$total_size.' b</b></td><td></td></tr>';
+		$out .= '</table>';
 		
 		return $out;
 	}
@@ -604,7 +619,7 @@
 	# Рекурсивна функція архівації вкладених файлів і тек ----------------
 	function addFolderToZip($dir, &$zipArchive, $zipdir = '', &$cnt, &$fp){		
 		if (is_dir($dir)){
-			fwrite($fp, $dir."\n");
+			fwrite($fp, $dir.'\n');
 
 			if ($dh = opendir($dir)){
 				if($cnt > $_SESSION['options']['min']){
@@ -613,10 +628,10 @@
 						$zdir = $zipdir;
 						if($zipArchive->addEmptyDir($zdir) === false){
 							if($_SESSION['hist']['ERROR'])
-								$_SESSION['history'][] = "<span class='red'>".trnslt('add_folder_err')." - ".$zdir."</span><br />\n";
+								$_SESSION['history'][] = '<span class="red">'.trnslt('add_folder_err').' - '.$zdir.'</span><br />\n';
 						}else{
 							if($_SESSION['hist']['OK'])
-								$_SESSION['history'][] = "<b>".$zdir."</b><br />";
+								$_SESSION['history'][] = '<b>'.$zdir.'</b><br />';
 						}
 					}
 				}
@@ -627,7 +642,7 @@
 						# пропуск директорій '.' і '..'
 						if(!in_array($file, $_POST['exept']) && $file != '.git'){
 							$zfile = $file;
-							addFolderToZip($dir.$file."/", $zipArchive, $zipdir.$zfile . "/", $cnt, $fp);
+							addFolderToZip($dir.$file.'/', $zipArchive, $zipdir.$zfile . '/', $cnt, $fp);
 						}
 					}else{
 						# якщо cnt більше max то зупинка 
@@ -642,18 +657,18 @@
 
 									if($zipArchive->addFile($dir.$file, $zipdir.$zfile)){
 										if($_SESSION['hist']['OK'])
-											$_SESSION['history'][] = "<span class='green'>".(1000000+$cnt)." - ".$dir.$file." OK</span><br />\n";
+											$_SESSION['history'][] = '<span class="green">'.(1000000+$cnt).' - '.$dir.$file.' OK</span><br />\n';
 									}else{
 										if($_SESSION['hist']['ERROR'])
-											$_SESSION['history'][] = "<span class='red'>".trnslt('add_file_err')." ".$dir.$file."</span><br />\n";
+											$_SESSION['history'][] = '<span class="red">'.trnslt('add_file_err').' '.$dir.$file.'</span><br />\n';
 									}
 									
-									fwrite($fp, (1000000+$cnt)." - ".$dir.$file." OK\n");
+									fwrite($fp, (1000000+$cnt).' - '.$dir.$file.' OK\n');
 								}else{
 									if($_SESSION['hist']['NOTICE'])
-										$_SESSION['history'][] = "<span class='grey'>".$dir.$file." - ".trnslt('skip')."</span><br />\n";
+										$_SESSION['history'][] = '<span class="grey">'.$dir.$file.' - '.trnslt('skip').'</span><br />\n';
 									
-									fwrite($fp, $dir.$file." - ".trnslt('skip')."\n");
+									fwrite($fp, $dir.$file.' - '.trnslt('skip').'\n');
 								}
 							}
 							$cnt++;
@@ -673,52 +688,52 @@
 		}
 		
 		if($_POST['exept']){
-			$_POST['exept'] = explode("|",$_POST['exept']);
+			$_POST['exept'] = explode('|',$_POST['exept']);
 		}
-		$_POST['exept'][] = ".";
-		$_POST['exept'][] = "..";
+		$_POST['exept'][] = '.';
+		$_POST['exept'][] = '..';
 
 		if(isset($_POST['dir'])){
 			# створення zip архіву
 			$zip = new ZipArchive();
 
-			if(is_array($_POST['dir']) && isset($_POST['dir'][0]) && $_POST['dir'][0] == ""){
-				$_POST['dir'] = "";
+			if(is_array($_POST['dir']) && isset($_POST['dir'][0]) && $_POST['dir'][0] == ''){
+				$_POST['dir'] = '';
 			}
 			# ім'я архіва
 			if($_POST['addtozip'] == 'new'){
 				if(is_array($_POST['dir'])){				
 					if(count($_POST['dir']) > 4)
-						$archname = "selected-".date('Y_m_d_His').".zip";
+						$archname = 'selected-'.date('Y_m_d_His').'.zip';
 					else{
-						$archname = implode("-",$_POST['dir'])."-".date('Y_m_d_His').".zip";
+						$archname = implode('-',$_POST['dir']).'-'.date('Y_m_d_His').'.zip';
 					}
 				}elseif($_POST['dir_write']){
-					$archname = $_POST['dir']."-".date('Y_m_d_His').".zip";
+					$archname = $_POST['dir'].'-'.date('Y_m_d_His').'.zip';
 				}else{
-					$archname = $_SERVER['SERVER_NAME']."-".date('Y_m_d_His').".zip";
+					$archname = $_SERVER['SERVER_NAME'].'-'.date('Y_m_d_His').'.zip';
 				}
 			}else{
 				$archname = $_POST['addtozip'];
 			}
-			$fileName = $pathname."/".$archname;
+			$fileName = $pathname.'/'.$archname;
 			
 			if($fp = fopen($log_file, 'w')){
-				fwrite($fp, $fileName."\n");
+				fwrite($fp, $fileName.'\n');
 			} else {
 				$dirperm = substr(sprintf('%o', fileperms($pathname)), -4);
 				if(chmod($pathname, 0777)){
-					fwrite($fp, $fileName."\n");
+					fwrite($fp, $fileName.'\n');
 				} else {
-					$_SESSION['message']['ERROR'][] = trnslt('permission')." ".$dirperm;
-					fwrite(STDERR, trnslt('permission')." ".$dirperm);
+					$_SESSION['message']['ERROR'][] = trnslt('permission').' '.$dirperm;
+					fwrite(STDERR, trnslt('permission').' '.$dirperm);
 					return;
 				}
 			}
 	
 			//ZIPARCHIVE::ER_ZLIB
 			if ($zip->open($fileName, ZIPARCHIVE::CREATE) !== true){
-				fwrite(STDERR, "Error while creating archive file");
+				fwrite(STDERR, 'Error while creating archive file');
 				$_SESSION['message']['ERROR'][] = trnslt('zip_not');
 				exit(1);
 			}
@@ -730,13 +745,13 @@
 			
 			if(is_array($_POST['dir'])){
 				foreach($_POST['dir'] as $onedir){
-					addFolderToZip($pathname."/".$onedir."/", $zip, $onedir."/", $count, $fp);
+					addFolderToZip($pathname.'/'.$onedir.'/', $zip, $onedir.'/', $count, $fp);
 				}
 			}else{
 				if($_POST['dir'])
-					$src_dir = $pathname."/".$_POST['dir']."/";
+					$src_dir = $pathname.'/'.$_POST['dir'].'/';
 				else
-					$src_dir = $pathname."/".$_POST['dir'];
+					$src_dir = $pathname.'/'.$_POST['dir'];
 
 				addFolderToZip($src_dir, $zip, '', $count, $fp);
 			}
@@ -745,11 +760,11 @@
 			$zip->close();
 			unlink($log_file);
 			
-			$download = preg_replace("/\/".basename(__FILE__).".*/","/",$_SERVER['REQUEST_URI']).$archname;
-			$_SESSION['message']['OK'][] = trnslt('zip_created')." <a id='archv' href='".$download."'>".$archname."</a>. ".trnslt('zip_added_files')." <span id='cntfls'>".$count."</span>";
-			$_SESSION['history'][] = "===========".trnslt('zip_created')." <a href='".$download."'>".$archname."</a>. ".trnslt('zip_added_files')." ".$count."===========";
+			$download = preg_replace('/\/'.basename(__FILE__).'.*/','/',$_SERVER['REQUEST_URI']).$archname;
+			$_SESSION['message']['OK'][] = trnslt('zip_created').' <a id="archv" href="'.$download.'">'.$archname.'</a>. '.trnslt('zip_added_files').' <span id="cntfls">'.$count.'</span>';
+			$_SESSION['history'][] = '==========='.trnslt('zip_created').' <a href="'.$download.'">'.$archname.'</a>. '.trnslt('zip_added_files').' '.$count.'===========';
 		}else{
-			$_SESSION['message']['NOTICE'][] = "Виберіть теку"."<br />";
+			$_SESSION['message']['NOTICE'][] = 'Виберіть теку'.'<br />';
 		}
 	}
 
@@ -759,21 +774,21 @@
 			$_SESSION['psswrd'] = $pass;
 		}else{
 			$_SESSION['pass_count']--;
-			$_SESSION['message']['ERROR'][] = trnslt('access_denied')." ".trnslt('shots')." ".trnslt('left').": ".$_SESSION['pass_count'];
+			$_SESSION['message']['ERROR'][] = trnslt('access_denied').' '.trnslt('shots').' '.trnslt('left').': '.$_SESSION['pass_count'];
 		}
 	}
 	
 	# функція відображення повідомлень -----------------------------------
 	function show_log($type, $text){
 		switch ($type) {
-			case "ERROR":
+			case 'ERROR':
 				return '<div class="msg w"><i>er</i>'.$text.'</div>';
-			case "NOTICE":
+			case 'NOTICE':
 				return '<div class="msg i"><i>!</i>'.$text.'</div>';
-			case "OK":
+			case 'OK':
 				return '<div class="msg ok"><i>ok</i>'.$text.'</div>';       
 			default:
-				return "wrong type";
+				return 'wrong type';
 		}
 	}
 	
@@ -812,7 +827,7 @@
 		} else {
 			$dirperm = substr(sprintf('%o', fileperms($pathname)), -4);
 			if(!chmod($pathname, 0777)){
-				$_SESSION['message']['ERROR'][] = trnslt('permission')." ".$dirperm;
+				$_SESSION['message']['ERROR'][] = trnslt('permission').' '.$dirperm;
 			}
 		}
 	}
@@ -828,7 +843,7 @@
 	init();
 	$l = set_lang();
 	
-	if(isset($_GET['del']) && !file_exists("checker.php")){
+	if(isset($_GET['del']) && !file_exists('checker.php')){
 		kamikadze();
 	}
 	elseif($_GET['logout']){
@@ -838,13 +853,13 @@
 		$_SESSION['psswrd'] = $pass;
 	}
 	
-	//$_SESSION['psswrd'] = "b59c67bf196a4758191e42f76670ceba";
+	//$_SESSION['psswrd'] = 'b59c67bf196a4758191e42f76670ceba';
 	if($_SESSION['psswrd'] == $pass){
 		$dirs = scandir($pathname);
 		unset(
-			$dirs[array_search(".",$dirs)],
-			$dirs[array_search("..",$dirs)],
-			$dirs[array_search(".git",$dirs)]
+			$dirs[array_search('.',$dirs)],
+			$dirs[array_search('..',$dirs)],
+			$dirs[array_search('.git',$dirs)]
 		);
 		
 		if($_POST['log_submit']){
@@ -862,7 +877,7 @@
 					$_SESSION['options']['min_orig'] = $_SESSION['options']['min'];
 					$_SESSION['options']['max_orig'] = $_SESSION['options']['max'];
 					
-					$_POST['dir'] = explode("|",substr($_POST['dir'],1, strlen($_POST['dir'])));
+					$_POST['dir'] = explode('|',substr($_POST['dir'],1, strlen($_POST['dir'])));
 					
 					$_SESSION['options']['min'] = $_POST['skipfiles'];
 					$_SESSION['options']['max'] = $_POST['skipfiles']+$_SESSION['options']['files_for_iteration'];
@@ -878,16 +893,16 @@
 					$allfiles_ajax = 0;
 					if(is_array($_POST['dir'])){
 						foreach($_POST['dir'] as $fldr){
-							$allfiles_ajax += getFolderCount_for_ajax($pathname."/".$fldr);
+							$allfiles_ajax += getFolderCount_for_ajax($pathname.'/'.$fldr);
 						}
 						$_SESSION['all_count_files'] = $allfiles_ajax;
 					} else{
-						$allfiles_ajax += getFolderCount_for_ajax(($_POST['dir'])?($pathname."/".$_POST['dir']):$pathname);
+						$allfiles_ajax += getFolderCount_for_ajax(($_POST['dir'])?($pathname.'/'.$_POST['dir']):$pathname);
 						$_SESSION['all_count_files'] = $allfiles_ajax;
 					}
 					
 					if($allfiles_ajax > $_SESSION['options']['files_for_iteration'])
-						echo "<div><span id='allfls'>".($allfiles_ajax-1)."</span></div>";
+						echo '<div><span id="allfls">'.($allfiles_ajax-1).'</span></div>';
 				}
 			}
 		}
@@ -908,15 +923,15 @@
 		<!DOCTYPE html>
 		<html>
 			<head>
-				<META http-equiv="content-type" content="text/html; charset=utf-8" />
-				<META NAME="Author" CONTENT="Lesyuk Sergiy">
+				<meta charset="UTF-8" />
+				<meta name="Author" CONTENT="Lesyuk Sergiy">
 				<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <?
 				if($_SESSION['psswrd'] == $pass){
 ?>
 					<script>
 						var all_files = 0;
-						var archive = "";
+						var archive = '';
 						var intrvl
 						
 						$(document).ready(function(){
@@ -926,7 +941,7 @@
 						
 							$('.nav li').click(function(){
 								if(!$(this).hasClass('active')){
-									window.location.href= '//<?=$_SERVER["SERVER_NAME"].$_SERVER["SCRIPT_NAME"]."?section="?>'+$(this).attr('id');
+									window.location.href= '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>'+$(this).attr('id');
 								}
 							});								
 <?
@@ -966,13 +981,13 @@
 						
 						// Збір данних форми для архівування ----------------------------------------
 						function collectdata(){
-							var addtozip = "";					
+							var addtozip = '';					
 							$('input.addtozip').each(function(){
 								if($(this)[0].checked)
 									addtozip = $(this).val();
 							});
 							
-							var dir = "";
+							var dir = '';
 							var chk = 0;
 							if($('input#alldir')[0].checked){
 								chk = 1;
@@ -1002,16 +1017,16 @@
 							}
 							
 							var wait = [
-								"#---------",
-								"-#--------", 
-								"--#-------",
-								"---#------",
-								"----#-----",
-								"-----#----",
-								"------#---",
-								"-------#--",
-								"--------#-",
-								"---------#",
+								'#---------',
+								'-#--------', 
+								'--#-------',
+								'---#------',
+								'----#-----',
+								'-----#----',
+								'------#---',
+								'-------#--',
+								'--------#-',
+								'---------#',
 							];
 							var i=0;
 							var intrvl = setInterval(function(){
@@ -1020,8 +1035,8 @@
 							}, 400);
 							
 							$.ajax({
-								type: "POST",
-								url: "<?=$_SERVER["SCRIPT_NAME"]?>",
+								type: 'POST',
+								url: '<?=$_SERVER['SCRIPT_NAME']?>',
 								data: sendata
 							}).success(function (data) {
 								clearInterval(intrvl);
@@ -1046,7 +1061,7 @@
 									$('.archivatorstart').removeAttr('disabled');
 								}
 							}).error(function () {
-								console.log("Ошибка при получении данных");
+								console.log('Ошибка при получении данных');
 							});
 							
 							
@@ -1054,7 +1069,7 @@
 						
 						// Підготовка до архівації --------------------------------------------------
 						function startarchivation(){
-							$("html, body").animate({ scrollTop: 0 }, 100);
+							$('html, body').animate({ scrollTop: 0 }, 100);
 							$('.archivatorstart').attr('disabled', 'disabled');
 							var skipfiles = 0;
 							all_files = 0;
@@ -1093,7 +1108,7 @@
 					h2 { margin-bottom:20px; }
 					.section { clear:both; position:relative; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:0 0 20px; }
 					.section__headline { background: #E05C50; background: linear-gradient(#EF705F, #E05C50) repeat scroll 0 0 rgba(0, 0, 0, 0); box-shadow: 0 1px #F08C75 inset; font-size: 16px; padding: 8px 14px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); }
-					.section__headline.exeption > span:hover { cursor:pointer; text-shadow:0 0 0; }
+					.section__inner.exeption > span:hover { cursor:pointer; text-shadow:0 0 0; color:#000000; }
 					.section__inner { color:#444444; padding:15px; background:#EFEFEF; }
 					.wrapper { max-width:894px; position:relative; margin:0 auto; }
 					label { cursor:pointer; display:inline-block; line-height:22px; }
@@ -1234,8 +1249,9 @@
 										</div>
 
 										<div class="section">
-											<div class="section__headline exeption"><?=trnslt('dir_exeption')?> "<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")</div>
-											<div class="section__inner">
+											<div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
+											<div class="section__inner exeption">
+												("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")
 												<div class="row">
 													<input type="text" name="exept" value="<?=implode("|",$_POST['exept'])?>" style="width:99%" />
 												</div>
