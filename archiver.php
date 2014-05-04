@@ -7,13 +7,20 @@
 		<title>Archiver</title>
 	</head>
 <?	
+	require "zip.php";
+
 	# папка в которой будет размещен архив
 	$archive_dir = dirname(__FILE__);
 	
 	$dirs = scandir($archive_dir);
 	$count = 0;
 	$archive_dir = $archive_dir."/";
-	
+	if (function_exists("bzopen")) {
+		echo "BZip2";
+	}
+	if (function_exists("gzopen")) {
+		echo "$this->comp_methods[1] = 'GZip';";
+	}
 	# Рекурсивная функция просмотра и архивации вложеных файлов и папок
 	function addFolderToZip($dir, &$zipArchive, $zipdir = '', &$cnt){
 		if (is_dir($dir)) {
@@ -28,18 +35,18 @@
 					# если это папка запускаем функцию опять
 					if(is_dir($dir . $file)){
 						# пропуск директорий '.' и '..'
-						if( ($file !== ".") && ($file !== ".." && ($file !== $_GET['exept']))){
+						if( ($file !== ".") && ($file !== ".." && ($file !== $_POST['exept']))){
 							addFolderToZip($dir . $file . "/", $zipArchive, $zipdir . $file . "/", $cnt);
 						}
 					}else{
 						# Добавляем файлы в архив
 						if(!strstr($file,"zip") && $file !==__FILE__){
 							$cnt++;
-							if($cnt > $_GET['max']){
+							if($cnt > $_POST['max']){
 								break;
 							}
 							
-							if($cnt > $_GET['min']){
+							if($cnt > $_POST['min']){
 								$zipArchive->addFile($dir . $file, $zipdir . $file);
 								// echo (1000000+$cnt)." - ".$dir.$file." OK <br />";
 							}
@@ -54,7 +61,7 @@
 		<div id="wpapper">
 			<h1>Архиватор сайта</h1>
 			<div id="form_block">
-				<form enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="GET">
+				<form enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
 					<fieldset>
 						<legend title="">Выберите директорию для архивирования:</legend>
 						<input type="radio" name="dir" value="" /> Все файлы и папки<br />
@@ -89,32 +96,36 @@
 					<legend title="" >Ход выполнения архивации:</legend>
 					<div>
 <?
-						if($_GET['dir_write']) $_GET['dir'] = $_GET['dir_write'];
-						
-						if(isset($_GET['dir'])){
+						if($_POST['dir_write']) $_POST['dir'] = $_POST['dir_write'];
+						if(isset($_POST['dir'])){
 							
 							# папка с исходными файлами
-							$src_dir = dirname(__FILE__)."/".$_GET['dir']."/";
+							$src_dir = dirname(__FILE__)."/".$_POST['dir']."/";
 
 							# создание zip архива
-							$zip = new ZipArchive();
-							# имя файла архива
-							if($_GET['dir']) {
-								$fileName = $archive_dir.$_GET['dir']."-backup_".date('Y_m_d_h_i_s').".zip";
+							if($zip = new ZipArchive()){
+								# имя файла архива
+								if($_POST['dir']) {
+									$archname = $_POST['dir']."-backup_".date('Y_m_d_H_i_s').".zip";
+								} else {
+									$archname = "all-backup_".date('Y_m_d_H_i_s').".zip";
+								}
+								$fileName = $archive_dir.$archname;
+								if ($zip->open($fileName, ZIPARCHIVE::CREATE) !== true) {
+									fwrite(STDERR, "Error while creating archive file");
+									echo "zip не установлен";
+									exit(1);
+								}
+
+								# добавляем файлы в архив все файлы из папки src_dir
+								addFolderToZip($src_dir, $zip, '', $count);
+								# закрываем архив
+								$zip->close();
+
+								echo "Archive <a href='/$archname'>".$archname."</a> created. Contains ".$count." files";
 							} else {
-								$fileName = $archive_dir."all"."-backup_".date('Y_m_d_h_i_s').".zip";
+								echo "Библиотека zip не подключена";
 							}
-							if ($zip->open($fileName, ZIPARCHIVE::CREATE) !== true) {
-								fwrite(STDERR, "Error while creating archive file");
-								exit(1);
-							}
-
-							# добавляем файлы в архив все файлы из папки src_dir
-							addFolderToZip($src_dir, $zip, '', $count);
-							# закрываем архив
-							$zip->close();
-
-							echo "Archive created. Contains ".$count." files";
 						}
 ?>
 					</div>
