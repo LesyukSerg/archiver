@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201404141145');
+	define('VERSION', '201404151109');
 	date_default_timezone_set("Europe/Kiev");
 	session_start();
 	//set_time_limit(0);
@@ -8,6 +8,10 @@
 	//$pass = "238a0fa7c18cd78ca1f8d14c260ee02b";
 	$pass = "b59c67bf196a4758191e42f76670ceba";
 	$url = preg_replace("/\?.*/","",$_SERVER['REQUEST_URI']);
+	if(isset($lastvers)) $_SESSION['message']['NOTICE'][] = $lastvers;
+	
+	$log_file = "archive.log";
+	$pathname = getcwd();
 ?>
 <? #--- массив перекладів ------------------------------------------------
 	$lang = array(
@@ -94,6 +98,8 @@
 			'size_files' => 'Підрахунок розміру тек',
 			'totally' => 'Загалом',
 			'download_new' => 'Завантажте останню версію: ',
+			'delete_confirm' => 'Ви дійсно хочете видалити цей архів?',
+			'extract_confirm' => 'Ви дійсно хочете розархівувати цей архів?',
 		),
 		'en' => array(
 			'language' => 'Language',
@@ -179,6 +185,8 @@
 			'size_files' => 'Calculate file size',
 			'totally' => 'Totally',
 			'download_new' => 'Download new version: ',
+			'delete_confirm' => 'Are you sure you want delete this archive?',
+			'extract_confirm' => 'Are you sure you want extract this archive?',
 		),
 		'ru' => array(
 			'language' => 'Язык',
@@ -263,65 +271,75 @@
 			'size_files' => 'Подсчет размеров папок',
 			'totally' => 'Всего',
 			'download_new' => 'Скачайте последнюю версию: ',
+			'delete_confirm' => 'Вы действительно хотите удалить этот архив?',
+			'extract_confirm' => 'Вы действительно хотите разархивировать этот архив?',
 		)
 	);
 	#--- /массив перекладів -------------------------------------------------------
 ?>
-<?
-	if(isset($_GET['lang']))
-		$_SESSION['lang'] = $_GET['lang'];
-	elseif(!isset($_SESSION['lang']))
-		$_SESSION['lang'] = 'ua';
+<? # ФУНКЦІЇ -------------------------------------------------------------
 	
-	$l = $_SESSION['lang'];
-
-	if(isset($_GET['del']) && !file_exists("checker.php")){
+	# функція визначення змінних -----------------------------------------
+	function init(){
+		if(!isset($_GET['get_count'])) $_GET['get_count'] = null;
+		if(!isset($_GET['get_size'])) $_GET['get_size'] = null;
+		if(!isset($_GET['logout'])) $_GET['logout'] = null;
+		if(!isset($_GET['section'])) $_GET['section'] = null;
+		if(!isset($_GET['fmdir'])) $_GET['fmdir'] = null;
+		if(!isset($_POST['gopass'])) $_POST['gopass'] = null;
+		if(!isset($_POST['dir'])) $_POST['dir'] = null;
+		if(!isset($_POST['dir_write'])) $_POST['dir_write'] = null;
+		if(!isset($_POST['exept'])) $_POST['exept'] = array("");
+		if(!isset($_POST['submit'])) $_POST['submit'] = null;
+		if(!isset($_POST['unzip'])) $_POST['unzip'] = null;
+		if(!isset($_POST['delzip'])) $_POST['delzip'] = null;
+		if(!isset($_POST['pswrd'])) $_POST['pswrd'] = null;
+		if(!isset($_POST['log_submit'])) $_POST['log_submit'] = null;
+		if(!isset($_POST['show_ok'])) $_POST['show_ok'] = null;
+		if(!isset($_POST['show_notice'])) $_POST['show_notice'] = null;
+		if(!isset($_POST['show_error'])) $_POST['show_error'] = null;
+		if(!isset($_POST['ajax'])) $_POST['ajax'] = null;
+		if(!isset($_POST['skipfiles'])) $_POST['skipfiles'] = null;
+		if(!isset($_POST['confirm_unzip'])) $_POST['confirm_unzip'] = null;
+		if(!isset($_POST['confirm_delzip'])) $_POST['confirm_delzip'] = null;
+		if(!isset($_SESSION['options']['min'])) $_SESSION['options']['min'] = 0;
+		if(!isset($_SESSION['options']['max'])) $_SESSION['options']['max'] = 999999;
+		if(!isset($_SESSION['options']['max_size'])) $_SESSION['options']['max_size'] = 1024;
+		if(!isset($_SESSION['pass_count'])) $_SESSION['pass_count'] = 3;
+		if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
+		if(!isset($_SESSION['hist']['OK'])) $_SESSION['hist']['OK'] = 1;
+		if(!isset($_SESSION['hist']['NOTICE'])) $_SESSION['hist']['NOTICE'] = 1;
+		if(!isset($_SESSION['hist']['ERROR'])) $_SESSION['hist']['ERROR'] = 1;
+		if(!isset($_SESSION['message'])) $_SESSION['message'] = array("ERROR" => array(), "NOTICE" => array(), "OK" => array());
+		if(!isset($_SESSION['history'])) $_SESSION['history'] = array();
+		if(!isset($_SESSION['options']['min_orig'])) $_SESSION['options']['min_orig'] = null;
+		if(!isset($_SESSION['options']['max_orig'])) $_SESSION['options']['max_orig'] = null;
+		if(!isset($_SESSION['options']['files_for_iteration'])) $_SESSION['options']['files_for_iteration'] = 1000;
+		if(!isset($_SESSION['options']['confirm_unzip'])) $_SESSION['options']['confirm_unzip'] = 1;
+		if(!isset($_SESSION['options']['confirm_delzip'])) $_SESSION['options']['confirm_delzip'] = 1;
+	}
+	
+	# функція визначення мови --------------------------------------------
+	function set_lang(){
+		if(isset($_GET['lang']))
+			$_SESSION['lang'] = $_GET['lang'];
+		elseif(!isset($_SESSION['lang']))
+			$_SESSION['lang'] = 'ua';
+		
+		return $_SESSION['lang'];
+	}
+	
+	# функція видалення файлу архівера -----------------------------------
+	function kamikadze(){
+		global $l, $lang;
+		
 		unset($_SESSION);
 		if(unlink(__FILE__))
-			exit($lang[$l]['kamikadze_ok']);
+			exit(trnslt('kamikadze_ok'));
 		else
-			exit($lang[$l]['kamikadze_err']);
+			exit(trnslt('kamikadze_err'));
 	}
-
-	if(!isset($_GET['get_count'])) $_GET['get_count'] = null;
-	if(!isset($_GET['get_size'])) $_GET['get_size'] = null;
-	if(!isset($_GET['logout'])) $_GET['logout'] = null;
-	if(!isset($_GET['section'])) $_GET['section'] = null;
-	if(!isset($_GET['fmdir'])) $_GET['fmdir'] = null;
-	if(!isset($_POST['gopass'])) $_POST['gopass'] = null;
-	if(!isset($_POST['dir'])) $_POST['dir'] = null;
-	if(!isset($_POST['dir_write'])) $_POST['dir_write'] = null;
-	if(!isset($_POST['exept'])) $_POST['exept'] = array("");
-	if(!isset($_POST['submit'])) $_POST['submit'] = null;
-	if(!isset($_POST['unzip'])) $_POST['unzip'] = null;
-	if(!isset($_POST['delzip'])) $_POST['delzip'] = null;
-	if(!isset($_POST['pswrd'])) $_POST['pswrd'] = null;
-	if(!isset($_POST['log_submit'])) $_POST['log_submit'] = null;
-	if(!isset($_POST['show_ok'])) $_POST['show_ok'] = null;
-	if(!isset($_POST['show_notice'])) $_POST['show_notice'] = null;
-	if(!isset($_POST['show_error'])) $_POST['show_error'] = null;
-	if(!isset($_POST['ajax'])) $_POST['ajax'] = null;
-	if(!isset($_POST['skipfiles'])) $_POST['skipfiles'] = null;
-	if(!isset($_POST['confirm_unzip'])) $_POST['confirm_unzip'] = null;
-	if(!isset($_POST['confirm_delzip'])) $_POST['confirm_delzip'] = null;
-	if(!isset($_SESSION['options']['min'])) $_SESSION['options']['min'] = 0;
-	if(!isset($_SESSION['options']['max'])) $_SESSION['options']['max'] = 999999;
-	if(!isset($_SESSION['options']['max_size'])) $_SESSION['options']['max_size'] = 1024;
-	if(!isset($_SESSION['pass_count'])) $_SESSION['pass_count'] = 3;
-	if(!isset($_SESSION['psswrd'])) $_SESSION['psswrd'] = null;
-	if(!isset($_SESSION['hist']['OK'])) $_SESSION['hist']['OK'] = 1;
-	if(!isset($_SESSION['hist']['NOTICE'])) $_SESSION['hist']['NOTICE'] = 1;
-	if(!isset($_SESSION['hist']['ERROR'])) $_SESSION['hist']['ERROR'] = 1;
-	if(!isset($_SESSION['message'])) $_SESSION['message'] = array("ERROR" => array(), "NOTICE" => array(), "OK" => array());
-	if(!isset($_SESSION['history'])) $_SESSION['history'] = array();
-	if(!isset($_SESSION['options']['min_orig'])) $_SESSION['options']['min_orig'] = null;
-	if(!isset($_SESSION['options']['max_orig'])) $_SESSION['options']['max_orig'] = null;
-	if(!isset($_SESSION['options']['files_for_iteration'])) $_SESSION['options']['files_for_iteration'] = 1000;
-	if(!isset($_SESSION['options']['confirm_unzip'])) $_SESSION['options']['confirm_unzip'] = 1;
-	if(!isset($_SESSION['options']['confirm_delzip'])) $_SESSION['options']['confirm_delzip'] = 1;
-	if(isset($lastvers)) $_SESSION['message']['NOTICE'][] = $lastvers;
-?>
-<? # ФУНКЦІЇ -------------------------------------------------------------
+	
 	# функція перекладу --------------------------------------------------
 	function trnslt($key){
 		global $lang;
@@ -344,7 +362,7 @@
 		}
 	}
 	
-	# Підрахунок всіх файлів в корені (по версії Армема) -----------------
+	# Підрахунок всіх файлів в корені (по версії Армема Вилкова) ---------
 	function getFolderCount($dir, &$cnt = 0){
 		if(!$_GET['get_count'] && $cnt>999) return $cnt;
 		
@@ -798,24 +816,36 @@
 			}
 		}
 	}
-?>
-<?
-	if($_GET['logout']){
+
+	# функція виходу із сессії -------------------------------------------
+	function logout(){
 		$_SESSION['psswrd'] = 1;
 		$_SESSION['pass_count'] = 3;
 		unset($_SESSION['log']);
 	}
+?>
+<?
+	init();
+	$l = set_lang();
 	
-	if(md5($_POST['pswrd']) == $pass) $_SESSION['psswrd'] = $pass;
+	if(isset($_GET['del']) && !file_exists("checker.php")){
+		kamikadze();
+	}
+	elseif($_GET['logout']){
+		logout();
+	}
+	elseif(md5($_POST['pswrd']) == $pass){
+		$_SESSION['psswrd'] = $pass;
+	}
+	
 	//$_SESSION['psswrd'] = "b59c67bf196a4758191e42f76670ceba";
 	if($_SESSION['psswrd'] == $pass){
-		$log_file = "archive.log";
-		$pathname = getcwd();
 		$dirs = scandir($pathname);
-		unset($dirs[array_search(".",$dirs)],$dirs[array_search("..",$dirs)],$dirs[array_search(".git",$dirs)]);
-		sort($dirs);
-		$count = 0;
-
+		unset(
+			$dirs[array_search(".",$dirs)],
+			$dirs[array_search("..",$dirs)],
+			$dirs[array_search(".git",$dirs)]
+		);
 		
 		if($_POST['log_submit']){
 			save_log();
@@ -843,6 +873,22 @@
 			if($_POST['ajax']){
 				$_SESSION['options']['min'] = $_SESSION['options']['min_orig'];
 				$_SESSION['options']['max'] = $_SESSION['options']['max_orig'];
+				
+				if($_POST['skipfiles'] == 0 && isset($_POST['dir'])){
+					$allfiles_ajax = 0;
+					if(is_array($_POST['dir'])){
+						foreach($_POST['dir'] as $fldr){
+							$allfiles_ajax += getFolderCount_for_ajax($pathname."/".$fldr);
+						}
+						$_SESSION['all_count_files'] = $allfiles_ajax;
+					} else{
+						$allfiles_ajax += getFolderCount_for_ajax(($_POST['dir'])?($pathname."/".$_POST['dir']):$pathname);
+						$_SESSION['all_count_files'] = $allfiles_ajax;
+					}
+					
+					if($allfiles_ajax > $_SESSION['options']['files_for_iteration'])
+						echo "<div><span id='allfls'>".($allfiles_ajax-1)."</span></div>";
+				}
 			}
 		}
 		
@@ -854,23 +900,9 @@
 	}
 	
 	if($_POST['ajax']){
-		if($_POST['skipfiles'] == 0 && isset($_POST['dir'])){
-			$allfiles_ajax = 0;
-			if(is_array($_POST['dir'])){
-				foreach($_POST['dir'] as $fldr){
-					$allfiles_ajax += getFolderCount_for_ajax($pathname."/".$fldr);
-				}
-				$_SESSION['all_count_files'] = $allfiles_ajax;
-			} else{
-				$allfiles_ajax += getFolderCount_for_ajax(($_POST['dir'])?($pathname."/".$_POST['dir']):$pathname);
-				$_SESSION['all_count_files'] = $allfiles_ajax;
-			}
-			
-			if($allfiles_ajax > $_SESSION['options']['files_for_iteration'])
-				echo "<div><span id='allfls'>".($allfiles_ajax-1)."</span></div>";
-		}
-		
+	
 		echo show_messages();
+	
 	} else {
 ?>
 		<!DOCTYPE html>
@@ -901,7 +933,7 @@
 							if($_SESSION['options']['confirm_delzip']){
 ?>
 								$('.zip.clear input[name="delzip"]').click(function(){
-									if (confirm('Ви дійсно хочете видалити цей архів?'))
+									if (confirm('<?=trnslt('delete_confirm')?>'))
 										return true;
 									else
 										return false;
@@ -911,7 +943,7 @@
 							if($_SESSION['options']['confirm_unzip']){
 ?>
 								$('.zip.clear input[name="unzip"]').click(function(){
-									if (confirm('Ви дійсно хочете розархівувати цей архів?'))
+									if (confirm('<?=trnslt('extract_confirm')?>'))
 										return true;
 									else
 										return false;
@@ -1010,7 +1042,6 @@
 									$('.messages #cntfls').html(skipfiles+'/'+all_files);
 									postgo(sendata);
 								} else {
-									//$('.messages #ldng').remove();
 									$('.messages').html(data);
 									$('.archivatorstart').removeAttr('disabled');
 								}
