@@ -122,6 +122,8 @@ DocProject/Help/Html2
 DocProject/Help/html
 testing/*
 old_vers/*
+iblock/*
+products_pictures/*
 
 # Click-Once directory
 publish/
