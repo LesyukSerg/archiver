@@ -1319,6 +1319,9 @@
 <?
 												$set_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'].'&get_size=1';
 												$no_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'];
+												
+												$free_space = number_format(round(disk_free_space($pathname)/(1024*1024*1024)), 0, ',', ' ');
+												$total_space = number_format(round(disk_total_space($pathname)/(1024*1024*1024)), 0, ',', ' ');
 ?>
 												<input type="checkbox" id="get_size" name="get_size" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'" />
 												<?=trnslt('show_full_size_dir')?>
@@ -1333,6 +1336,7 @@
 											<div class="row">
 												<?=show_root_dir_and_files($pathname.($_GET['fmdir']?("/".$_GET['fmdir']):'')."/", $_GET['fmdir']);?>
 											</div>
+											<?=$free_space.'mb / '.$total_space.'mb';?>
 										</div>
 									</section>
 								</div>
