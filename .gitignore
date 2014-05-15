@@ -2,6 +2,20 @@
 ## Eclipse
 #################
 
+# my skip settings
+testing/*
+old_vers/*
+iblock/*
+test/*
+test1/*
+test2/*
+test3/*
+products_pictures/*
+crash_test/*
+*.zip
+# /my skip settings
+
+
 *.pydevproject
 .project
 .metadata
@@ -120,11 +134,7 @@ DocProject/Help/*.hhk
 DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
-testing/*
-old_vers/*
-iblock/*
-products_pictures/*
-crash_test/*
+
 
 # Click-Once directory
 publish/

@@ -101,6 +101,7 @@
 			'download_new' => 'Завантажте останню версію: ',
 			'delete_confirm' => 'Ви дійсно хочете видалити цей архів?',
 			'extract_confirm' => 'Ви дійсно хочете розархівувати цей архів?',
+			'extracting_archive' => 'Розархівація архіву ',
 		),
 		'en' => array(
 			'language' => 'Language',
@@ -189,6 +190,7 @@
 			'download_new' => 'Download new version: ',
 			'delete_confirm' => 'Are you sure you want delete this archive?',
 			'extract_confirm' => 'Are you sure you want extract this archive?',
+			'extracting_archive' => 'Extracting archive ',
 		),
 		'ru' => array(
 			'language' => 'Язык',
@@ -276,6 +278,7 @@
 			'download_new' => 'Скачайте последнюю версию: ',
 			'delete_confirm' => 'Вы действительно хотите удалить этот архив?',
 			'extract_confirm' => 'Вы действительно хотите разархивировать этот архив?',
+			'extracting_archive' => 'Разархивация архива ',
 		)
 	);
 	#--- /массив перекладів -------------------------------------------------------
@@ -866,6 +869,10 @@
 			save_log();
 		}
 		elseif($_POST['unzip']){
+			if($_POST['get_size']){
+				die(''.filesize($pathname.'/'.$_POST['zipfile']));
+			}
+			
 			unzippp($pathname, $_POST['zipfile']);
 		}
 		elseif($_POST['delzip']){
@@ -945,25 +952,34 @@
 								}
 							});
 <?
-							if($_SESSION['options']['confirm_delzip']){
+							if($_GET['section'] == 'extractar'){
+								if($_SESSION['options']['confirm_delzip']){
 ?>
-								$('.zip.clear input[name="delzip"]').click(function(){
-									if (confirm('<?=trnslt('delete_confirm')?>'))
-										return true;
-									else
-										return false;
-								});
+									$('.zip.clear input[name="delzip"]').click(function(){
+										if (confirm('<?=trnslt('delete_confirm')?>'))
+											return true;
+										else
+											return false;
+									});
 <?
-							}
-							if($_SESSION['options']['confirm_unzip']){
+								}
+								if($_SESSION['options']['confirm_unzip']){
 ?>
-								$('.zip.clear input[name="unzip"]').click(function(){
-									if (confirm('<?=trnslt('extract_confirm')?>'))
-										return true;
-									else
+									$('.zip.clear input[name="unzip"]').click(function(){
+										if (confirm('<?=trnslt('extract_confirm')?>')){
+											startExtraction($(this).parent('form'));
+										}
+										
 										return false;
-								});
+									});
 <?
+								} else {
+?>
+									$('.zip.clear input[name="unzip"]').click(function(){
+										startExtraction($(this).parent('form'));
+									});
+<?
+								}
 							}
 ?>
 						});
@@ -979,38 +995,43 @@
 							input.value = arr.join('|');
 						}
 						
+					//----------------------------------------------------------------------------------------
+					// АРХІВАЦІЯ ---------------------------------------------------------------------------
 						// Збір данних форми для архівування ----------------------------------------
-						function collectdata(){
-							var addtozip = '';					
-							$('input.addtozip').each(function(){
-								if($(this)[0].checked)
-									addtozip = $(this).val();
-							});
-							
-							var dir = '';
-							var chk = 0;
-							if($('input#alldir')[0].checked){
-								chk = 1;
-							}else{
-								$('input.selecteddir').each(function(){
-									if($(this)[0].checked){
-										chk = 1;
-										dir = dir+'|'+$(this).val();
-									}
+						function collectDataToZip(forma){
+							var forma = forma || '';
+							if(forma != ''){
+								var addtozip = '';					
+								forma.find('input.addtozip').each(function(){
+									if($(this)[0].checked)
+										addtozip = $(this).val();
 								});
-								if(!chk){
-									dir = chk;
+								
+								var dir = '';
+								var chk = 0;
+								if(forma.find('input#alldir')[0].checked){
+									chk = 1;
+								}else{
+									forma.find('input.selecteddir').each(function(){
+										if($(this)[0].checked){
+											chk = 1;
+											dir = dir+'|'+$(this).val();
+										}
+									});
+									if(!chk){
+										dir = chk;
+									}
 								}
+								var dir_write = forma.find('input[name=dir_write]').val();
+								var exept = forma.find('input[name=exept]').val();
+								var submit = 'start';
+								
+								return {'addtozip' : addtozip, 'dir' : dir, 'dir_write' : dir_write, 'exept': exept, 'submit' : submit, 'ajax' : 'ajax', 'skipfiles' : '0'};
 							}
-							var dir_write = $('input[name=dir_write]').val();
-							var exept = $('input[name=exept]').val();
-							var submit = 'start';
-							
-							return {'addtozip' : addtozip, 'dir' : dir, 'dir_write' : dir_write, 'exept': exept, 'submit' : submit, 'ajax' : 'ajax', 'skipfiles' : '0'};
 						}
 						
 						// Запуск аяксового запросу на архівацію ------------------------------------
-						function postgo(sendata){
+						function postGo(sendata){
 							if(!all_files){
 								$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('zip_added_files')?> <span id="cntfls">0</span> [<span id="ldng">----------</span>]</div><div></div>');
 							}
@@ -1054,7 +1075,7 @@
 								if(skipfiles < all_files){
 									$('.messages .progress').css('width', (100*skipfiles/all_files)+'%');
 									$('.messages #cntfls').html(skipfiles+'/'+all_files);
-									postgo(sendata);
+									postGo(sendata);
 								} else {
 									if(data.indexOf('msg') > 0){
 										$('.messages').html(data);
@@ -1071,14 +1092,14 @@
 						}
 						
 						// Підготовка до архівації --------------------------------------------------
-						function startarchivation(){
+						function startAarchivation(){
 							$('html, body').animate({ scrollTop: 0 }, 100);
 							$('.archivatorstart').attr('disabled', 'disabled');
 							var skipfiles = 0;
 							all_files = 0;
 							archive = '';
 							
-							var sendata = collectdata();
+							var sendata = collectDataToZip($('form.create_archive'));
 							
 							if(sendata['dir'] == '0'){
 								delete sendata['dir'];
@@ -1087,8 +1108,106 @@
 								delete sendata['dir_write'];
 							}
 							
-							postgo(sendata);
+							postGo(sendata);
 						}
+					// /АРХІВАЦІЯ --------------------------------------------------------------------------
+					//----------------------------------------------------------------------------------------
+						
+					//----------------------------------------------------------------------------------------
+					// РОЗАРХІВАЦІЯ ------------------------------------------------------------------------
+						// Збір данних форми для архівування ----------------------------------------
+						function collectDataToExtract(forma){
+							var forma = forma || '';
+							if(forma != ''){
+								var zipfile = forma.find('input[name="zipfile"]').val();
+								var unzip = 'Розархівація';
+								
+								return {zipfile: zipfile, unzip: unzip, ajax: 'ajax'};
+							}
+						}
+						
+						// Запуск аяксового запросу на розархівацію ---------------------------------
+						function postGoExtract(sendata){
+							sendata['get_size'] = 1;
+							$.ajax({
+								type: 'POST',
+								url: '<?=$_SERVER['SCRIPT_NAME']?>',
+								data: sendata
+							}).success(function (data){
+								var size = parseInt(data);
+								if(size){
+									$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('extracting_archive')?> [<span id="ldng">----------</span>]</div><div></div>');
+									
+									var wait = [
+										'#---------',
+										'-#--------', 
+										'--#-------',
+										'---#------',
+										'----#-----',
+										'-----#----',
+										'------#---',
+										'-------#--',
+										'--------#-',
+										'---------#',
+									];
+									
+									var precent = 0;
+									var step = 200000000/size;
+									
+									var i=0;
+									var intrvl = setInterval(function(){
+										if(precent<100)
+											precent = Math.ceil(precent+step);
+										else
+											precent = 100;
+										
+										if(i>=wait.length) i=0;	
+										$('.messages #ldng').html(wait[i++]);
+										$('.messages .progress').css('width', precent+'%');
+									}, 400);
+									
+									sendata['get_size'] = 0;
+									
+									$.ajax({
+										type: 'POST',
+										url: '<?=$_SERVER['SCRIPT_NAME']?>',
+										data: sendata
+									}).success(function (data) {
+										clearInterval(intrvl);
+										
+										if(data.indexOf('msg') > 0){
+											$('.messages').html(data);
+										} else {
+											data = data.replace(/<br \/>/, '');
+											$('.messages').html('<div class="msg w"><i>err</i><span style="">'+data+'</span></div>');
+										}
+										$('input[name="unzip"]').removeAttr('disabled');
+									}).error(function (){
+										$('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
+										console.log('Ошибка при получении данных');
+									});
+								}
+							
+							}).error(function (){
+								$('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
+								console.log('Ошибка при получении данных');
+							});
+						}
+						
+						// Підготовка до розархівації -----------------------------------------------
+						function startExtraction(forma){
+							$('html, body').animate({ scrollTop: 0 }, 100);
+							$('input[name="unzip"]').attr('disabled', 'disabled');
+							
+							var sendata = collectDataToExtract(forma);
+							
+							console.log(sendata);
+							postGoExtract(sendata);
+						}
+					// /РОЗАРХІВАЦІЯ -----------------------------------------------------------------------
+					//----------------------------------------------------------------------------------------
+						
+						
 					</script>
 <?
 				}
@@ -1225,7 +1344,7 @@
 										</div>
 									</section>
 									
-									<form action="<?=$url?>" method="POST">
+									<form class="create_archive" action="<?=$url?>" method="POST">
 										<section class="section choose_zip">
 											<div class="section__headline"><?=trnslt('choose_zip')?>:</div>
 											<div class="section__inner">
@@ -1273,7 +1392,7 @@
 										<div class="clear"></div>
 										
 										<!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
-										<input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" onclick="startarchivation(); return false;" />
+										<input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" onclick="startAarchivation(); return false;" />
 									</form>
 								</div>
 <?
