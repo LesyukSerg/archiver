@@ -124,6 +124,7 @@ testing/*
 old_vers/*
 iblock/*
 products_pictures/*
+crash_test/*
 
 # Click-Once directory
 publish/
