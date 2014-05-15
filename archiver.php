@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201429042352');
+	define('VERSION', '201405151249');
 	date_default_timezone_set('Europe/Kiev');
 	session_start();
 	//set_time_limit(2);
