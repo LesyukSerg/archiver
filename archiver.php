@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201405151249');
+	define('VERSION', '201406021144');
 	date_default_timezone_set('Europe/Kiev');
 	session_start();
 	//set_time_limit(2);
@@ -102,6 +102,7 @@
 			'delete_confirm' => 'Ви дійсно хочете видалити цей архів?',
 			'extract_confirm' => 'Ви дійсно хочете розархівувати цей архів?',
 			'extracting_archive' => 'Розархівація архіву ',
+			'change_options' => 'змінити',
 		),
 		'en' => array(
 			'language' => 'Language',
@@ -191,6 +192,7 @@
 			'delete_confirm' => 'Are you sure you want delete this archive?',
 			'extract_confirm' => 'Are you sure you want extract this archive?',
 			'extracting_archive' => 'Extracting archive ',
+			'change_options' => 'edit',
 		),
 		'ru' => array(
 			'language' => 'Язык',
@@ -279,6 +281,7 @@
 			'delete_confirm' => 'Вы действительно хотите удалить этот архив?',
 			'extract_confirm' => 'Вы действительно хотите разархивировать этот архив?',
 			'extracting_archive' => 'Разархивация архива ',
+			'change_options' => 'изменить',
 		)
 	);
 	#--- /массив перекладів -------------------------------------------------------
@@ -937,6 +940,7 @@
 				if($_SESSION['psswrd'] == $pass){
 ?>
 					<script>
+						var wait = ['#---------','-#--------','--#-------','---#------','----#-----','-----#----','------#---','-------#--','--------#-','---------#'];
 						var all_files = 0;
 						var archive = '';
 						var intrvl
@@ -995,8 +999,8 @@
 							input.value = arr.join('|');
 						}
 						
-					//----------------------------------------------------------------------------------------
-					// АРХІВАЦІЯ ---------------------------------------------------------------------------
+					//----------------------------------------------------------------------------------------/
+					// АРХІВАЦІЯ ---------------------------------------------------------------------------/
 						// Збір данних форми для архівування ----------------------------------------
 						function collectDataToZip(forma){
 							var forma = forma || '';
@@ -1036,18 +1040,6 @@
 								$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('zip_added_files')?> <span id="cntfls">0</span> [<span id="ldng">----------</span>]</div><div></div>');
 							}
 							
-							var wait = [
-								'#---------',
-								'-#--------', 
-								'--#-------',
-								'---#------',
-								'----#-----',
-								'-----#----',
-								'------#---',
-								'-------#--',
-								'--------#-',
-								'---------#',
-							];
 							var i=0;
 							var intrvl = setInterval(function(){
 								if(i>=wait.length) i=0;	
@@ -1110,11 +1102,11 @@
 							
 							postGo(sendata);
 						}
-					// /АРХІВАЦІЯ --------------------------------------------------------------------------
-					//----------------------------------------------------------------------------------------
+					// /АРХІВАЦІЯ --------------------------------------------------------------------------\
+					//----------------------------------------------------------------------------------------\
 						
-					//----------------------------------------------------------------------------------------
-					// РОЗАРХІВАЦІЯ ------------------------------------------------------------------------
+					//----------------------------------------------------------------------------------------/
+					// РОЗАРХІВАЦІЯ ------------------------------------------------------------------------/
 						// Збір данних форми для архівування ----------------------------------------
 						function collectDataToExtract(forma){
 							var forma = forma || '';
@@ -1137,19 +1129,6 @@
 								var size = parseInt(data);
 								if(size){
 									$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('extracting_archive')?> [<span id="ldng">----------</span>]</div><div></div>');
-									
-									var wait = [
-										'#---------',
-										'-#--------', 
-										'--#-------',
-										'---#------',
-										'----#-----',
-										'-----#----',
-										'------#---',
-										'-------#--',
-										'--------#-',
-										'---------#',
-									];
 									
 									var precent = 0;
 									var step = 200000000/size;
@@ -1204,8 +1183,8 @@
 							console.log(sendata);
 							postGoExtract(sendata);
 						}
-					// /РОЗАРХІВАЦІЯ -----------------------------------------------------------------------
-					//----------------------------------------------------------------------------------------
+					// /РОЗАРХІВАЦІЯ -----------------------------------------------------------------------\
+					//----------------------------------------------------------------------------------------\
 						
 						
 					</script>
@@ -1279,6 +1258,9 @@
 					.file_mamger_table tr:nth-child(even) td{ background-color: #E0E0E0; }
 					.file_mamger_table tr:hover td { background-color: #D0D0D0; }
 					.file_mamger_table .count, .file_mamger_table .size { width: 20%; text-align: right; }
+					.working_options { color: #888888; font-size: 10px; text-align: center; }
+					.working_options a { color: #E7EAED; font-size: 13px; }
+					.working_options a:hover { text-decoration: none; }
 				</style>
 				<title>Archiver</title>
 			</head>
@@ -1393,6 +1375,12 @@
 										
 										<!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
 										<input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" onclick="startAarchivation(); return false;" />
+										
+										<div class="working_options">
+											<div class="optns"><?=trnslt('dont_zip_more')?> <b><?=$_SESSION['options']['max_size']?></b> kb</div>
+											<div class="optns"><?=trnslt('zip_max_files_count')?>: <b><?=$_SESSION['options']['files_for_iteration']?></b> <?=trnslt('ajax_load_step')?></div>
+											<a href="//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section=options'?>" title="<?=trnslt('change_options')?>"><?=trnslt('change_options')?></a>
+										</div>
 									</form>
 								</div>
 <?
@@ -1508,7 +1496,7 @@
 											<div class="section__headline"><?=trnslt('dont_zip_more')?>:</div>
 											<div class="section__inner">
 												<div class="row">
-													<input type="number" min="1" max="512000" name="max_size" value="<?=$_SESSION['options']['max_size']?>" required /> кб
+													<input type="number" min="1" max="512000" name="max_size" value="<?=$_SESSION['options']['max_size']?>" required /> kb
 												</div>
 											</div>
 										</section>
