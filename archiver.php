@@ -659,7 +659,8 @@
 						if($file !== basename(__FILE__)){
 							if($cnt > $_SESSION['options']['min']){
 								if(filesize($dir.$file) < $_SESSION['options']['max_size']*1024 && $file != 'archive.log'){
-									$zfile = iconv(mb_detect_encoding($file), 'CP866//TRANSLIT//IGNORE', $file);
+									$zfile = $file;
+									//$zfile = iconv(mb_detect_encoding($file), 'CP866//TRANSLIT//IGNORE', $file);
 
 									if($zipArchive->addFile($dir.$file, $zipdir.$zfile)){
 										if($_SESSION['hist']['OK'])
