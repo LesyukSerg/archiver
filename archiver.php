@@ -66,7 +66,7 @@
 			'sec' => 'секунд',
 			'enter_pass' => 'Введіть пароль',
 			'login' => 'вхід',
-			'zip_sorry' => 'Шановний користувач архіватору.<br /> На жаль на цьому хостингу не встановлений ZIP архіватор.',
+			'zip_sorry' => 'Шановний користувач архіватору.<br /> На жаль на цьому хостингу не встановлено розширення ZIP. Воно потрібне для роботи архіватору',
 			'show_log' => 'Відображення повідомлень',
 			'show_log_ok' => 'Успішні',
 			'show_log_notice' => 'Пропущені',
@@ -156,7 +156,7 @@
 			'sec' => 'second',
 			'enter_pass' => 'Enter password',
 			'login' => 'enter',
-			'zip_sorry' => 'Dear user archiver. <br /> Unfortunately this host is not established ZIP archive.',
+			'zip_sorry' => 'Dear user archiver. <br /> Unfortunately this host does not have extension ZIP. It is necessary to run the archiver',
 			'show_log' => 'Show log settings',
 			'show_log_ok' => 'Success',
 			'show_log_notice' => 'Skiped',
@@ -245,7 +245,7 @@
 			'sec' => 'секунд',
 			'enter_pass' => 'Введите пароль',
 			'login' => 'вход',
-			'zip_sorry' => 'Уважаемый пользователь архиватора. <br /> К сожалению на этом хостинге не установлен ZIP архиватор.',
+			'zip_sorry' => 'Уважаемый пользователь архиватора. <br /> К сожалению на этом хостинге не установлено расширение ZIP. Оно необходимо для работы  архиватора.',
 			'show_log' => 'Отображение уведомлений',
 			'show_log_ok' => 'Успешные',
 			'show_log_notice' => 'Пропущеные',
@@ -332,8 +332,12 @@
 	function set_lang(){
 		if(isset($_GET['lang']))
 			$_SESSION['lang'] = $_GET['lang'];
-		elseif(!isset($_SESSION['lang']))
-			$_SESSION['lang'] = 'ua';
+		elseif(!isset($_SESSION['lang'])){
+			$lan = explode(",",$_SERVER['HTTP_ACCEPT_LANGUAGE']);
+			$lan  = explode('-',$lan[0]);
+			$_SESSION['lang'] = ($lan[0] == 'uk' || $lan[0] == 'ru')?'ua':$lan[0];
+			//$_SESSION['lang'] = 'ua';
+		}
 		
 		return $_SESSION['lang'];
 	}
