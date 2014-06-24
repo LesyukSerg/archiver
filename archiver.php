@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201406021144');
+	define('VERSION', '201406241251');
 	date_default_timezone_set('Europe/Kiev');
 	session_start();
 	//set_time_limit(2);
@@ -333,7 +333,7 @@
 		if(isset($_GET['lang']))
 			$_SESSION['lang'] = $_GET['lang'];
 		elseif(!isset($_SESSION['lang'])){
-			$lan = explode(",",$_SERVER['HTTP_ACCEPT_LANGUAGE']);
+			$lan = explode(',',$_SERVER['HTTP_ACCEPT_LANGUAGE']);
 			$lan  = explode('-',$lan[0]);
 			$_SESSION['lang'] = ($lan[0] == 'uk' || $lan[0] == 'ru')?'ua':$lan[0];
 			//$_SESSION['lang'] = 'ua';
@@ -518,17 +518,17 @@
 		if(!$_GET['get_count'])
 			$out .= 'document.getElementById("get_count").checked = false;';
 
-		$out .= "
+		$out .= '
 			function turn_of(alldir){
 				if(alldir.checked){
-					var f1 = document.getElementsByTagName('input');
+					var f1 = document.getElementsByTagName("input");
 					for (var i=0; i<f1.length; i++)
-						if (f1[i].className == 'selecteddir')
+						if (f1[i].className == "selecteddir")
 							f1[i].checked = false;
 				}
-			}";
+			}';
 		$out .= '</script>';
-		$out .= "<input id='alldir' type='checkbox' name='dir' value='' onclick='turn_of(this)' /> <b>".trnslt('all_files')."</b> <input type='checkbox' name='get_count' value='all' ".(($_GET['get_count']=='all' && !$_POST['submit'])?"checked='checked'":"")." onclick='if(get_count.checked)window.location=\"".preg_replace("/\?.*/","",$_SERVER['REQUEST_URI'])."?get_count=all\"; else window.location=\"".$_SERVER['SCRIPT_NAME']."\"' />".trnslt('show_dir_count_files')."<br />";
+		$out .= '<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of(this)" /> <b>'.trnslt('all_files').'</b> <input type="checkbox" name="get_count" value="all" '.(($_GET['get_count']=='all' && !$_POST['submit'])?'checked="checked"':'').' onclick="if(get_count.checked)window.location=\"'.preg_replace("/\?.*/",'',$_SERVER['REQUEST_URI']).'?get_count=all\'; else window.location=\"'.$_SERVER['SCRIPT_NAME'].'\"" />'.trnslt('show_dir_count_files').'<br />';
 
 		foreach($dirs as $dir){
 			if (is_dir($src_dir.$dir)){
@@ -605,7 +605,7 @@
 		}
 		
 		foreach($files_out as $file){
-			$dirperm = substr(sprintf('%o', fileperms($src_dir."/".$dir)), -4);
+			$dirperm = substr(sprintf('%o', fileperms($src_dir.'/'.$dir)), -4);
 			$size = filesize($src_dir.$file);
 			$total_count++;
 			$total_size += $size;
@@ -1275,7 +1275,7 @@
 					if($_SESSION['psswrd'] == $pass){
 						check_permission($pathname, $log_file);
 						check_new_vers(VERSION);
-						$archive_exist = check_for_archive($pathname."/", $dirs);
+						$archive_exist = check_for_archive($pathname.'/', $dirs);
 ?>
 						<header>
 							<a class="logo" href="<?=$url?>">ARCHIVER</a>
@@ -1309,7 +1309,7 @@
 													<div>
 														<?
 															foreach($_SESSION['history'] as $line){
-																echo $line."<br />";
+																echo $line.'<br />';
 															}
 															$_SESSION['history'] = array();
 														?>
@@ -1340,7 +1340,7 @@
 <?
 													if(count($archive_exist)){
 														foreach($archive_exist as $zzz){
-															if (!is_dir($pathname."/".$zzz) && strstr($zzz, "zip")){
+															if (!is_dir($pathname.'/'.$zzz) && strstr($zzz, 'zip')){
 ?>
 																<input class="addtozip" type="radio" name="addtozip" value="<?=$zzz?>" /> <?=trnslt('add_to_zip')?> <b><?=$zzz?></b><br />
 <?
@@ -1348,7 +1348,7 @@
 														}
 													}
 													
-													unset($_POST['exept'][array_search(".",$_POST['exept'])],$_POST['exept'][array_search("..",$_POST['exept'])]);
+													unset($_POST['exept'][array_search('.',$_POST['exept'])],$_POST['exept'][array_search('..',$_POST['exept'])]);
 ?>
 												</div>
 											</div>
@@ -1358,7 +1358,7 @@
 											<div class="section__headline"><?=trnslt('choose_dir')?>:</div>
 											<div class="section__inner">
 												<div class="row">
-													<?=show_root_dir($pathname."/", $dirs);?>
+													<?=show_root_dir($pathname.'/', $dirs);?>
 													<div class="clear"><br /></div>
 													<b><?=trnslt('enter_subdir')?></b>
 													<input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%" /> <br />
@@ -1371,7 +1371,7 @@
 											<div class="section__inner exeption">
 												("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")
 												<div class="row">
-													<input type="text" name="exept" value="<?=implode("|",$_POST['exept'])?>" style="width:99%" />
+													<input type="text" name="exept" value="<?=implode('|',$_POST['exept'])?>" style="width:99%" />
 												</div>
 											</div>
 										</section>
@@ -1403,7 +1403,7 @@
 ?>
 														<form class="zip clear" enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
 															<input class="selectedzip" type="hidden" name="zipfile" value="<?=$dir?>" checked="checked" />
-															<span title="<?=number_format(filesize($pathname."/".$dir)/1024, 2, ".", " ")?> кб"><b><?=$dir?></b></span>
+															<span title="<?=number_format(filesize($pathname.'/'.$dir)/1024, 2, '.', ' ')?> кб"><b><?=$dir?></b></span>
 															<input class="right inside" type="submit" name="delzip" value="<?=trnslt('dell')?>" />
 															<input class="right inside" type="submit" name="unzip" value="<?=trnslt('unzip')?>" />
 															<div class="clear"></div>
@@ -1437,16 +1437,16 @@
 ?>
 												<input type="checkbox" id="get_size" name="get_size" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'" />
 												<?=trnslt('show_full_size_dir')?>
-												<?=(!$_GET['get_size'])?"<script>document.getElementById('get_size').checked = false;</script>":''?>
+												<?=(!$_GET['get_size'])?'<script>document.getElementById("get_size").checked = false;</script>':''?>
 											</div>
 										</div>
 									</section>
 									
 									<section class="section file_manager">
-										<div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?="/".$_GET['fmdir']?>:</div>
+										<div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?=$pathname .'/'.$_GET['fmdir']?>:</div>
 										<div class="section__inner">
 											<div class="row">
-												<?=show_root_dir_and_files($pathname.($_GET['fmdir']?("/".$_GET['fmdir']):'')."/", $_GET['fmdir']);?>
+												<?=show_root_dir_and_files($pathname.($_GET['fmdir']?('/'.$_GET['fmdir']):'').'/', $_GET['fmdir']);?>
 											</div>
 											<?=$free_space.'mb / '.$total_space.'mb';?>
 										</div>
@@ -1562,22 +1562,22 @@
 								</section>
 <?
 							} else {
-								echo show_log("ERROR", trnslt('access_denied'));
+								echo show_log('ERROR', trnslt('access_denied'));
 							}
 						}else{
-							echo "<h1 align='center'>".trnslt('zip_sorry')."</h1>";
+							echo '<h1 align="center">'.trnslt('zip_sorry').'</h1>';
 						}
 					}
 ?>
 				</div>
 				<footer class="footer" style='position:absolute'>
 					<div class="page_gen">
-						<?=trnslt('page_gen')." ".round(microtime(1)-$timestart, 4)." ".trnslt('sec').".<br />"?>
+						<?=trnslt('page_gen').' '.round(microtime(1)-$timestart, 4).' '.trnslt('sec').'.<br />'?>
 					</div>
 					<a class="kamicadze"  href="<?=preg_replace("/\?.+/",'',$url)?>?del=itself" title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
 					
 					<div class="wrapper">
-						<span style="float: left;">&copy; <?=date("Y")?> <b>ARCHIVER</b> <?=trnslt('develop')?> <u>Lesyuk Sergiy</u>. All Right Reserved.</span>
+						<span style="float: left;">&copy; <?=date('Y')?> <b>ARCHIVER</b> <?=trnslt('develop')?> <u>Lesyuk Sergiy</u>. All Right Reserved.</span>
 						<span style="float: right;"><?=trnslt('your_vers')?> <?=VERSION?></span>
 						<div class="clear"></div>
 					</div>
