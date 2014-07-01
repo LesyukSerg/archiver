@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201406241251');
+	define('VERSION', '201406271505');
 	date_default_timezone_set('Europe/Kiev');
 	session_start();
 	//set_time_limit(2);
@@ -17,18 +17,15 @@
 	$lang = array(
 		'ua' => array(
 			'language' => 'Мова',
-			'file_not' => 'Не знайдено файл ',
 			'kamikadze_ok' => 'Самознищення пройшло вдало.',
 			'kamikadze_err' => 'файл не знищено. В доступі відмовлено.',
 			'your_vers' => 'Ваша версія',
-			'not_new' => 'архіватору не є найновішою',
 			'arch' => 'Архів',
 			'unzip_ok' => 'успішно розархівовано в директорію ',
 			'unzip_err' => 'Пошкоджено архів',
 			'unzip_not' => 'Архів не знайдено',
 			'unzip_choose' => 'Виберіть файл для розархівування',
 			'unzip' => 'Розархівувати',
-			'unzip_log' => 'Хід виконання',
 			'dell' => 'Видалити',
 			'delzip_ok' => 'Успішно видалено архів.',
 			'delzip_err' => 'Не видалено архів',
@@ -43,7 +40,6 @@
 			'zip_created' => 'Створено архів',
 			'zip_added_files' => 'До архіву додано файлів',
 			'many' => ' багацько',
-			'choose_folder' => 'Виберіть теку',
 			'full_files' => 'Всього файлів',
 			'count_files' => 'Кількість файлів',
 			'show_full_count_files' => 'Показати кількість файлів.(Це займе деякий час...)',
@@ -106,18 +102,15 @@
 		),
 		'en' => array(
 			'language' => 'Language',
-			'file_not' => 'File not found ',
 			'kamikadze_ok' => 'Destroy itself successfully completed.',
 			'kamikadze_err' => 'File don`t destroy. Permission denied.',
 			'your_vers' => 'Your version',
-			'not_new' => 'archivator is not newest',
 			'arch' => 'Archive',
 			'unzip_ok' => 'Successfully extracted in directory ',
 			'unzip_err' => 'Archive broken',
 			'unzip_not' => 'Archive not found',
 			'unzip_choose' => 'Choose file to extract',
 			'unzip' => 'Extract',
-			'unzip_log' => 'Log',
 			'dell' => 'Delete',
 			'delzip_ok' => 'Successfully deleted archive.',
 			'delzip_err' => 'Archive was not deleted',
@@ -132,7 +125,6 @@
 			'zip_created' => 'Archive will created',
 			'zip_added_files' => 'filed added',
 			'many' => ' many',
-			'choose_folder' => 'Choose directory',
 			'count_files' => 'Count files',
 			'full_files' => 'All files',
 			'show_full_count_files' => 'Show count files.(It will take some time...)',
@@ -196,18 +188,15 @@
 		),
 		'ru' => array(
 			'language' => 'Язык',
-			'file_not' => 'Не найдено файл',
 			'kamikadze_ok' => 'Самоуничтожение прошло удачно.',
 			'kamikadze_err' => 'файл не уничтожено. В доступе отказано.',
 			'your_vers' => 'Ваша версия',
-			'not_new' => 'архиватора не является новейшей',
 			'arch' => 'Архив',
 			'unzip_ok' => 'успешно извлечен в директорию',
 			'unzip_err' => 'Поврежден архив',
 			'unzip_not' => 'Архив не найден',
 			'unzip_choose' => 'Выберите файл для разархивирования',
 			'unzip' => 'Разархивировать',
-			'unzip_log' => 'Ход выполнения',
 			'dell' => 'Удалить',
 			'delzip_ok' => 'Успешно удалено архив.',
 			'delzip_err' => 'Не было удалено архив',
@@ -222,7 +211,6 @@
 			'zip_created' => 'Создан архив',
 			'zip_added_files' => 'В архив добавлено файлов',
 			'many' => 'множество',
-			'choose_folder' => 'Выберите папку',
 			'count_files' => 'Количество файлов',
 			'full_files' => 'Всего файлов',
 			'show_full_count_files' => 'Показать количество файлов. (Это займет некоторое время ...)',
@@ -375,7 +363,7 @@
 		}
 	}
 	
-	# Підрахунок всіх файлів в корені (по версії Армема Вилкова) ---------
+	# Підрахунок всіх файлів в корені (по версії Артема Вилкова) ---------
 	function getFolderCount($dir, &$cnt = 0){
 		if(!$_GET['get_count'] && $cnt>999) return $cnt;
 		
