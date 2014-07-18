@@ -1,6 +1,6 @@
 <?
 	error_reporting(E_ALL);
-	define('VERSION', '201406271505');
+	define('VERSION', '201407181324');
 	date_default_timezone_set('Europe/Kiev');
 	session_start();
 	//set_time_limit(2);
@@ -866,9 +866,20 @@
 		}
 		elseif($_POST['unzip']){
 			if($_POST['get_size']){
-				die(''.filesize($pathname.'/'.$_POST['zipfile']));
+				$zipfile = $pathname.'/'.$_POST['zipfile'];
+
+				if(file_exists($zipfile)){
+					$zip = new ZipArchive;
+					$res = $zip->open($zipfile);
+					if ($res === TRUE){
+						$koef = $zip->numFiles*$zip->numFiles/2;
+						$zip->close();
+						$step = round(filesize($zipfile)/$koef, 2);
+						die(''.$step);
+					}
+				}
 			}
-			
+			set_time_limit(0);
 			unzippp($pathname, $_POST['zipfile']);
 		}
 		elseif($_POST['delzip']){
@@ -1124,12 +1135,12 @@
 									$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('extracting_archive')?> [<span id="ldng">----------</span>]</div><div></div>');
 									
 									var precent = 0;
-									var step = 200000000/size;
+									var step = size;
 									
 									var i=0;
 									var intrvl = setInterval(function(){
 										if(precent<100)
-											precent = Math.ceil(precent+step);
+											precent = precent+step;
 										else
 											precent = 100;
 										
