@@ -872,7 +872,7 @@
 					$zip = new ZipArchive;
 					$res = $zip->open($zipfile);
 					if ($res === TRUE){
-						$koef = $zip->numFiles*$zip->numFiles/2;
+						$koef = $zip->numFiles*$zip->numFiles;
 						$zip->close();
 						$step = round(filesize($zipfile)/$koef, 2);
 						die(''.$step);
@@ -1130,7 +1130,7 @@
 								url: '<?=$_SERVER['SCRIPT_NAME']?>',
 								data: sendata
 							}).success(function (data){
-								var size = parseInt(data);
+								var size = parseFloat(data);
 								if(size){
 									$('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('extracting_archive')?> [<span id="ldng">----------</span>]</div><div></div>');
 									
