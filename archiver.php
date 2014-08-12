@@ -1,6 +1,5 @@
 <?php
-    error_reporting(E_ALL);
-    define('VERSION', '201407181324');
+    define('VERSION', '201408121140');
     date_default_timezone_set('Europe/Kiev');
     session_start();
     //set_time_limit(2);
@@ -8,7 +7,7 @@
     //$pass = '238a0fa7c18cd78ca1f8d14c260ee02b';
     $pass = 'b59c67bf196a4758191e42f76670ceba';
     $url = preg_replace('/\?.*/','',$_SERVER['REQUEST_URI']);
-    if(isset($lastvers)) $_SESSION['message']['NOTICE'][] = $lastvers;
+    if (isset($lastvers)) $_SESSION['message']['NOTICE'][] = $lastvers;
     
     $log_file = 'archive.log';
     $pathname = getcwd();
@@ -277,7 +276,7 @@
 <?php # ФУНКЦІЇ -------------------------------------------------------------
     
     # функція визначення змінних -----------------------------------------
-    public public function init()
+    function init()
 	{
         if (!isset($_GET['get_count'])) $_GET['get_count'] = null;
         if (!isset($_GET['get_size'])) $_GET['get_size'] = null;
@@ -318,7 +317,7 @@
     }
     
     # функція визначення мови --------------------------------------------
-    public public function set_lang()
+    function set_lang()
 	{
         if (isset($_GET['lang']))
             $_SESSION['lang'] = $_GET['lang'];
@@ -333,7 +332,7 @@
     }
     
     # функція видалення файлу архівера -----------------------------------
-    public public function kamikadze()
+    function kamikadze()
 	{
         global $l, $lang;
         
@@ -345,7 +344,7 @@
     }
     
     # функція перекладу --------------------------------------------------
-    public public function trnslt($key)
+    function trnslt($key)
 	{
         global $lang;
         $l = $_SESSION['lang'];
@@ -356,7 +355,7 @@
     }
     
     # функція перевірки нової версії -------------------------------------
-    public public function check_new_vers($vers)
+    function check_new_vers($vers)
 	{
         ini_set('default_socket_timeout', 2);
         error_reporting(E_ERROR);
@@ -369,7 +368,7 @@
     }
     
     # Підрахунок всіх файлів в корені (по версії Артема Вилкова) ---------
-    public public function getFolderCount($dir, &$cnt = 0)
+    function getFolderCount($dir, &$cnt = 0)
 	{
         if (!$_GET['get_count'] && $cnt>999)
 			return $cnt;
@@ -395,7 +394,7 @@
     }
     
     # Підрахунок всіх розмірів файлів в теках ----------------------------
-    public function getFolderSize($dir, &$cnt = 0)
+    function getFolderSize($dir, &$cnt = 0)
 	{
         if (!$_GET['get_size'] && $cnt>9)
 			return 0;
@@ -423,7 +422,7 @@
     }
     
     # Підрахунок файлів для архівації ------------------------------------
-    public function getFolderCount_for_ajax($dir, &$cnt = 0)
+    function getFolderCount_for_ajax($dir, &$cnt = 0)
 	{
         if ($dirs = scandir($dir)) {
             unset(
@@ -450,7 +449,7 @@
     }
 
     # перевірка в root каталозі на zip файли -----------------------------
-    public function check_for_archive($archive_dir, $dirs)
+    function check_for_archive($archive_dir, $dirs)
 	{
         $deleted_zip = '';
         if ($_POST['delzip'])
@@ -466,7 +465,7 @@
     }
 
     # функція розархівації -----------------------------------------------
-    public function unzippp($archive_dir, $zpfl)
+    function unzippp($archive_dir, $zpfl)
 	{
         global $l, $lang;
         
@@ -494,7 +493,7 @@
     }
     
     # функція видалення архіву -------------------------------------------
-    public function delzippp($archive_dir, $zpfl)
+    function delzippp($archive_dir, $zpfl)
 	{
         if ($zpfl) {
             $zipfile = $archive_dir.'/'.$zpfl;
@@ -514,7 +513,7 @@
     }
     
     # показ та функціонал вибору тек в root директорії -------------------
-    public function show_root_dir($src_dir, $dirs)
+    function show_root_dir($src_dir, $dirs)
 	{
         global $lang, $l;
         $out = '<script>';
@@ -522,7 +521,7 @@
             $out .= 'document.getElementById("get_count").checked = false;';
 
         $out .= '
-            public function turn_of(alldir){
+            function turn_of(alldir){
                 if(alldir.checked){
                     var f1 = document.getElementsByTagName("input");
                     for (var i=0; i<f1.length; i++)
@@ -548,7 +547,7 @@
     }
     
     # показ тек та файлів в $src_dir директорії --------------------------
-    public function show_root_dir_and_files($src_dir, $sub)
+    function show_root_dir_and_files($src_dir, $sub)
 	{
         global $lang, $l;
         /* 
@@ -632,7 +631,7 @@
     }
 
     # Рекурсивна функція архівації вкладених файлів і тек ----------------
-    public function addFolderToZip($dir, &$zipArchive, $zipdir = '', &$cnt, &$fp)
+    function addFolderToZip($dir, &$zipArchive, $zipdir = '', &$cnt, &$fp)
 	{        
         if (is_dir($dir)) {
             fwrite($fp, $dir.'\n');
@@ -698,7 +697,7 @@
     }
 
     # головна функція підготовки до архівації ----------------------------
-    public function start_archivation($pathname, $log_file)
+    function start_archivation($pathname, $log_file)
 	{
         if ($_POST['dir_write']) {
             unset($_POST['dir']);
@@ -787,7 +786,7 @@
     }
 
     # функція перевірки паролю -------------------------------------------
-    public function check_pass($pass)
+    function check_pass($pass)
 	{
         if (md5($_POST['pswrd']) == $pass) {
             $_SESSION['psswrd'] = $pass;
@@ -798,22 +797,19 @@
     }
     
     # функція відображення повідомлень -----------------------------------
-    public function show_log($type, $text)
+    function show_log($type, $text)
 	{
-        switch ($type) {
-            case 'ERROR':
-                return '<div class="msg w"><i>er</i>'.$text.'</div>';
-            case 'NOTICE':
-                return '<div class="msg i"><i>!</i>'.$text.'</div>';
-            case 'OK':
-                return '<div class="msg ok"><i>ok</i>'.$text.'</div>';       
-            default:
-                return 'wrong type';
-        }
+        $message = array(
+            'ERROR' => '<div class="msg w"><i>er</i>'.$text.'</div>',
+            'NOTICE' => '<div class="msg i"><i>!</i>'.$text.'</div>',
+            'OK' => '<div class="msg ok"><i>ok</i>'.$text.'</div>',
+        );
+        
+        return $message[$type];
     }
     
     # функція виводу повідомлень -----------------------------------------
-    public function show_messages()
+    function show_messages()
 	{
         if ($_SESSION['message']) {
             foreach ($_SESSION['message'] as $key => $messages) {
@@ -826,7 +822,7 @@
     }
 
     # функція збереження налаштувань логування ---------------------------
-    public function save_log()
+    function save_log()
 	{
         $_SESSION['hist']['ok'] = $_POST['show_ok']?1:0;
         $_SESSION['hist']['notice'] = $_POST['show_notice']?1:0;
@@ -842,7 +838,7 @@
     }
 
     # функція перевірки прав на запис ------------------------------------
-    public function check_permission($pathname, $log_file)
+    function check_permission($pathname, $log_file)
 	{
         if ($fp = fopen($log_file, 'w')) {
             fclose($fp);
@@ -856,7 +852,7 @@
     }
 
     # функція виходу із сессії -------------------------------------------
-    public function logout()
+    function logout()
 	{
         $_SESSION['psswrd'] = 1;
         $_SESSION['pass_count'] = 3;
@@ -869,15 +865,12 @@
     
     if (isset($_GET['del']) && !file_exists('checker.php')) {
         kamikadze();
-    }
-    elseif ($_GET['logout']) {
+    } elseif ($_GET['logout']) {
         logout();
-    }
-    elseif (md5($_POST['pswrd']) == $pass) {
+    } elseif (md5($_POST['pswrd']) == $pass) {
         $_SESSION['psswrd'] = $pass;
     }
     
-    //$_SESSION['psswrd'] = 'b59c67bf196a4758191e42f76670ceba';
     if	($_SESSION['psswrd'] == $pass) {
         $dirs = scandir($pathname);
         unset(
@@ -887,9 +880,10 @@
         );
         
         if ($_POST['log_submit']) {
+            
             save_log();
-        }
-        elseif ($_POST['unzip']) {
+            
+        } elseif ($_POST['unzip']) {
             if ($_POST['get_size']) {
                 $zipfile = $pathname.'/'.$_POST['zipfile'];
 
@@ -906,12 +900,13 @@
             }
             set_time_limit(0);
             unzippp($pathname, $_POST['zipfile']);
-        }
-        elseif ($_POST['delzip']) {
+            
+        } elseif ($_POST['delzip']) {
+            
             delzippp($pathname, $_POST['zipfile']);
-        }
-        elseif($_POST['submit']) {
-            if($_POST['ajax']){
+            
+        } elseif ($_POST['submit']) {
+            if ($_POST['ajax']) {
                 if (isset($_POST['dir']) || isset($_POST['dir_write'])) {
                     $_SESSION['options']['min_orig'] = $_SESSION['options']['min'];
                     $_SESSION['options']['max_orig'] = $_SESSION['options']['max'];
@@ -954,624 +949,540 @@
     }
     
     if ($_POST['ajax']) {
-    
         echo show_messages();
-    
-    } else {
+        die;
+    }
 ?>
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <meta charset="UTF-8" />
-                <meta name="Author" CONTENT="Lesyuk Sergiy">
-                <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="UTF-8" />
+            <meta name="Author" CONTENT="Lesyuk Sergiy">
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <?php
-                if ($_SESSION['psswrd'] == $pass) {
+            if ($_SESSION['psswrd'] == $pass) {
 ?>
-                    <script>
-                        var wait = ['#---------','-#--------','--#-------','---#------','----#-----','-----#----','------#---','-------#--','--------#-','---------#'];
-                        var all_files = 0;
-                        var archive = '';
-                        var intrvl
-                        
-                        $(document).ready(public function(){
-                            if($('body').height() > $(window).height()){
-                                $('.footer').removeAttr('style');
-                            }
-                        
-                            $('.nav li').click(public function(){
-                                if(!$(this).hasClass('active')){
-                                    window.location.href= '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>'+$(this).attr('id');
-                                }
-                            });
-<?php
-                            if($_GET['section'] == 'extractar'){
-                                if($_SESSION['options']['confirm_delzip']){
-?>
-                                    $('.zip.clear input[name="delzip"]').click(public function(){
-                                        if (confirm('<?=trnslt('delete_confirm')?>'))
-                                            return true;
-                                        else
-                                            return false;
-                                    });
-<?php
-                                }
-                                if($_SESSION['options']['confirm_unzip']){
-?>
-                                    $('.zip.clear input[name="unzip"]').click(public function(){
-                                        if (confirm('<?=trnslt('extract_confirm')?>')){
-                                            startExtraction($(this).parent('form'));
-                                        }
-                                        
-                                        return false;
-                                    });
-<?php
-                                } else {
-?>
-                                    $('.zip.clear input[name="unzip"]').click(public function(){
-                                        startExtraction($(this).parent('form'));
-                                    });
-<?php
-                                }
-                            }
-?>
-                        });
-                        
-                        // вставлення тек із блоку "наприклад" --------------------------------------
-                        public function addEx(el){
-                            var input = el.parentNode.parentNode.getElementsByTagName('input').item(0);
-                            var arr = [];
-                            if(input.value.length)
-                                var arr = input.value.split('|');
-
-                            arr.push(el.innerHTML);
-                            input.value = arr.join('|');
+                <script>
+                    var wait = ['#---------','-#--------','--#-------','---#------','----#-----','-----#----','------#---','-------#--','--------#-','---------#'];
+                    var all_files = 0;
+                    var archive = '';
+                    var intrvl
+                    
+                    $(document).ready(function(){
+                        if ($('body').height() > $(window).height()) {
+                            $('.footer').removeAttr('style');
                         }
-                        
-                    //----------------------------------------------------------------------------------------/
-                    // АРХІВАЦІЯ ---------------------------------------------------------------------------/
-                        // Збір данних форми для архівування ----------------------------------------
-                        public function collectDataToZip(forma){
-                            var forma = forma || '';
-                            if(forma != ''){
-                                var addtozip = '';                    
-                                forma.find('input.addtozip').each(public function(){
-                                    if($(this)[0].checked)
-                                        addtozip = $(this).val();
+                    
+                        $('.nav li').click(function(){
+                            if (!$(this).hasClass('active')) {
+                                window.location.href= '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>'+$(this).attr('id');
+                            }
+                        });
+<?php
+                        if ($_GET['section'] == 'extractar') {
+                            if ($_SESSION['options']['confirm_delzip']) {
+?>
+                                $('.zip.clear input[name="delzip"]').click(function(){
+                                    if (confirm('<?=trnslt('delete_confirm')?>'))
+                                        return true;
+                                    else
+                                        return false;
+                                });
+<?php
+                            }
+                            if ($_SESSION['options']['confirm_unzip']) {
+?>
+                                $('.zip.clear input[name="unzip"]').click(function(){
+                                    if (confirm('<?=trnslt('extract_confirm')?>'))
+                                        startExtraction($(this).parent('form'));
+                                    
+                                    return false;
+                                });
+<?php
+                            } else {
+?>
+                                $('.zip.clear input[name="unzip"]').click(function(){
+                                    startExtraction($(this).parent('form'));
+                                });
+<?php
+                            }
+                        }
+?>
+                    });
+                    
+                    // вставлення тек із блоку "наприклад" --------------------------------------
+                    function addEx(el)
+                    {
+                        var input = el.parentNode.parentNode.getElementsByTagName('input').item(0);
+                        var arr = [];
+                        if (input.value.length)
+                            var arr = input.value.split('|');
+
+                        arr.push(el.innerHTML);
+                        input.value = arr.join('|');
+                    }
+                    
+                //----------------------------------------------------------------------------------------/
+                // АРХІВАЦІЯ ---------------------------------------------------------------------------/
+                    // Збір данних форми для архівування ----------------------------------------
+                    function collectDataToZip(forma)
+                    {
+                        var forma = forma || '';
+                        if (forma != '') {
+                            var addtozip = '';                    
+                            forma.find('input.addtozip').each(function() {
+                                if($(this)[0].checked)
+                                    addtozip = $(this).val();
+                            });
+                            
+                            var dir = '';
+                            var chk = 0;
+                            if (forma.find('input#alldir')[0].checked) {
+                                chk = 1;
+                            } else {
+                                forma.find('input.selecteddir').each(function() {
+                                    if ($(this)[0].checked) {
+                                        chk = 1;
+                                        dir = dir+'|'+$(this).val();
+                                    }
                                 });
                                 
-                                var dir = '';
-                                var chk = 0;
-                                if(forma.find('input#alldir')[0].checked){
-                                    chk = 1;
-                                }else{
-                                    forma.find('input.selecteddir').each(public function(){
-                                        if($(this)[0].checked){
-                                            chk = 1;
-                                            dir = dir+'|'+$(this).val();
-                                        }
-                                    });
-                                    if(!chk){
-                                        dir = chk;
-                                    }
+                                if (!chk) {
+                                    dir = chk;
                                 }
-                                var dir_write = forma.find('input[name=dir_write]').val();
-                                var exept = forma.find('input[name=exept]').val();
-                                var submit = 'start';
-                                
-                                return {'addtozip' : addtozip, 'dir' : dir, 'dir_write' : dir_write, 'exept': exept, 'submit' : submit, 'ajax' : 'ajax', 'skipfiles' : '0'};
                             }
+                            var dir_write = forma.find('input[name=dir_write]').val();
+                            var exept = forma.find('input[name=exept]').val();
+                            var submit = 'start';
+                            
+                            return {'addtozip' : addtozip, 'dir' : dir, 'dir_write' : dir_write, 'exept': exept, 'submit' : submit, 'ajax' : 'ajax', 'skipfiles' : '0'};
+                        }
+                    }
+                    
+                    // Запуск аяксового запросу на архівацію ------------------------------------
+                    function postGo(sendata)
+                    {
+                        if (!all_files) {
+                            $('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('zip_added_files')?> <span id="cntfls">0</span> [<span id="ldng">----------</span>]</div><div></div>');
                         }
                         
-                        // Запуск аяксового запросу на архівацію ------------------------------------
-                        public function postGo(sendata){
-                            if(!all_files){
-                                $('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('zip_added_files')?> <span id="cntfls">0</span> [<span id="ldng">----------</span>]</div><div></div>');
+                        var i=0;
+                        var intrvl = setInterval(function(){
+                            if (i>=wait.length) i=0;    
+                            $('.messages #ldng').html(wait[i++]);
+                        }, 400);
+                        
+                        $.ajax({
+                            type: 'POST',
+                            url: '<?=$_SERVER['SCRIPT_NAME']?>',
+                            data: sendata
+                        }).success(function (data) {
+                            clearInterval(intrvl);
+                            
+                            if (!all_files) {
+                                all_files = parseInt($(data).find('#allfls').html());
+                                archive = $(data).find('#archv').html();
+                                sendata['addtozip'] = archive;
                             }
                             
-                            var i=0;
-                            var intrvl = setInterval(public function(){
-                                if(i>=wait.length) i=0;    
-                                $('.messages #ldng').html(wait[i++]);
-                            }, 400);
+                            skipfiles = parseInt($(data).find('#cntfls').html());
+                            sendata['skipfiles'] = skipfiles;
                             
-                            $.ajax({
-                                type: 'POST',
-                                url: '<?=$_SERVER['SCRIPT_NAME']?>',
-                                data: sendata
-                            }).success(public function (data) {
-                                clearInterval(intrvl);
-                                
-                                if(!all_files){
-                                    all_files = parseInt($(data).find('#allfls').html());
-                                    archive = $(data).find('#archv').html();
-                                    sendata['addtozip'] = archive;
-                                }
-                                
-                                skipfiles = parseInt($(data).find('#cntfls').html());
-                                sendata['skipfiles'] = skipfiles;
-                                
-                                console.log(skipfiles, all_files, archive);
-                                
-                                if(skipfiles < all_files){
-                                    $('.messages .progress').css('width', (100*skipfiles/all_files)+'%');
-                                    $('.messages #cntfls').html(skipfiles+'/'+all_files);
-                                    postGo(sendata);
+                            console.log(skipfiles, all_files, archive);
+                            
+                            if (skipfiles < all_files) {
+                                $('.messages .progress').css('width', (100*skipfiles/all_files)+'%');
+                                $('.messages #cntfls').html(skipfiles+'/'+all_files);
+                                postGo(sendata);
+                            } else {
+                                if (data.indexOf('msg') > 0) {
+                                    $('.messages').html(data);
                                 } else {
-                                    if(data.indexOf('msg') > 0){
+                                    data = data.replace(/<br \/>/, '');
+                                    $('.messages').html('<div class="msg w"><i>err</i><span style="">'+data+'</span></div>');
+                                }
+                                $('.archivatorstart').removeAttr('disabled');
+                            }
+                        }).error(function (){
+                            $('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
+                            console.log('Ошибка при получении данных');
+                        });
+                    }
+                    
+                    // Підготовка до архівації --------------------------------------------------
+                    function startAarchivation()
+                    {
+                        $('html, body').animate({ scrollTop: 0 }, 100);
+                        $('.archivatorstart').attr('disabled', 'disabled');
+                        var skipfiles = 0;
+                        all_files = 0;
+                        archive = '';
+                        
+                        var sendata = collectDataToZip($('form.create_archive'));
+                        
+                        if (sendata['dir'] == '0') {
+                            delete sendata['dir'];
+                        }
+                        if (sendata['dir_write'].length == 0 || sendata['dir_write'] == ' ') {
+                            delete sendata['dir_write'];
+                        }
+                        
+                        postGo(sendata);
+                    }
+                // /АРХІВАЦІЯ --------------------------------------------------------------------------\
+                //----------------------------------------------------------------------------------------\
+                    
+                //----------------------------------------------------------------------------------------/
+                // РОЗАРХІВАЦІЯ ------------------------------------------------------------------------/
+                    // Збір данних форми для архівування ----------------------------------------
+                    function collectDataToExtract(forma)
+                    {
+                        var forma = forma || '';
+                        if (forma != '') {
+                            var zipfile = forma.find('input[name="zipfile"]').val();
+                            var unzip = 'Розархівація';
+                            
+                            return {zipfile: zipfile, unzip: unzip, ajax: 'ajax'};
+                        }
+                    }
+                    
+                    // Запуск аяксового запросу на розархівацію ---------------------------------
+                    function postGoExtract(sendata)
+                    {
+                        sendata['get_size'] = 1;
+                        $.ajax({
+                            type: 'POST',
+                            url: '<?=$_SERVER['SCRIPT_NAME']?>',
+                            data: sendata
+                        }).success(function (data){
+                            var size = parseFloat(data);
+                            if (size) {
+                                $('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('extracting_archive')?> [<span id="ldng">----------</span>]</div><div></div>');
+                                
+                                var precent = 0;
+                                var step = size;
+                                
+                                var i=0;
+                                var intrvl = setInterval(function(){
+                                    if (precent<100)
+                                        precent = precent+step;
+                                    else
+                                        precent = 100;
+                                    
+                                    if (i>=wait.length) i=0;    
+                                    $('.messages #ldng').html(wait[i++]);
+                                    $('.messages .progress').css('width', precent+'%');
+                                }, 400);
+                                
+                                sendata['get_size'] = 0;
+                                
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '<?=$_SERVER['SCRIPT_NAME']?>',
+                                    data: sendata
+                                }).success(function (data) {
+                                    clearInterval(intrvl);
+                                    
+                                    if (data.indexOf('msg') > 0) {
                                         $('.messages').html(data);
                                     } else {
                                         data = data.replace(/<br \/>/, '');
                                         $('.messages').html('<div class="msg w"><i>err</i><span style="">'+data+'</span></div>');
                                     }
-                                    $('.archivatorstart').removeAttr('disabled');
-                                }
-                            }).error(public function (){
-                                $('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
-                                console.log('Ошибка при получении данных');
-                            });
-                        }
-                        
-                        // Підготовка до архівації --------------------------------------------------
-                        public function startAarchivation(){
-                            $('html, body').animate({ scrollTop: 0 }, 100);
-                            $('.archivatorstart').attr('disabled', 'disabled');
-                            var skipfiles = 0;
-                            all_files = 0;
-                            archive = '';
-                            
-                            var sendata = collectDataToZip($('form.create_archive'));
-                            
-                            if(sendata['dir'] == '0'){
-                                delete sendata['dir'];
+                                    $('input[name="unzip"]').removeAttr('disabled');
+                                }).error(function (){
+                                    $('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
+                                    console.log('Ошибка при получении данных');
+                                });
                             }
-                            if(sendata['dir_write'].length == 0 || sendata['dir_write'] == ' '){
-                                delete sendata['dir_write'];
-                            }
-                            
-                            postGo(sendata);
-                        }
-                    // /АРХІВАЦІЯ --------------------------------------------------------------------------\
-                    //----------------------------------------------------------------------------------------\
                         
-                    //----------------------------------------------------------------------------------------/
-                    // РОЗАРХІВАЦІЯ ------------------------------------------------------------------------/
-                        // Збір данних форми для архівування ----------------------------------------
-                        public function collectDataToExtract(forma){
-                            var forma = forma || '';
-                            if(forma != ''){
-                                var zipfile = forma.find('input[name="zipfile"]').val();
-                                var unzip = 'Розархівація';
-                                
-                                return {zipfile: zipfile, unzip: unzip, ajax: 'ajax'};
-                            }
-                        }
+                        }).error(function (){
+                            $('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
+                            console.log('Ошибка при получении данных');
+                        });
+                    }
+                    
+                    // Підготовка до розархівації -----------------------------------------------
+                    function startExtraction(forma)
+                    {
+                        $('html, body').animate({ scrollTop: 0 }, 100);
+                        $('input[name="unzip"]').attr('disabled', 'disabled');
                         
-                        // Запуск аяксового запросу на розархівацію ---------------------------------
-                        public function postGoExtract(sendata){
-                            sendata['get_size'] = 1;
-                            $.ajax({
-                                type: 'POST',
-                                url: '<?=$_SERVER['SCRIPT_NAME']?>',
-                                data: sendata
-                            }).success(public function (data){
-                                var size = parseFloat(data);
-                                if(size){
-                                    $('.messages').html('<div class="msg i process"><div><div class="msg ok progress" style="width: 0%;"></div><div class="flytext"><?=trnslt('extracting_archive')?> [<span id="ldng">----------</span>]</div><div></div>');
-                                    
-                                    var precent = 0;
-                                    var step = size;
-                                    
-                                    var i=0;
-                                    var intrvl = setInterval(public function(){
-                                        if(precent<100)
-                                            precent = precent+step;
-                                        else
-                                            precent = 100;
-                                        
-                                        if(i>=wait.length) i=0;    
-                                        $('.messages #ldng').html(wait[i++]);
-                                        $('.messages .progress').css('width', precent+'%');
-                                    }, 400);
-                                    
-                                    sendata['get_size'] = 0;
-                                    
-                                    $.ajax({
-                                        type: 'POST',
-                                        url: '<?=$_SERVER['SCRIPT_NAME']?>',
-                                        data: sendata
-                                    }).success(public function (data) {
-                                        clearInterval(intrvl);
-                                        
-                                        if(data.indexOf('msg') > 0){
-                                            $('.messages').html(data);
-                                        } else {
-                                            data = data.replace(/<br \/>/, '');
-                                            $('.messages').html('<div class="msg w"><i>err</i><span style="">'+data+'</span></div>');
-                                        }
-                                        $('input[name="unzip"]').removeAttr('disabled');
-                                    }).error(public function (){
-                                        $('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
-                                        console.log('Ошибка при получении данных');
-                                    });
-                                }
-                            
-                            }).error(public function (){
-                                $('.messages').html('<div class="msg w"><i>err</i>File not found</div>');
-                                console.log('Ошибка при получении данных');
-                            });
-                        }
+                        var sendata = collectDataToExtract(forma);
                         
-                        // Підготовка до розархівації -----------------------------------------------
-                        public function startExtraction(forma){
-                            $('html, body').animate({ scrollTop: 0 }, 100);
-                            $('input[name="unzip"]').attr('disabled', 'disabled');
-                            
-                            var sendata = collectDataToExtract(forma);
-                            
-                            console.log(sendata);
-                            postGoExtract(sendata);
-                        }
-                    // /РОЗАРХІВАЦІЯ -----------------------------------------------------------------------\
-                    //----------------------------------------------------------------------------------------\
-                        
-                        
-                    </script>
+                        console.log(sendata);
+                        postGoExtract(sendata);
+                    }
+                // /РОЗАРХІВАЦІЯ -----------------------------------------------------------------------\
+                //----------------------------------------------------------------------------------------\
+                </script>
 <?php
-                }
+            }
 ?>
-                <style>
-                    * { margin:0; padding:0; }
-                    body { font:13px/18px Verdana, Arial, Tahoma, sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; color:#FFF; width:100%; background:#39404C; overflow-y: scroll; }
-                    input.archivatorstart { display: block; width:30%; }
-                    legend { font-weight:bold; font-size:medium; }
-                    .archivelog div { max-height:394px; overflow:auto; }
-                    .progress { height:40px; width:100%; transition:all 2s ease 0; }
-                    .kamicadze { color:#888888; margin-top:-30px; position:absolute; right:10px; text-decoration:none; }
-                    .kamicadze:hover { text-decoration:underline; }
-                    .kamicadze:active { color:#444444; }
-                    .red { color:red; }
-                    .green { color:green; }
-                    .zip.clear { line-height: 52px; }
-                    form.zip:hover { background:#E8E2D2; }
-                    .right { float:right; margin-left:20px; }
-                    .clear { clear:both; }
-                    .logo { color:#888888; display:block; font-size:28px; text-decoration:none; text-shadow:0 0 1px #888888; transition:all .4s ease 0; float:left; padding:20px 10px 10px 0; transition: all 0.3s ease 0s; }
-                    .logo:hover { color: #F1F1FF; text-shadow: 0 0 8px #FFFFFF; }
-                    h1 { line-height: 50px; }
-                    h2 { margin-bottom:20px; }
-                    .section { clear:both; position:relative; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:0 0 20px; }
-                    .section__headline { background: #E05C50; background: linear-gradient(#EF705F, #E05C50) repeat scroll 0 0 rgba(0, 0, 0, 0); box-shadow: 0 1px #F08C75 inset; font-size: 16px; padding: 8px 14px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); }
-                    .section__inner.exeption > span:hover { cursor:pointer; text-shadow:0 0 0; color:#000000; }
-                    .section__inner { color:#444444; padding:15px; background:#EFEFEF; }
-                    .wrapper { max-width:894px; position:relative; margin:0 auto; }
-                    label { cursor:pointer; display:inline-block; line-height:22px; }
-                    select,input[type="text"],input[type="password"] { border:1px solid #C4C9D0; color:#646F81; padding:2px 5px; }
-                    select { padding: 2px; }
-                    select:focus,input[type="text"]:focus,input[type="password"]:focus { border:1px solid #8891A2; }
-                    input[type="submit"] { height:34px; cursor:pointer; font:16px Verdana, Arial, sans-serif; border:none; color:#FFF; box-shadow:0 5px 10px rgba(0,0,0,0.3); text-shadow:1px 1px 1px rgba(0,0,0,0.2); padding:0 15px; background:#94CF58; background:linear-gradient(#94CF58,#85CA40); margin: 10px auto; }
-                    input[type="submit"]:hover { background:linear-gradient(#A4DF68,#95DA50); }
-                    input[type="submit"]:active { box-shadow:0 0 0!important; background: #85CA40; }
-                    input[type="submit"][disabled="disabled"] { background: none repeat scroll 0 0 #888888; box-shadow: 0 0 0; }
-                    .nav { float:right; box-shadow:0 5px 10px rgba(0,0,0,0.2); background-color: #646F81; margin-top: 10px; }
-                    .nav li { float:left; list-style:none; cursor:pointer; border-left:1px solid #515D6D; box-shadow:inset -1px 1px #6B7787; }
-                    .nav li a,.nav li span { display:block; color:#E7EAED; text-decoration:none; padding:8px 12px; }
-                    .nav li:first-child { border-left:none; }
-                    .nav li:hover { color:#FFF; box-shadow:inset 0 1px #F08C75; background:#EF705F; background:linear-gradient(#EF705F,#E05C50); }
-                    .nav li:active { box-shadow:inset 0 1px #F08C75; background:#E04C40; }
-                    .nav li.active { box-shadow:inset 0 1px #6B7787; background:#4B525F; background:linear-gradient(#5B6475,#4B525F); }
-                    .row:first-child { margin-top:0; }
-                    .row:last-child { margin-bottom:0; }
-                    .row { margin:10px 0; }
-                    .messages { padding-top: 20px; }
-                    .msg.w { background-color: #F13921; }
-                    .msg.i { background-color: #4FC0E8; }
-                    .msg.ok { background-color: #94CF58; }
-                    .msg i { color:#FFF; line-height:15px; font-size:11px; text-align:center; position:absolute; left:12px; top:12px; display:inline-block; width:16px; height:16px; border:1px solid #FFF; }
-                    .msg { box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); line-height: 20px; margin: 0 0 20px; padding: 10px 0 10px 45px; position: relative; white-space: nowrap; }
-                    .msg.process { padding: 6px; text-align: center; }
-                    .msg.process > div { background-color: #62C4BF; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset; }
-                    .msg.ok.progress { margin: 0; padding: 0; transition: all 4s ease 0s; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset; }
-                    .flytext { font-size: 13px; margin: -29px auto; position: absolute; width: 100%; }
-                    .tab.createar { padding-bottom: 40px; }
-                    .footer { bottom:0; color:#AEB4BB; font-size:11px; left:0; width:100%; padding:8px 0; background:#2E333D; opacity:0.6; }
-                    .footer a { color:#AEB4BB; }
-                    .footer a:hover { color:#FFF; }
-                    .login { position:absolute; width:300px; margin:10% 0 0 10%; }
-                    input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: right; margin: 8px; }
-                    .page_gen { position:absolute; margin-top:-30px; }
-                    .section__headline.exeption > span { cursor:pointer; }
-                    .grey { color:grey; }
-                    .file_mamger_table { width: 100%; }
-                    .file_mamger_table tr td { padding: 2px 4px; }
-                    .file_mamger_table tr:nth-child(even) td{ background-color: #E0E0E0; }
-                    .file_mamger_table tr:hover td { background-color: #D0D0D0; }
-                    .file_mamger_table .count, .file_mamger_table .size { width: 20%; text-align: right; }
-                    .working_options { color: #888888; font-size: 10px; text-align: center; }
-                    .working_options a { color: #E7EAED; font-size: 13px; }
-                    .working_options a:hover { text-decoration: none; }
-                </style>
-                <title>Archiver</title>
-            </head>
-            <body>
-                <div class="wrapper">
+            <style>
+                * { margin:0; padding:0 }
+                body { font:13px/18px Verdana, Arial, Tahoma, sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; color:#FFF; width:100%; background:#39404C; overflow-y: scroll }
+                input.archivatorstart { display: block; width:30% }
+                legend { font-weight:bold; font-size:medium }
+                .archivelog div { max-height:394px; overflow:auto }
+                .progress { height:40px; width:100%; transition:all 2s ease 0 }
+                .kamicadze { color:#888888; margin-top:-30px; position:absolute; right:10px; text-decoration:none }
+                .kamicadze:hover { text-decoration:underline }
+                .kamicadze:active { color:#444444 }
+                .red { color:red }
+                .green { color:green }
+                .zip.clear { line-height: 52px }
+                form.zip:hover { background:#E8E2D2 }
+                .right { float:right; margin-left:20px }
+                .clear { clear:both }
+                .logo { color:#888888; display:block; font-size:28px; text-decoration:none; text-shadow:0 0 1px #888888; transition:all .4s ease 0; float:left; padding:20px 10px 10px 0; transition: all 0.3s ease 0s }
+                .logo:hover { color: #F1F1FF; text-shadow: 0 0 8px #FFFFFF }
+                h1 { line-height: 50px }
+                h2 { margin-bottom:20px }
+                .section { clear:both; position:relative; box-shadow:0 5px 10px rgba(0,0,0,0.2); margin:0 0 20px }
+                .section__headline { background: #E05C50; background: linear-gradient(#EF705F, #E05C50) repeat scroll 0 0 rgba(0, 0, 0, 0); box-shadow: 0 1px #F08C75 inset; font-size: 16px; padding: 8px 14px; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2) }
+                .section__inner.exeption > span:hover { cursor:pointer; text-shadow:0 0 0; color:#000000 }
+                .section__inner { color:#444444; padding:15px; background:#EFEFEF }
+                .wrapper { max-width:894px; position:relative; margin:0 auto }
+                label { cursor:pointer; display:inline-block; line-height:22px }
+                select,input[type="text"],input[type="password"] { border:1px solid #C4C9D0; color:#646F81; padding:2px 5px }
+                select { padding: 2px }
+                select:focus,input[type="text"]:focus,input[type="password"]:focus { border:1px solid #8891A2 }
+                input[type="submit"] { height:34px; cursor:pointer; font:16px Verdana, Arial, sans-serif; border:none; color:#FFF; box-shadow:0 5px 10px rgba(0,0,0,0.3); text-shadow:1px 1px 1px rgba(0,0,0,0.2); padding:0 15px; background:#94CF58; background:linear-gradient(#94CF58,#85CA40); margin: 10px auto }
+                input[type="submit"]:hover { background:linear-gradient(#A4DF68,#95DA50) }
+                input[type="submit"]:active { box-shadow:0 0 0!important; background: #85CA40 }
+                input[type="submit"][disabled="disabled"] { background: none repeat scroll 0 0 #888888; box-shadow: 0 0 0 }
+                .nav { float:right; box-shadow:0 5px 10px rgba(0,0,0,0.2); background-color: #646F81; margin-top: 10px }
+                .nav li { float:left; list-style:none; cursor:pointer; border-left:1px solid #515D6D; box-shadow:inset -1px 1px #6B7787 }
+                .nav li a,.nav li span { display:block; color:#E7EAED; text-decoration:none; padding:8px 12px }
+                .nav li:first-child { border-left:none }
+                .nav li:hover { color:#FFF; box-shadow:inset 0 1px #F08C75; background:#EF705F; background:linear-gradient(#EF705F,#E05C50) }
+                .nav li:active { box-shadow:inset 0 1px #F08C75; background:#E04C40 }
+                .nav li.active { box-shadow:inset 0 1px #6B7787; background:#4B525F; background:linear-gradient(#5B6475,#4B525F) }
+                .row:first-child { margin-top:0 }
+                .row:last-child { margin-bottom:0 }
+                .row { margin:10px 0 }
+                .messages { padding-top: 20px }
+                .msg.w { background-color: #F13921 }
+                .msg.i { background-color: #4FC0E8 }
+                .msg.ok { background-color: #94CF58 }
+                .msg i { color:#FFF; line-height:15px; font-size:11px; text-align:center; position:absolute; left:12px; top:12px; display:inline-block; width:16px; height:16px; border:1px solid #FFF }
+                .msg { box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); line-height: 20px; margin: 0 0 20px; padding: 10px 0 10px 45px; position: relative; white-space: nowrap }
+                .msg.process { padding: 6px; text-align: center }
+                .msg.process > div { background-color: #62C4BF; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset }
+                .msg.ok.progress { margin: 0; padding: 0; transition: all 4s ease 0s; box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset }
+                .flytext { font-size: 13px; margin: -29px auto; position: absolute; width: 100% }
+                .tab.createar { padding-bottom: 40px }
+                .footer { bottom:0; color:#AEB4BB; font-size:11px; left:0; width:100%; padding:8px 0; background:#2E333D; opacity:0.6 }
+                .footer a { color:#AEB4BB }
+                .footer a:hover { color:#FFF }
+                .login { position:absolute; width:300px; margin:10% 0 0 10% }
+                input.inside[type="submit"] { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3); float: right; margin: 8px }
+                .page_gen { position:absolute; margin-top:-30px }
+                .section__headline.exeption > span { cursor:pointer }
+                .grey { color:grey }
+                .file_mamger_table { width: 100% }
+                .file_mamger_table tr td { padding: 2px 4px }
+                .file_mamger_table tr:nth-child(even) td{ background-color: #E0E0E0 }
+                .file_mamger_table tr:hover td { background-color: #D0D0D0 }
+                .file_mamger_table .count, .file_mamger_table .size { width: 20%; text-align: right }
+                .working_options { color: #888888; font-size: 10px; text-align: center }
+                .working_options a { color: #E7EAED; font-size: 13px }
+                .working_options a:hover { text-decoration: none }
+            </style>
+            <title>Archiver</title>
+        </head>
+        <body>
+            <div class="wrapper">
 <?php
-                    if ($_SESSION['psswrd'] == $pass) {
-                        check_permission($pathname, $log_file);
-                        check_new_vers(VERSION);
-                        $archive_exist = check_for_archive($pathname.'/', $dirs);
+                if ($_SESSION['psswrd'] == $pass) {
+                    check_permission($pathname, $log_file);
+                    check_new_vers(VERSION);
+                    $archive_exist = check_for_archive($pathname.'/', $dirs);
 ?>
-                        <header>
-                            <a class="logo" href="<?=$url?>">ARCHIVER</a>
-                        
-                            <nav>
-                                <menu class="nav">
-                                    <li id="createar" <?=(!$_GET['section'] || $_GET['section'] == 'createar')?'class="active"':''?> ><span><?=trnslt('create_arch')?></span></li>
-                                    <li id="extractar" <?=($_GET['section'] == 'extractar')?'class="active"':''?> ><span><?=trnslt('extract_arch')?></span></li>
-                                    <li id="filemanager" <?=($_GET['section'] == 'filemanager')?'class="active"':''?> ><span><?=trnslt('file_manager')?></span></li>
-                                    <li id="options" <?=($_GET['section'] == 'options')?'class="active"':''?> ><span><?=trnslt('settings')?></span></li>
-                                    <li><a href="<?=$url?>?logout=ok"><?=trnslt('exit')?></a></li>
-                                </menu>
-                            </nav>
-                            <div class="clear"></div>
-                        </header>
-                        
-                        <div id="form_block">
-                            <div class="messages"><?=show_messages();?></div>
+                    <header>
+                        <a class="logo" href="<?=$url?>">ARCHIVER</a>
+                    
+                        <nav>
+                            <menu class="nav">
+                                <li id="createar" <?=(!$_GET['section'] || $_GET['section'] == 'createar')?'class="active"':''?> ><span><?=trnslt('create_arch')?></span></li>
+                                <li id="extractar" <?=($_GET['section'] == 'extractar')?'class="active"':''?> ><span><?=trnslt('extract_arch')?></span></li>
+                                <li id="filemanager" <?=($_GET['section'] == 'filemanager')?'class="active"':''?> ><span><?=trnslt('file_manager')?></span></li>
+                                <li id="options" <?=($_GET['section'] == 'options')?'class="active"':''?> ><span><?=trnslt('settings')?></span></li>
+                                <li><a href="<?=$url?>?logout=ok"><?=trnslt('exit')?></a></li>
+                            </menu>
+                        </nav>
+                        <div class="clear"></div>
+                    </header>
+                    
+                    <div id="form_block">
+                        <div class="messages"><?=show_messages();?></div>
 <?php
-                            if (!$_GET['section'] || $_GET['section'] == 'createar') {
+                        if (!$_GET['section'] || $_GET['section'] == 'createar') {
 ?>
-                                <div class="tab createar">
-                                    <h2><?=trnslt('zipsite')?></h2>
+                            <div class="tab createar">
+                                <h2><?=trnslt('zipsite')?></h2>
 <?php
-                                    if (count($_SESSION['history'])) {
+                                if (count($_SESSION['history'])) {
 ?>
-                                        <section class="section las_archive_log">
-                                            <div class="section__headline"><?=trnslt('zip_log')?>:</div>
-                                            <div class="section__inner">
-                                                <div class="row archivelog">
-                                                    <div>
-<?php
-														foreach($_SESSION['history'] as $line){
-															echo $line.'<br />';
-														}
-														$_SESSION['history'] = array();
-?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </section>
-<?php
-                                    }
-?>
-                                    <section class="section count_files">
-                                        <div class="section__headline"><?=trnslt('count_files')?>:</div>
+                                    <section class="section las_archive_log">
+                                        <div class="section__headline"><?=trnslt('zip_log')?>:</div>
                                         <div class="section__inner">
-                                            <div class="row">
-                                                <?=trnslt('full_files')?> <b><?=$all_count?></b>
-                                                <input type="checkbox" id="get_count" name="get_count" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_count.checked)window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&get_count=1'?>'; else window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section']?>'" />
-                                                <?=trnslt('show_full_count_files')?>
-                                            </div>
-                                        </div>
-                                    </section>
-                                    
-                                    <form class="create_archive" action="<?=$url?>" method="POST">
-                                        <section class="section choose_zip">
-                                            <div class="section__headline"><?=trnslt('choose_zip')?>:</div>
-                                            <div class="section__inner">
-                                                <div class="row">
-                                                    <input class="addtozip" type="radio" name="addtozip" value="new" checked="checked" /> <?=trnslt('create_new_zip')?><br />
+                                            <div class="row archivelog">
+                                                <div>
 <?php
-                                                    if (count($archive_exist)) {
-                                                        foreach($archive_exist as $zzz){
-                                                            if (!is_dir($pathname.'/'.$zzz) && strstr($zzz, 'zip')){
-?>
-                                                                <input class="addtozip" type="radio" name="addtozip" value="<?=$zzz?>" /> <?=trnslt('add_to_zip')?> <b><?=$zzz?></b><br />
-<?php
-                                                            }
-                                                        }
+                                                    foreach ($_SESSION['history'] as $line) {
+                                                        echo $line.'<br />';
                                                     }
-                                                    
-                                                    unset($_POST['exept'][array_search('.',$_POST['exept'])],$_POST['exept'][array_search('..',$_POST['exept'])]);
+                                                    $_SESSION['history'] = array();
 ?>
                                                 </div>
-                                            </div>
-                                        </section>
-                                        
-                                        <section class="section choose_dir">
-                                            <div class="section__headline"><?=trnslt('choose_dir')?>:</div>
-                                            <div class="section__inner">
-                                                <div class="row">
-                                                    <?=show_root_dir($pathname.'/', $dirs);?>
-                                                    <div class="clear"><br /></div>
-                                                    <b><?=trnslt('enter_subdir')?></b>
-                                                    <input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%" /> <br />
-                                                </div>
-                                            </div>
-                                        </section>
-                                        
-                                        <section class="section dir_exeption">
-                                            <div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
-                                            <div class="section__inner exeption">
-                                                ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")
-                                                <div class="row">
-                                                    <input type="text" name="exept" value="<?=implode('|',$_POST['exept'])?>" style="width:99%" />
-                                                </div>
-                                            </div>
-                                        </section>
-                                        
-                                        <div class="clear"></div>
-                                        
-                                        <!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
-                                        <input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" onclick="startAarchivation(); return false;" />
-                                        
-                                        <div class="working_options">
-                                            <div class="optns"><?=trnslt('dont_zip_more')?> <b><?=$_SESSION['options']['max_size']?></b> kb</div>
-                                            <div class="optns"><?=trnslt('zip_max_files_count')?>: <b><?=$_SESSION['options']['files_for_iteration']?></b> <?=trnslt('ajax_load_step')?></div>
-                                            <a href="//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section=options'?>" title="<?=trnslt('change_options')?>"><?=trnslt('change_options')?></a>
-                                        </div>
-                                    </form>
-                                </div>
-<?php
-                            } elseif($_GET['section'] == 'extractar') {
-?>
-                                <div class="tab extractar">
-                                    <h2><?=trnslt('unziper')?></h2>
-                                    <section class="section extractar zip_found">
-                                        <div class="section__headline"><?=trnslt('zip_found')?>:</div>
-                                        <div class="section__inner">
-                                            <div class="row">
-<?php
-                                                if (count($archive_exist)) {
-                                                    foreach ($archive_exist as $dir) {
-?>
-                                                        <form class="zip clear" enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-                                                            <input class="selectedzip" type="hidden" name="zipfile" value="<?=$dir?>" checked="checked" />
-                                                            <span title="<?=number_format(filesize($pathname.'/'.$dir)/1024, 2, '.', ' ')?> кб"><b><?=$dir?></b></span>
-                                                            <input class="right inside" type="submit" name="delzip" value="<?=trnslt('dell')?>" />
-                                                            <input class="right inside" type="submit" name="unzip" value="<?=trnslt('unzip')?>" />
-                                                            <div class="clear"></div>
-                                                        </form>
-<?php
-                                                    }
-                                                } else {
-                                                    echo trnslt('zip_not_found');
-                                                }
-?>
                                             </div>
                                         </div>
                                     </section>
-                                </div>
 <?php
-                            } elseif ($_GET['section'] == 'filemanager') {
+                                }
 ?>
-                                <div class="tab filemanager">
-                                    <h2><?=trnslt('file_manager')?></h2>
-                                    
-                                    <section class="section size_files">
-                                        <div class="section__headline"><?=trnslt('size_files')?>:</div>
-                                        <div class="section__inner">
-                                            <div class="row">
-<?php
-                                                $set_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'].'&get_size=1';
-                                                $no_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'];
-                                                
-                                                $free_space = number_format(round(disk_free_space($pathname)/(1024*1024*1024)), 0, ',', ' ');
-                                                $total_space = number_format(round(disk_total_space($pathname)/(1024*1024*1024)), 0, ',', ' ');
-?>
-                                                <input type="checkbox" id="get_size" name="get_size" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'" />
-                                                <?=trnslt('show_full_size_dir')?>
-                                                <?=(!$_GET['get_size'])?'<script>document.getElementById("get_size").checked = false;</script>':''?>
-                                            </div>
-                                        </div>
-                                    </section>
-                                    
-                                    <section class="section file_manager">
-                                        <div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?=$pathname .'/'.$_GET['fmdir']?>:</div>
-                                        <div class="section__inner">
-                                            <div class="row">
-                                                <?=show_root_dir_and_files($pathname.($_GET['fmdir']?('/'.$_GET['fmdir']):'').'/', $_GET['fmdir']);?>
-                                            </div>
-                                            <?=$free_space.'mb / '.$total_space.'mb';?>
-                                        </div>
-                                    </section>
-                                </div>
-<?php
-                            } elseif ($_GET['section'] == 'options') {
-?>
-                                <div class="tab options">
-                                    <h2><?=trnslt('settings')?></h2>
-                                    <section class="section language">
-                                        <div class="section__headline"><?=trnslt('language')?>:</div>
-                                        <div class="section__inner">
-                                            <div class="row">
-                                                <form class="lang_form" action="<?=$url?>" method="GET">
-                                                    <?=trnslt('language')?>:
-                                                    <select name="lang" onchange="this.form.submit()">
-                                                        <option value="ua" <?=($l=='ua')?'selected="selected"':''?>>Українська</option>
-                                                        <option value="en" <?=($l=='en')?'selected="selected"':''?>>English</option>
-                                                        <option value="ru" <?=($l=='ru')?'selected="selected"':''?>>Русский</option>
-                                                    </select>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </section>
-                                
-                                    <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-                                        <section class="section show_log_options">
-                                            <div class="section__headline"><?=trnslt('show_log')?>:</div>
-                                            <div class="section__inner">
-                                                <div class="row">
-                                                    <input type="checkbox" name="show_ok" value='1' <?if($_SESSION['hist']['OK']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_ok')?> |
-                                                    <input type="checkbox" name="show_notice" value='1' <?if($_SESSION['hist']['NOTICE']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_notice')?> |
-                                                    <input type="checkbox" name="show_error" value='1' <?if($_SESSION['hist']['ERROR']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_error')?>
-                                                    <div class="clear"></div>
-                                                </div>
-                                            </div>
-                                        </section>
-                                        
-                                        <section class="section confirm_window_options">
-                                            <div class="section__headline"><?=trnslt('show_confirm_window')?>:</div>
-                                            <div class="section__inner">
-                                                <div class="row">
-                                                    <input type="checkbox" name="confirm_unzip" value='1' <?if($_SESSION['options']['confirm_unzip']):?>checked="checked"<?endif;?> /> <?=trnslt('unziping_arch')?> |
-                                                    <input type="checkbox" name="confirm_delzip" value='1' <?if($_SESSION['options']['confirm_delzip']):?>checked="checked"<?endif;?> /> <?=trnslt('deleting_arch')?>
-                                                    <div class="clear"></div>
-                                                </div>
-                                            </div>
-                                        </section>
-                                        
-                                        <section class="section dont_zip_file_more_than">
-                                            <div class="section__headline"><?=trnslt('dont_zip_more')?>:</div>
-                                            <div class="section__inner">
-                                                <div class="row">
-                                                    <input type="number" min="1" max="512000" name="max_size" value="<?=$_SESSION['options']['max_size']?>" required /> kb
-                                                </div>
-                                            </div>
-                                        </section>
-                                        
-                                        <section class="section zip_max_files_count">
-                                            <div class="section__headline"><?=trnslt('zip_max_files_count')?>:</div>
-                                            <div class="section__inner">
-                                                <div class="row">
-                                                    <?=trnslt('limit')?> <input type="number" min="1" max="20000" name="files_for_iteration" value="<?=$_SESSION['options']['files_for_iteration']?>" required /> <?=trnslt('ajax_load_step')?>
-                                                </div>
-                                            </div>
-                                        </section>
-                                        
-                                        <input class="right " type="submit" name="log_submit" value='<?=trnslt('show_log_save')?>' />
-                                        <div class="clear"></div>
-                                    </form>
-                                </div>
-<?php
-                            }
-?>
-                        </div>
-<?php
-                    } else {
-                        if (class_exists('ZipArchive')) {
-?>
-                            <header>
-                                <a class="logo" href="<?=$url?>">ARCHIVER</a>
-                                <div class="clear"></div>
-                            </header>
-<?php
-                            if ($_SESSION['pass_count'] > 0) {
-                                check_new_vers(VERSION);
-                                if($_POST['pswrd'])
-                                    check_pass($pass);
-                            
-                                show_messages();
-?>
-                                <section class="section login login_form">
-                                    <div class="section__headline"><?=trnslt('enter_pass')?>:</div>
+                                <section class="section count_files">
+                                    <div class="section__headline"><?=trnslt('count_files')?>:</div>
                                     <div class="section__inner">
                                         <div class="row">
-                                            <form name="login" action="<?=$url?>" method="POST">
-                                                <input type="password" name="pswrd" value="" />
-                                                <input class="inside" type="submit" name="gopass" value="<?=trnslt('login')?>" />
-                                            </form>
+                                            <?=trnslt('full_files')?> <b><?=$all_count?></b>
+                                            <input type="checkbox" id="get_count" name="get_count" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_count.checked)window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&get_count=1'?>'; else window.location='<?='//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section']?>'" />
+                                            <?=trnslt('show_full_count_files')?>
                                         </div>
+                                    </div>
+                                </section>
+                                
+                                <form class="create_archive" action="<?=$url?>" method="POST">
+                                    <section class="section choose_zip">
+                                        <div class="section__headline"><?=trnslt('choose_zip')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row">
+                                                <input class="addtozip" type="radio" name="addtozip" value="new" checked="checked" /> <?=trnslt('create_new_zip')?><br />
+<?php
+                                                if (count($archive_exist)) {
+                                                    foreach ($archive_exist as $zzz) {
+                                                        if (!is_dir($pathname.'/'.$zzz) && strstr($zzz, 'zip')) {
+?>
+                                                            <input class="addtozip" type="radio" name="addtozip" value="<?=$zzz?>" /> <?=trnslt('add_to_zip')?> <b><?=$zzz?></b><br />
+<?php
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                unset($_POST['exept'][array_search('.',$_POST['exept'])],$_POST['exept'][array_search('..',$_POST['exept'])]);
+?>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <section class="section choose_dir">
+                                        <div class="section__headline"><?=trnslt('choose_dir')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row">
+                                                <?=show_root_dir($pathname.'/', $dirs);?>
+                                                <div class="clear"><br /></div>
+                                                <b><?=trnslt('enter_subdir')?></b>
+                                                <input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%" /> <br />
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <section class="section dir_exeption">
+                                        <div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
+                                        <div class="section__inner exeption">
+                                            ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")
+                                            <div class="row">
+                                                <input type="text" name="exept" value="<?=implode('|',$_POST['exept'])?>" style="width:99%" />
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <div class="clear"></div>
+                                    
+                                    <!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
+                                    <input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" onclick="startAarchivation(); return false;" />
+                                    
+                                    <div class="working_options">
+                                        <div class="optns"><?=trnslt('dont_zip_more')?> <b><?=$_SESSION['options']['max_size']?></b> kb</div>
+                                        <div class="optns"><?=trnslt('zip_max_files_count')?>: <b><?=$_SESSION['options']['files_for_iteration']?></b> <?=trnslt('ajax_load_step')?></div>
+                                        <a href="//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section=options'?>" title="<?=trnslt('change_options')?>"><?=trnslt('change_options')?></a>
+                                    </div>
+                                </form>
+                            </div>
+<?php
+                        } elseif($_GET['section'] == 'extractar') {
+?>
+                            <div class="tab extractar">
+                                <h2><?=trnslt('unziper')?></h2>
+                                <section class="section extractar zip_found">
+                                    <div class="section__headline"><?=trnslt('zip_found')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+<?php
+                                            if (count($archive_exist)) {
+                                                foreach ($archive_exist as $dir) {
+?>
+                                                    <form class="zip clear" enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+                                                        <input class="selectedzip" type="hidden" name="zipfile" value="<?=$dir?>" checked="checked" />
+                                                        <span title="<?=number_format(filesize($pathname.'/'.$dir)/1024, 2, '.', ' ')?> кб"><b><?=$dir?></b></span>
+                                                        <input class="right inside" type="submit" name="delzip" value="<?=trnslt('dell')?>" />
+                                                        <input class="right inside" type="submit" name="unzip" value="<?=trnslt('unzip')?>" />
+                                                        <div class="clear"></div>
+                                                    </form>
+<?php
+                                                }
+                                            } else {
+                                                echo trnslt('zip_not_found');
+                                            }
+?>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+<?php
+                        } elseif ($_GET['section'] == 'filemanager') {
+?>
+                            <div class="tab filemanager">
+                                <h2><?=trnslt('file_manager')?></h2>
+                                
+                                <section class="section size_files">
+                                    <div class="section__headline"><?=trnslt('size_files')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+<?php
+                                            $set_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'].'&get_size=1';
+                                            $no_count = '//'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='.$_GET['section'].'&fmdir='.$_GET['fmdir'];
+                                            
+                                            $free_space = number_format(round(disk_free_space($pathname)/(1024*1024*1024)), 0, ',', ' ');
+                                            $total_space = number_format(round(disk_total_space($pathname)/(1024*1024*1024)), 0, ',', ' ');
+?>
+                                            <input type="checkbox" id="get_size" name="get_size" value='1' <?=(!$_POST['submit'])?'checked="checked"':''?> onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'" />
+                                            <?=trnslt('show_full_size_dir')?>
+                                            <?=(!$_GET['get_size'])?'<script>document.getElementById("get_size").checked = false;</script>':''?>
+                                        </div>
+                                    </div>
+                                </section>
+                                
+                                <section class="section file_manager">
+                                    <div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?=$pathname .'/'.$_GET['fmdir']?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <?=show_root_dir_and_files($pathname.($_GET['fmdir']?('/'.$_GET['fmdir']):'').'/', $_GET['fmdir']);?>
+                                        </div>
+                                        <?=$free_space.'mb / '.$total_space.'mb';?>
+                                    </div>
+                                </section>
+                            </div>
+<?php
+                        } elseif ($_GET['section'] == 'options') {
+?>
+                            <div class="tab options">
+                                <h2><?=trnslt('settings')?></h2>
+                                <section class="section language">
+                                    <div class="section__headline"><?=trnslt('language')?>:</div>
+                                    <div class="section__inner">
                                         <div class="row">
                                             <form class="lang_form" action="<?=$url?>" method="GET">
                                                 <?=trnslt('language')?>:
@@ -1584,30 +1495,115 @@
                                         </div>
                                     </div>
                                 </section>
+                            
+                                <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+                                    <section class="section show_log_options">
+                                        <div class="section__headline"><?=trnslt('show_log')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row">
+                                                <input type="checkbox" name="show_ok" value='1' <?if($_SESSION['hist']['OK']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_ok')?> |
+                                                <input type="checkbox" name="show_notice" value='1' <?if($_SESSION['hist']['NOTICE']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_notice')?> |
+                                                <input type="checkbox" name="show_error" value='1' <?if($_SESSION['hist']['ERROR']):?>checked="checked"<?endif;?> /> <?=trnslt('show_log_error')?>
+                                                <div class="clear"></div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <section class="section confirm_window_options">
+                                        <div class="section__headline"><?=trnslt('show_confirm_window')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row">
+                                                <input type="checkbox" name="confirm_unzip" value='1' <?if($_SESSION['options']['confirm_unzip']):?>checked="checked"<?endif;?> /> <?=trnslt('unziping_arch')?> |
+                                                <input type="checkbox" name="confirm_delzip" value='1' <?if($_SESSION['options']['confirm_delzip']):?>checked="checked"<?endif;?> /> <?=trnslt('deleting_arch')?>
+                                                <div class="clear"></div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <section class="section dont_zip_file_more_than">
+                                        <div class="section__headline"><?=trnslt('dont_zip_more')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row">
+                                                <input type="number" min="1" max="512000" name="max_size" value="<?=$_SESSION['options']['max_size']?>" required /> kb
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <section class="section zip_max_files_count">
+                                        <div class="section__headline"><?=trnslt('zip_max_files_count')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row">
+                                                <?=trnslt('limit')?> <input type="number" min="1" max="20000" name="files_for_iteration" value="<?=$_SESSION['options']['files_for_iteration']?>" required /> <?=trnslt('ajax_load_step')?>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <input class="right " type="submit" name="log_submit" value='<?=trnslt('show_log_save')?>' />
+                                    <div class="clear"></div>
+                                </form>
+                            </div>
 <?php
-                            } else {
-                                echo show_log('ERROR', trnslt('access_denied'));
-                            }
-                        } else {
-                            echo '<h1 align="center">'.trnslt('zip_sorry').'</h1>';
                         }
-                    }
 ?>
-                </div>
-                <footer class="footer" style='position:absolute'>
-                    <div class="page_gen">
-                        <?=trnslt('page_gen').' '.round(microtime(1)-$timestart, 4).' '.trnslt('sec').'.<br />'?>
                     </div>
-                    <a class="kamicadze"  href="<?=preg_replace("/\?.+/",'',$url)?>?del=itself" title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
-                    
-                    <div class="wrapper">
-                        <span style="float: left;">&copy; <?=date('Y')?> <b>ARCHIVER</b> <?=trnslt('develop')?> <u>Lesyuk Sergiy</u>. All Right Reserved.</span>
-                        <span style="float: right;"><?=trnslt('your_vers')?> <?=VERSION?></span>
-                        <div class="clear"></div>
-                    </div>
-                </footer>
-            </body>
-        </html>
 <?php
-    }
+                } else {
+                    if (class_exists('ZipArchive')) {
 ?>
+                        <header>
+                            <a class="logo" href="<?=$url?>">ARCHIVER</a>
+                            <div class="clear"></div>
+                        </header>
+<?php
+                        if ($_SESSION['pass_count'] > 0) {
+                            check_new_vers(VERSION);
+                            if($_POST['pswrd'])
+                                check_pass($pass);
+                        
+                            show_messages();
+?>
+                            <section class="section login login_form">
+                                <div class="section__headline"><?=trnslt('enter_pass')?>:</div>
+                                <div class="section__inner">
+                                    <div class="row">
+                                        <form name="login" action="<?=$url?>" method="POST">
+                                            <input type="password" name="pswrd" value="" />
+                                            <input class="inside" type="submit" name="gopass" value="<?=trnslt('login')?>" />
+                                        </form>
+                                    </div>
+                                    <div class="row">
+                                        <form class="lang_form" action="<?=$url?>" method="GET">
+                                            <?=trnslt('language')?>:
+                                            <select name="lang" onchange="this.form.submit()">
+                                                <option value="ua" <?=($l=='ua')?'selected="selected"':''?>>Українська</option>
+                                                <option value="en" <?=($l=='en')?'selected="selected"':''?>>English</option>
+                                                <option value="ru" <?=($l=='ru')?'selected="selected"':''?>>Русский</option>
+                                            </select>
+                                        </form>
+                                    </div>
+                                </div>
+                            </section>
+<?php
+                        } else {
+                            echo show_log('ERROR', trnslt('access_denied'));
+                        }
+                    } else {
+                        echo '<h1 align="center">'.trnslt('zip_sorry').'</h1>';
+                    }
+                }
+?>
+            </div>
+            <footer class="footer" style='position:absolute'>
+                <div class="page_gen">
+                    <?=trnslt('page_gen').' '.round(microtime(1)-$timestart, 4).' '.trnslt('sec').'.<br />'?>
+                </div>
+                <a class="kamicadze"  href="<?=preg_replace("/\?.+/",'',$url)?>?del=itself" title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
+                
+                <div class="wrapper">
+                    <span style="float: left;">&copy; <?=date('Y')?> <b>ARCHIVER</b> <?=trnslt('develop')?> <u>Lesyuk Sergiy</u>. All Right Reserved.</span>
+                    <span style="float: right;"><?=trnslt('your_vers')?> <?=VERSION?></span>
+                    <div class="clear"></div>
+                </div>
+            </footer>
+        </body>
+    </html>
