@@ -13,6 +13,8 @@ test2/*
 test3/*
 dellall.php
 *.zip
+.gitattributes
+.htaccess
 
 
 *.pydevproject
