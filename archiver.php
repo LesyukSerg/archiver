@@ -1,5 +1,5 @@
 <?php
-    define('VERSION', '201408121140');
+    define('VERSION', '201409021324');
     date_default_timezone_set('Europe/Kiev');
     session_start();
     //set_time_limit(2);
@@ -656,7 +656,11 @@
                     if (is_dir($dir.$file)) {
                         # пропуск директорій '.' і '..'
                         if (!in_array($file, $_POST['exept']) && $file != '.git') {
-                            $zfile = $file;
+                            $zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
+                            /* if (preg_match('/[А-Яа-я]+/', $file)) {
+                            } else {
+                                $zfile = $file;
+                            } */
                             addFolderToZip($dir.$file.'/', $zipArchive, $zipdir.$zfile . '/', $cnt, $fp);
                         }
                     } else {
@@ -668,8 +672,13 @@
                         if ($file !== basename(__FILE__)) {
                             if ($cnt > $_SESSION['options']['min']) {
                                 if (filesize($dir.$file) < $_SESSION['options']['max_size']*1024 && $file != 'archive.log') {
-                                    $zfile = $file;
-                                    //$zfile = iconv(mb_detect_encoding($file), 'CP866//TRANSLIT//IGNORE', $file);
+                                    //$zfile = $file;
+                                    $zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
+                                    /* if (preg_match('/[А-Яа-я]+/', $file)) {
+                                    } else {
+                                        $zfile = $file;
+                                    } */
+                                    //$zfile = iconv(mb_detect_encoding($file), );
 
                                     if ($zipArchive->addFile($dir.$file, $zipdir.$zfile)) {
                                         if ($_SESSION['hist']['OK'])
