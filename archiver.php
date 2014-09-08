@@ -1,7 +1,9 @@
 <?php
-    define('VERSION', '201409021324');
+    define('VERSION', '201409081107');
     date_default_timezone_set('Europe/Kiev');
     session_start();
+    //set_time_limit(2);
+    ini_set('memory_limit', '-1');
     //set_time_limit(2);
     $timestart = microtime(1);
     //$pass = '238a0fa7c18cd78ca1f8d14c260ee02b';
@@ -98,6 +100,8 @@
             'extract_confirm' => 'Ви дійсно хочете розархівувати цей архів?',
             'extracting_archive' => 'Розархівація архіву ',
             'change_options' => 'змінити',
+            'files' => 'файлів',
+            'zip_part_files_count' => 'Розбивати архів на частини'
         ),
         'en' => array(
             'language' => 'Language',
@@ -184,6 +188,9 @@
             'extract_confirm' => 'Are you sure you want extract this archive?',
             'extracting_archive' => 'Extracting archive ',
             'change_options' => 'edit',
+            'files' => 'files',
+            'zip_part_files_count' => 'Split the archive into parts'
+            
         ),
         'ru' => array(
             'language' => 'Язык',
@@ -269,6 +276,8 @@
             'extract_confirm' => 'Вы действительно хотите разархивировать этот архив?',
             'extracting_archive' => 'Разархивация архива ',
             'change_options' => 'изменить',
+            'files' => 'файлов',
+            'zip_part_files_count' => 'Разбивать архив на части'
         )
     );
     #--- /массив перекладів -------------------------------------------------------
@@ -314,6 +323,7 @@
         if (!isset($_SESSION['options']['files_for_iteration'])) $_SESSION['options']['files_for_iteration'] = 1000;
         if (!isset($_SESSION['options']['confirm_unzip'])) $_SESSION['options']['confirm_unzip'] = 1;
         if (!isset($_SESSION['options']['confirm_delzip'])) $_SESSION['options']['confirm_delzip'] = 1;
+        if (!isset($_SESSION['options']['zip_part_files'])) $_SESSION['options']['zip_part_files'] = 200000;
     }
     
     # функція визначення мови --------------------------------------------
@@ -656,7 +666,7 @@
                     if (is_dir($dir.$file)) {
                         # пропуск директорій '.' і '..'
                         if (!in_array($file, $_POST['exept']) && $file != '.git') {
-                            $zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
+                            //$zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
                             /* if (preg_match('/[А-Яа-я]+/', $file)) {
                             } else {
                                 $zfile = $file;
@@ -665,39 +675,39 @@
                         }
                     } else {
                         # якщо cnt більше max то зупинка 
-                        if ($cnt >= $_SESSION['options']['max']) {
+                        if ($cnt >=$_SESSION['options']['max']) {
                             break;
                         }
-                        # якщо cnt більше max то зупинка 
-                        if ($file !== basename(__FILE__)) {
-                            if ($cnt > $_SESSION['options']['min']) {
-                                if (filesize($dir.$file) < $_SESSION['options']['max_size']*1024 && $file != 'archive.log') {
-                                    //$zfile = $file;
-                                    $zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
-                                    /* if (preg_match('/[А-Яа-я]+/', $file)) {
-                                    } else {
-                                        $zfile = $file;
-                                    } */
-                                    //$zfile = iconv(mb_detect_encoding($file), );
-
-                                    if ($zipArchive->addFile($dir.$file, $zipdir.$zfile)) {
-                                        if ($_SESSION['hist']['OK'])
-                                            $_SESSION['history'][] = '<span class="green">'.(1000000+$cnt).' - '.$dir.$file.' OK</span><br />\n';
-                                    } else {
-                                        if ($_SESSION['hist']['ERROR'])
-                                            $_SESSION['history'][] = '<span class="red">'.trnslt('add_file_err').' '.$dir.$file.'</span><br />\n';
-                                    }
-                                    
-                                    fwrite($fp, (1000000+$cnt).' - '.$dir.$file.' OK\n');
+                        
+                        # якщо cnt більше max то зупинка                         
+                        if ($cnt > $_SESSION['options']['min']) {
+                            if (filesize($dir.$file) < $_SESSION['options']['max_size']*1024 && $file != 'archive.log') {
+                                //$zfile = $file;
+                                //$zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
+                                $zfile = iconv('utf-8', 'CP866//TRANSLIT//IGNORE', $file);
+                                /* if (preg_match('/[А-Яа-я]+/', $file)) {
                                 } else {
-                                    if ($_SESSION['hist']['NOTICE'])
-                                        $_SESSION['history'][] = '<span class="grey">'.$dir.$file.' - '.trnslt('skip').'</span><br />\n';
-                                    
-                                    fwrite($fp, $dir.$file.' - '.trnslt('skip').'\n');
+                                    $zfile = $file;
+                                } */
+                                //$zfile = iconv(mb_detect_encoding($file), );
+
+                                if ($zipArchive->addFile($dir.$file, $zipdir.$zfile)) {
+                                    if ($_SESSION['hist']['OK'])
+                                        $_SESSION['history'][] = '<span class="green">'.(1000000+$cnt).' - '.$dir.$file.' OK</span><br />\n';
+                                } else {
+                                    if ($_SESSION['hist']['ERROR'])
+                                        $_SESSION['history'][] = '<span class="red">'.trnslt('add_file_err').' '.$dir.$file.'</span><br />\n';
                                 }
+                                
+                                //fwrite($fp, (1000000+$cnt).' - '.$dir.$file.' OK\n');
+                            } else {
+                                if ($_SESSION['hist']['NOTICE'])
+                                    $_SESSION['history'][] = '<span class="grey">'.$dir.$file.' - '.trnslt('skip').'</span><br />\n';
+                                
+                                //fwrite($fp, $dir.$file.' - '.trnslt('skip').'\n');
                             }
-                            $cnt++;
                         }
+                        $cnt++;
                     }
                 }
                 closedir($dh);
@@ -840,6 +850,7 @@
         //$_SESSION['options']['max'] = $_POST['max'];
         $_SESSION['options']['max_size'] = $_POST['max_size'];
         $_SESSION['options']['files_for_iteration'] = $_POST['files_for_iteration'];
+        $_SESSION['options']['zip_part_files'] = $_POST['zip_part_files'];
         $_SESSION['options']['confirm_unzip'] = $_POST['confirm_unzip']?1:0;
         $_SESSION['options']['confirm_delzip'] = $_POST['confirm_delzip']?1:0;
         
@@ -1088,16 +1099,27 @@
                         }).success(function (data) {
                             clearInterval(intrvl);
                             
+                            skipfiles = parseInt($(data).find('#cntfls').html());
+                            sendata['skipfiles'] = skipfiles;
+                            
                             if (!all_files) {
                                 all_files = parseInt($(data).find('#allfls').html());
                                 archive = $(data).find('#archv').html();
                                 sendata['addtozip'] = archive;
+                                sendata['originalzip'] = archive;
                             }
                             
-                            skipfiles = parseInt($(data).find('#cntfls').html());
-                            sendata['skipfiles'] = skipfiles;
+                            // разбивание на архива части ---------------
+                            var part = Math.floor(skipfiles/<?=$_SESSION['options']['zip_part_files']?>);
+                            if (part) {
+                                if (part < 10) {
+                                    part = '0'+part;
+                                }
+                                sendata['addtozip'] = sendata['originalzip'].replace('.zip', '_'+part+'.zip');
+                            }
+                            // разбивание на архива части ---------------
                             
-                            console.log(skipfiles, all_files, archive);
+                            console.log(skipfiles, all_files, sendata['addtozip'], part);
                             
                             if (skipfiles < all_files) {
                                 $('.messages .progress').css('width', (100*skipfiles/all_files)+'%');
@@ -1298,6 +1320,63 @@
                 .working_options { color: #888888; font-size: 10px; text-align: center }
                 .working_options a { color: #E7EAED; font-size: 13px }
                 .working_options a:hover { text-decoration: none }
+                
+                @media only screen and (max-width: 800px) {
+                    body{ font: 18px/24px Verdana,Arial,Tahoma,sans-serif; }
+                    .nav li a, .nav li span { font-size: 0; line-height: 0; padding: 0; }
+                    
+                    .nav li  { padding: 8px 12px; }
+                    .nav li#options { padding: 13px 24px; }
+                    .nav li#filemanager { padding: 8px 16px; }
+                    .nav li a { padding: 9px 12px; }
+
+                    .crt{ width: 1.500em; height: 0.500em; border: 0.250em solid #2c2c2c; border-top: none; position: absolute; bottom: 0.188em; position: relative; margin-top:1em; }
+                    .crt:before{ content: ''; position: absolute; width: 0.438em; height: 0.625em; background: #2c2c2c; top: -0.875em; left: 0.563em; }
+                    .crt:after{ width: 0em; height: 0em; content: ''; position: absolute; border-style: solid; border-color: #2c2c2c transparent transparent transparent; border-width: 0.500em; left: 0.250em; top: -0.250em; }
+                    
+                    .extr{ width: 1.500em; height: 0.500em; border: 0.250em solid #2c2c2c; border-top: none; position: absolute; bottom: 0.188em; position: relative; margin-top:1em; }
+                    .extr:before{ content: ''; position: absolute; width: 0.438em; height: 0.625em; background: #2c2c2c; top: -0.4em; left: 0.54em; }
+                    .extr:after{ width: 0em; height: 0em; content: ''; position: absolute; border-style: solid; border-color: transparent transparent #2c2c2c transparent; border-width: 0.500em; left: 0.250em; top: -1.4em; }
+                    
+                    .tls { margin-left: -0.4em; margin-top: -0.3em; font-size: 21px; background: #2C2C2C; height: 0.3em; width: 0.15em; position: relative; -webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -o-transform: rotate(-45deg); -ms-transform: rotate(-45deg); transform: rotate(-45deg); -webkit-box-shadow: 0 0.25em 0 0 #2C2C2C,0 -0.25em 0 0 #2C2C2C,0 -0.55em 0 0.07em #2C2C2C,0 0.55em 0 0.1em #2C2C2C,0 0.9em 0 0.1em #2C2C2C,0 1.2em 0 0.1em #2C2C2C; box-shadow: 0 0.25em 0 0 #2C2C2C,0 -0.25em 0 0 #2C2C2C,0 -0.55em 0 0.07em #2C2C2C,0 0.55em 0 0.1em #2C2C2C,0 0.9em 0 0.1em #2C2C2C,0 1.2em 0 0.1em #2C2C2C; }
+                    .tls::before { height: 1.5em; width: 0.3em; -webkit-transform: rotate(90deg); -moz-transform: rotate(90deg); -o-transform: rotate(90deg); -ms-transform: rotate(90deg); transform: rotate(90deg); background: #2C2C2C; position: absolute; content: ""; top: -0.2em; left: -0.3em; }
+                    .tls::after { height: 0.3em; width: 0.3em; -webkit-transform: rotate(90deg); -moz-transform: rotate(90deg); -o-transform: rotate(90deg); -ms-transform: rotate(90deg); transform: rotate(90deg); position: absolute; border-left: 0.2em solid #2C2C2C; border-bottom: 0.4em solid #2C2C2C; border-right: 0.2em solid #2C2C2C; border-top: 0.05em solid transparent; content: ""; top: 0.17em; left: 0.55em; border-top-right-radius: 25% 25%; border-top-left-radius: 25% 25%; border-bottom-left-radius: 50% 50%; border-bottom-right-radius: 50% 50%; }
+
+                    
+                    .fm { box-shadow: 0 0 0 0.2em #2c2c2c, 0 -0.2em 0 0.2em #2c2c2c; height: 1.4em; margin: 15% auto 2%; position: relative; width: 2em; }
+                    .fm:after{ content:""; position: absolute; left:.23em; top:.3em; width: .35em; height: .35em; background:#2c2c2c; box-shadow:.6em 0 0 #2c2c2c,1.2em 0 0 #2c2c2c, 0 .5em 0 #2c2c2c,.6em .5em 0 #2c2c2c,1.2em .5em 0 #2c2c2c; }
+
+                    .sttng{ position: relative; width: 0.35em; height: 0.8em; background: #2C2C2C; -webkit-transform: rotate(45deg); -moz-transform: rotate(45deg); -o-transform: rotate(45deg); -ms-transform: rotate(45deg); transform: rotate(45deg); font-size: 1.4em; }
+                    .sttng:before{ content: ""; position: absolute; top: -0.35em; left: 0; width: 0.35em; height: 0.3em; background: #2C2C2C; border-radius: 0.1em; }
+                    .sttng:after{ content: ""; position: absolute; width: 0; height: 0; top: 0.85em; left: 0; border: solid 0.2em #2C2C2C; border-bottom-color: transparent; border-left-color: transparent; border-right-color: transparent; border-top: solid 0.45em #2C2C2C; }
+                    
+                    .ext { background: #2C2C2C; font-size: 12px; position: relative; width: 1em; height: 1em; margin-left: -0.7em; }
+                    .ext::before { bottom: -0.666em; left: 0.8em; position: absolute; border-left: 1.2em solid #2C2C2C; border-top: 1.2em solid rgba(44, 44, 44, 0); border-bottom: 1.2em solid rgba(44, 44, 44, 0); content: ""; }
+                
+                    input.archivatorstart { width: 50%; }
+                }
+                
+                @media only screen and (max-width: 456px) {
+                    .nav li { padding: 2px 4px; }
+                    .nav li#filemanager { padding: 6px 8px; }
+                    .nav li#options { padding: 7px 8px; transform: scale(0.8, 0.8); }
+                    .nav li a { padding: 9px 6px; transform: scale(0.8, 0.8); }
+                    
+                   
+                    
+                    .fm:after { box-shadow: 0.4em 0 0 #2c2c2c, 0 0.4em 0 #2c2c2c, 0.4em 0.4em 0 #2c2c2c; width: 0.3em; }
+                    .fm { box-shadow: 0 0 0 0.2em #2c2c2c, 0 -0.2em 0 0.1em #2c2c2c; height: 1.2em; margin: 0 auto; width: 1.15em; }
+                    
+                    .extr { width: 1em; }
+                    .extr:before { left: 0.25em; top: -0.3em; }
+                    .extr:after { left: -0.01em; top: -1.2em; }
+                    
+                    .crt { width: 1em; }
+                    .crt:before { left: 0.27em; top: -0.7em; }
+                    .crt:after { left: -0.01em; top: -0.2em; }
+                    
+                    input.archivatorstart { width: 70%; }
+                }
             </style>
             <title>Archiver</title>
         </head>
@@ -1314,11 +1393,11 @@
                     
                         <nav>
                             <menu class="nav">
-                                <li id="createar" <?=(!$_GET['section'] || $_GET['section'] == 'createar')?'class="active"':''?> ><span><?=trnslt('create_arch')?></span></li>
-                                <li id="extractar" <?=($_GET['section'] == 'extractar')?'class="active"':''?> ><span><?=trnslt('extract_arch')?></span></li>
-                                <li id="filemanager" <?=($_GET['section'] == 'filemanager')?'class="active"':''?> ><span><?=trnslt('file_manager')?></span></li>
-                                <li id="options" <?=($_GET['section'] == 'options')?'class="active"':''?> ><span><?=trnslt('settings')?></span></li>
-                                <li><a href="<?=$url?>?logout=ok"><?=trnslt('exit')?></a></li>
+                                <li id="createar" <?=(!$_GET['section'] || $_GET['section'] == 'createar')?'class="active"':''?> ><div class="crt"></div><span><?=trnslt('create_arch')?></span></li>
+                                <li id="extractar" <?=($_GET['section'] == 'extractar')?'class="active"':''?> ><div class="extr"></div><span><?=trnslt('extract_arch')?></span></li>
+                                <li id="filemanager" <?=($_GET['section'] == 'filemanager')?'class="active"':''?> ><div class="fm"></div><span><?=trnslt('file_manager')?></span></li>
+                                <li id="options" <?=($_GET['section'] == 'options')?'class="active"':''?> ><div class="sttng"></div><span><?=trnslt('settings')?></span></li>
+                                <li id="exit"><a href="<?=$url?>?logout=ok"><div class="ext"></div><?=trnslt('exit')?></a></li>
                             </menu>
                         </nav>
                         <div class="clear"></div>
@@ -1543,6 +1622,15 @@
                                         <div class="section__inner">
                                             <div class="row">
                                                 <?=trnslt('limit')?> <input type="number" min="1" max="20000" name="files_for_iteration" value="<?=$_SESSION['options']['files_for_iteration']?>" required /> <?=trnslt('ajax_load_step')?>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    
+                                    <section class="section zip_part_files_count">
+                                        <div class="section__headline"><?=trnslt('zip_part_files_count')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row">
+                                                <?=trnslt('limit')?> <input type="number" min="1" max="200000" name="zip_part_files" value="<?=$_SESSION['options']['zip_part_files']?>" required /> <?=trnslt('files')?>
                                             </div>
                                         </div>
                                     </section>
