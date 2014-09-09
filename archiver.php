@@ -976,8 +976,11 @@
     <!DOCTYPE html>
     <html>
         <head>
+            <meta content="width=480" name="viewport" />
+            <meta content="width" name="MobileOptimized" />
+            <meta content="true" name="HandheldFriendly" />
             <meta charset="UTF-8" />
-            <meta name="Author" CONTENT="Lesyuk Sergiy">
+            <meta name="Author" CONTENT="Lesyuk Sergiy" />
             <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <?php
             if ($_SESSION['psswrd'] == $pass) {
@@ -1330,12 +1333,14 @@
                     .nav li#filemanager { padding: 8px 16px; }
                     .nav li a { padding: 9px 12px; }
 
+                    .msg { white-space: normal; }
+
                     .crt{ width: 1.500em; height: 0.500em; border: 0.250em solid #2c2c2c; border-top: none; position: absolute; bottom: 0.188em; position: relative; margin-top:1em; }
                     .crt:before{ content: ''; position: absolute; width: 0.438em; height: 0.625em; background: #2c2c2c; top: -0.875em; left: 0.563em; }
                     .crt:after{ width: 0em; height: 0em; content: ''; position: absolute; border-style: solid; border-color: #2c2c2c transparent transparent transparent; border-width: 0.500em; left: 0.250em; top: -0.250em; }
                     
                     .extr{ width: 1.500em; height: 0.500em; border: 0.250em solid #2c2c2c; border-top: none; position: absolute; bottom: 0.188em; position: relative; margin-top:1em; }
-                    .extr:before{ content: ''; position: absolute; width: 0.438em; height: 0.625em; background: #2c2c2c; top: -0.4em; left: 0.54em; }
+                    .extr:before{ content: ''; position: absolute; width: 0.438em; height: 0.625em; background: #2c2c2c; top: -0.4em; left: 0.55em; }
                     .extr:after{ width: 0em; height: 0em; content: ''; position: absolute; border-style: solid; border-color: transparent transparent #2c2c2c transparent; border-width: 0.500em; left: 0.250em; top: -1.4em; }
                     
                     .tls { margin-left: -0.4em; margin-top: -0.3em; font-size: 21px; background: #2C2C2C; height: 0.3em; width: 0.15em; position: relative; -webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -o-transform: rotate(-45deg); -ms-transform: rotate(-45deg); transform: rotate(-45deg); -webkit-box-shadow: 0 0.25em 0 0 #2C2C2C,0 -0.25em 0 0 #2C2C2C,0 -0.55em 0 0.07em #2C2C2C,0 0.55em 0 0.1em #2C2C2C,0 0.9em 0 0.1em #2C2C2C,0 1.2em 0 0.1em #2C2C2C; box-shadow: 0 0.25em 0 0 #2C2C2C,0 -0.25em 0 0 #2C2C2C,0 -0.55em 0 0.07em #2C2C2C,0 0.55em 0 0.1em #2C2C2C,0 0.9em 0 0.1em #2C2C2C,0 1.2em 0 0.1em #2C2C2C; }
@@ -1354,9 +1359,11 @@
                     .ext::before { bottom: -0.666em; left: 0.8em; position: absolute; border-left: 1.2em solid #2C2C2C; border-top: 1.2em solid rgba(44, 44, 44, 0); border-bottom: 1.2em solid rgba(44, 44, 44, 0); content: ""; }
                 
                     input.archivatorstart { width: 50%; }
+                    
+                    .section__inner.exeption > span { display: block; overflow: scroll; }
                 }
                 
-                @media only screen and (max-width: 456px) {
+                @media only screen and (max-width: 474px) {
                     .nav li { padding: 2px 4px; }
                     .nav li#filemanager { padding: 6px 8px; }
                     .nav li#options { padding: 7px 8px; transform: scale(0.8, 0.8); }
@@ -1368,7 +1375,7 @@
                     .fm { box-shadow: 0 0 0 0.2em #2c2c2c, 0 -0.2em 0 0.1em #2c2c2c; height: 1.2em; margin: 0 auto; width: 1.15em; }
                     
                     .extr { width: 1em; }
-                    .extr:before { left: 0.25em; top: -0.3em; }
+                    .extr:before { left: 0.28em; top: -0.3em; }
                     .extr:after { left: -0.01em; top: -1.2em; }
                     
                     .crt { width: 1em; }
@@ -1480,7 +1487,9 @@
                                     <section class="section dir_exeption">
                                         <div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
                                         <div class="section__inner exeption">
-                                            ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")
+                                            <span>
+                                                ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span onclick="addEx(this)">rss</span>|<span onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span onclick="addEx(this)">cgi-bin</span>")
+                                            </span>
                                             <div class="row">
                                                 <input type="text" name="exept" value="<?=implode('|',$_POST['exept'])?>" style="width:99%" />
                                             </div>
