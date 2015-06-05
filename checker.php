@@ -14,7 +14,7 @@
 		}
 
 		if($_GET['curr'] < $last){
-			echo "Остання версія <a title='Завантажити' href='http://lesyuk-serg.w.pw/archiver/checker.php?dwnld=".$last."'>".$last."</a>";
+			echo "Остання версія <a title='Завантажити' href='http://lesyuk-serg.zz.mu/archiver/checker.php?dwnld=".$last."'>".$last."</a>";
 		} else {
 			echo $last;
 		}
