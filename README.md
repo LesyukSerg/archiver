@@ -2,17 +2,17 @@ PHP ARCHIVER
 ========
 
 ARCHIVER - it is a PHP script all in one file.
-This Script helps:
+This Script can:
 
 1. Create an archive / add files to existing archive;
     
-    a) Archive selected files and folders;
+    a) Archiving selected files and folders;
     
     b) Exclude some folders;
     
     c) Exclude some file which bigger than selected size;
     
-    d) Archive in ajax mode;
+    d) Archiving in ajax mode;
     
     e) Split an archive by a small archives certain size
 
