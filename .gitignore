@@ -3,6 +3,7 @@
 #################
 
 # my ignore
+.idea/*
 crash_test/*
 flashrockonline/*
 iblock/*
