@@ -1,11 +1,11 @@
 <?php
     header('Content-Type: text/html; charset=utf-8');
-    define('VERSION', '201512041557');
+    define('VERSION', '201512151035');
     date_default_timezone_set('Europe/Kiev');
     session_start();
     //set_time_limit(2);
     ini_set('memory_limit', '-1');
-    $timestart = microtime(1);
+    $timeStart = microtime(1);
     $pass = 'b59c67bf196a4758191e42f76670ceba';
     $url = preg_replace('/\?.*/', '', $_SERVER['REQUEST_URI']);
     if (isset($lastvers)) $_SESSION['message']['NOTICE'][] = $lastvers;
@@ -13,7 +13,7 @@
     $log_file = 'archive.log';
     $pathname = getcwd();
 
-    #--- массив перекладів --------------------------------------------------------------------------------------------
+    # --- translations array ------------------------------------------------------------------------------------------
     $lang = array(
         'ua' => array(
             'language'              => 'Мова',
@@ -278,11 +278,11 @@
             'zip_part_files_count'  => 'Разбивать архив на части'
         )
     );
-    #--- /массив перекладів -------------------------------------------------------------------------------------------
+    # --- /translations array -----------------------------------------------------------------------------------------
 
-    # ФУНКЦІЇ ---------------------------------------------------------------------------------------------------------
+    # --- FUNCTIONS ---------------------------------------------------------------------------------------------------
 
-    # функція визначення змінних --------------------------------------------------------------------------------------
+    # - initalization -------------------------------------------------------------------------------------------------
     function init()
     {
         if (!isset($_GET['get_count'])) $_GET['get_count'] = NULL;
@@ -324,7 +324,7 @@
         if (!isset($_SESSION['options']['zip_part_files'])) $_SESSION['options']['zip_part_files'] = 200000;
     }
 
-    # функція визначення мови -----------------------------------------------------------------------------------------
+    # - define language -----------------------------------------------------------------------------------------------
     function set_lang()
     {
         if (isset($_GET['lang']))
@@ -338,7 +338,7 @@
         return $_SESSION['lang'];
     }
 
-    # функція видалення файлу архівера --------------------------------------------------------------------------------
+    # - self deleting -------------------------------------------------------------------------------------------------
     function kamikadze()
     {
         unset($_SESSION);
@@ -348,7 +348,7 @@
             exit(trnslt('kamikadze_err'));
     }
 
-    # функція перекладу -----------------------------------------------------------------------------------------------
+    # - translation ---------------------------------------------------------------------------------------------------
     function trnslt($key)
     {
         global $lang;
@@ -359,7 +359,7 @@
             return $key;
     }
 
-    # функція перевірки нової версії ----------------------------------------------------------------------------------
+    # - check new version ---------------------------------------------------------------------------------------------
     function check_new_vers($vers)
     {
         ini_set('default_socket_timeout', 2);
@@ -372,7 +372,7 @@
         }
     }
 
-    # Підрахунок всіх файлів в корені (по версії Артема Вилкова) ------------------------------------------------------
+    # - count all files by Artem Vilkov -------------------------------------------------------------------------------
     function getFolderCount($dir, &$cnt = 0)
     {
         if (!$_GET['get_count'] && $cnt > 999)
@@ -399,7 +399,7 @@
         return $cnt;
     }
 
-    # Підрахунок всіх розмірів файлів в теках -------------------------------------------------------------------------
+    # - count all folder sizes ----------------------------------------------------------------------------------------
     function getFolderSize($dir, &$cnt = 0)
     {
         $size = 0;
@@ -430,7 +430,7 @@
         return $size;
     }
 
-    # Підрахунок файлів для архівації ---------------------------------------------------------------------------------
+    # - count files for archive ---------------------------------------------------------------------------------------
     function getFolderCount_for_ajax($dir, &$cnt = 0)
     {
         if ($dirs = scandir($dir)) {
@@ -457,8 +457,8 @@
         return $cnt;
     }
 
-    # перевірка в root каталозі на zip файли --------------------------------------------------------------------------
-    function check_for_archive($archive_dir, $dirs)
+    # - check another zip archives ------------------------------------------------------------------------------------
+    function check_for_archive($archiveDir, $dirs)
     {
         $deleted_zip = '';
         if ($_POST['delzip'])
@@ -466,7 +466,7 @@
 
         $zips = array();
         foreach ($dirs as $dir) {
-            if (!is_dir($archive_dir . $dir) && strstr($dir, 'zip') && $dir != $deleted_zip) {
+            if (!is_dir($archiveDir . $dir) && strstr($dir, 'zip') && $dir != $deleted_zip) {
                 $zips[] = $dir;
             }
         }
@@ -474,23 +474,23 @@
         return $zips;
     }
 
-    # функція розархівації --------------------------------------------------------------------------------------------
-    function unzippp($archive_dir, $zpfl)
+    # - extracting ----------------------------------------------------------------------------------------------------
+    function unzippp($archiveDir, $zipName)
     {
-        if ($zpfl) {
-            $zipfile = $archive_dir . '/' . $zpfl;
+        if ($zipName) {
+            $zipFile = $archiveDir . '/' . $zipName;
 
-            if (file_exists($zipfile)) {
+            if (file_exists($zipFile)) {
                 $zip = new ZipArchive;
-                $res = $zip->open($zipfile);
+                $res = $zip->open($zipFile);
                 if ($res === true) {
                     //$num = $zip->numFiles;
-                    $zip->extractTo($archive_dir);
+                    $zip->extractTo($archiveDir);
                     $zip->close();
 
-                    $_SESSION['message']['OK'][] = trnslt('arch') . ' <b>' . $zpfl . '</b> ' . trnslt('unzip_ok') . ' ' . $archive_dir . '.';
+                    $_SESSION['message']['OK'][] = trnslt('arch') . ' <b>' . $zipName . '</b> ' . trnslt('unzip_ok') . ' ' . $archiveDir . '.';
                 } else {
-                    $_SESSION['message']['ERROR'][] = trnslt('unzip_err') . ' <b>' . $zpfl . '</b>';
+                    $_SESSION['message']['ERROR'][] = trnslt('unzip_err') . ' <b>' . $zipName . '</b>';
                 }
             } else {
                 $_SESSION['message']['ERROR'][] = trnslt('unzip_not');
@@ -500,17 +500,17 @@
         }
     }
 
-    # функція видалення архіву ----------------------------------------------------------------------------------------
-    function delzippp($archive_dir, $zpfl)
+    # - delete selected archive ---------------------------------------------------------------------------------------
+    function delzippp($archiveDir, $zipName)
     {
-        if ($zpfl) {
-            $zipfile = $archive_dir . '/' . $zpfl;
+        if ($zipName) {
+            $zipFile = $archiveDir . '/' . $zipName;
 
-            if (file_exists($zipfile)) {
-                if (unlink($zipfile)) {
-                    $_SESSION['message']['OK'][] = trnslt('delzip_ok') . ' <b>' . $zpfl . '</b>';
+            if (file_exists($zipFile)) {
+                if (unlink($zipFile)) {
+                    $_SESSION['message']['OK'][] = trnslt('delzip_ok') . ' <b>' . $zipName . '</b>';
                 } else {
-                    $_SESSION['message']['ERROR'][] = trnslt('delzip_err') . ' <b>' . $zpfl . '</b>';
+                    $_SESSION['message']['ERROR'][] = trnslt('delzip_err') . ' <b>' . $zipName . '</b>';
                 }
             } else {
                 $_SESSION['message']['ERROR'][] = trnslt('unzip_not');
@@ -520,23 +520,13 @@
         }
     }
 
-    # показ та функціонал вибору тек в root директорії ----------------------------------------------------------------
+    # - show folders in root dir --------------------------------------------------------------------------------------
     function show_root_dir($src_dir, $dirs)
     {
-        //global $lang, $l;
         $out = '<script>';
         if (!$_GET['get_count'])
             $out .= 'document.getElementById("get_count").checked = false;';
 
-        $out .= '
-            function turn_of(alldir){
-                if(alldir.checked){
-                    var f1 = document.getElementsByTagName("input");
-                    for (var i=0; i<f1.length; i++)
-                        if (f1[i].className == "selecteddir")
-                            f1[i].checked = false;
-                }
-            }';
         $out .= '</script>';
         $out .= '<input id="alldir" type="checkbox" name="dir" value="" onclick="turn_of(this)" /> <b>' . trnslt('all_files') . '</b> <input type="checkbox" name="get_count" value="all" ' . (($_GET['get_count'] == 'all' && !$_POST['submit']) ? 'checked="checked"' : '') . ' onclick="if(get_count.checked)window.location=\'' . preg_replace("/\?.*/", '', $_SERVER['REQUEST_URI']) . '?get_count=all\'; else window.location=\'' . $_SERVER['SCRIPT_NAME'] . '\'" />' . trnslt('show_dir_count_files') . '<br />';
 
@@ -554,13 +544,10 @@
         return $out;
     }
 
-    # показ тек та файлів в $src_dir директорії -----------------------------------------------------------------------
+    # - show files and folders in $src_dir dir ------------------------------------------------------------------------
     function show_root_dir_and_files($src_dir, $sub, $perpage, $page)
     {
-        //global $lang, $l;
-
         $dirs = scandir($src_dir);
-        //$out = '';
         $total_count = 0;
         $total_size = 0;
         unset($dirs[array_search('.', $dirs)]);
@@ -579,9 +566,9 @@
         $out .= '<tr><th>' . trnslt('fm_t_name') . '</th><th>' . trnslt('fm_t_count') . '</th><th>' . trnslt('fm_t_size') . '</th><th>' . trnslt('fm_t_permission') . '</th></tr>';
         $up = '';
         foreach ($dirs_out as $dir) {
-            $dirperm = substr(sprintf('%o', fileperms($src_dir . '/' . $dir)), -4);
+            $dirPermission = substr(sprintf('%o', fileperms($src_dir . '/' . $dir)), -4);
             $all_count = 0;
-            $fsize = 0;
+            $fileSize = 0;
             if ($dir == '..') {
                 $pos = strrpos($sub, '/');
                 if ($pos)
@@ -590,28 +577,28 @@
                     if (!$sub)
                         continue;
 
-                $dirname = '<a href="?section=filemanager&fmdir=' . $up . '">' . $dir . '</a>';
+                $dirName = '<a href="?section=filemanager&fmdir=' . $up . '">' . $dir . '</a>';
             } else {
                 $all_count = (!$_GET['get_size']) ? getFolderCount($src_dir . $dir . '/') : 0;
-                $fsize = 0;
+                $fileSize = 0;
                 if ($_GET['get_size'])
-                    $fsize = getFolderSize($src_dir . $dir . '/', $all_count);
+                    $fileSize = getFolderSize($src_dir . $dir . '/', $all_count);
 
                 $dir = iconv('cp1251', 'UTF-8', $dir);
-                $dirname = '<a href="?section=filemanager&fmdir=' . ($sub ? ($sub . '/') : '') . $dir . '">' . $dir . '</a>';
+                $dirName = '<a href="?section=filemanager&fmdir=' . ($sub ? ($sub . '/') : '') . $dir . '">' . $dir . '</a>';
             }
 
             $total_count += $all_count;
-            $total_size += $fsize;
+            $total_size += $fileSize;
 
             $count = ($all_count > 1000 && !$_GET['get_size']) ? trnslt('more_999') : $all_count;
-            $fsize = (!$_GET['get_size']) ? '~~~' : number_format($fsize, 0, ',', ' ');
+            $fileSize = (!$_GET['get_size']) ? '~~~' : number_format($fileSize, 0, ',', ' ');
 
-            $out .= '<tr><td>' . $dirname . '</td><td class="count">' . $count . '</td><td class="size">' . $fsize . ' b</td><td class="size">' . $dirperm . '</td></tr>';
+            $out .= '<tr><td>' . $dirName . '</td><td class="count">' . $count . '</td><td class="size">' . $fileSize . ' b</td><td class="size">' . $dirPermission . '</td></tr>';
         }
 
         foreach ($files_out as $file) {
-            $dirperm = substr(sprintf('%o', fileperms($src_dir . '/' . $dir)), -4);
+            $dirPermission = substr(sprintf('%o', fileperms($src_dir . '/' . $dir)), -4);
             $size = filesize($src_dir . $file);
             $total_count++;
             $total_size += $size;
@@ -619,7 +606,7 @@
             $size = number_format($size, 0, ',', ' ');
             $file = iconv('cp1251', 'UTF-8', $file);
 
-            $out .= '<tr><td>' . $file . '</td><td class="count"></td><td class="size">' . $size . ' b</td><td class="size">' . $dirperm . '</td></tr>';
+            $out .= '<tr><td>' . $file . '</td><td class="count"></td><td class="size">' . $size . ' b</td><td class="size">' . $dirPermission . '</td></tr>';
         }
         $total_size = number_format($total_size, 0, ',', ' ');
         $aprox = '';
@@ -734,36 +721,35 @@
             if ($_POST['addtozip'] == 'new') {
                 if (is_array($_POST['dir'])) {
                     if (count($_POST['dir']) > 4) {
-                        $archname = 'selected-' . date('Y_m_d_His') . '.zip';
+                        $archName = 'selected-' . date('Y_m_d_His') . '.zip';
                     } else {
-                        $archname = implode('-', $_POST['dir']) . '-' . date('Y_m_d_His') . '.zip';
+                        $archName = implode('-', $_POST['dir']) . '-' . date('Y_m_d_His') . '.zip';
                     }
                 } elseif ($_POST['dir_write']) {
-                    $archname = $_POST['dir'] . '-' . date('Y_m_d_His') . '.zip';
+                    $archName = $_POST['dir'] . '-' . date('Y_m_d_His') . '.zip';
                 } else {
-                    $archname = $_SERVER['SERVER_NAME'] . '-' . date('Y_m_d_His') . '.zip';
+                    $archName = $_SERVER['SERVER_NAME'] . '-' . date('Y_m_d_His') . '.zip';
                 }
             } else {
-                $archname = $_POST['addtozip'];
+                $archName = $_POST['addtozip'];
             }
-            $fileName = $pathname . '/' . $archname;
+            $fileName = $pathname . '/' . $archName;
 
             if ($fp = fopen($log_file, 'w')) {
                 fwrite($fp, $fileName . '\n');
             } else {
-                $dirperm = substr(sprintf('%o', fileperms($pathname)), -4);
+                $dirPermission = substr(sprintf('%o', fileperms($pathname)), -4);
                 if (chmod($pathname, 0777)) {
                     fwrite($fp, $fileName . '\n');
                 } else {
-                    $_SESSION['message']['ERROR'][] = trnslt('permission') . ' ' . $dirperm;
-                    fwrite(STDERR, trnslt('permission') . ' ' . $dirperm);
+                    $_SESSION['message']['ERROR'][] = trnslt('permission') . ' ' . $dirPermission;
+                    fwrite(STDERR, trnslt('permission') . ' ' . $dirPermission);
 
                     return;
                 }
             }
 
             if ($zip->open($fileName, ZIPARCHIVE::CREATE) !== true) {
-                //fwrite(STDERR, 'Error while creating archive file');
                 $_SESSION['message']['ERROR'][] = trnslt('zip_not');
                 exit(1);
             }
@@ -774,8 +760,8 @@
             # додаємо файли в архів всі файли із теки src_dir
 
             if (is_array($_POST['dir'])) {
-                foreach ($_POST['dir'] as $onedir) {
-                    addFolderToZip($pathname . '/' . $onedir . '/', $zip, $onedir . '/', $count, $fp);
+                foreach ($_POST['dir'] as $oneDir) {
+                    addFolderToZip($pathname . '/' . $oneDir . '/', $zip, $oneDir . '/', $count, $fp);
                 }
             } else {
                 if ($_POST['dir'])
@@ -790,15 +776,15 @@
             $zip->close();
             unlink($log_file);
 
-            $download = preg_replace('/\/' . basename(__FILE__) . '.*/', '/', $_SERVER['REQUEST_URI']) . $archname;
-            $_SESSION['message']['OK'][] = trnslt('zip_created') . ' <a id="archv" href="' . $download . '">' . $archname . '</a>. ' . trnslt('zip_added_files') . ' <span id="cntfls">' . $count . '</span>';
-            $_SESSION['history'][] = '===========' . trnslt('zip_created') . ' <a href="' . $download . '">' . $archname . '</a>. ' . trnslt('zip_added_files') . ' ' . $count . '===========';
+            $download = preg_replace('/\/' . basename(__FILE__) . '.*/', '/', $_SERVER['REQUEST_URI']) . $archName;
+            $_SESSION['message']['OK'][] = trnslt('zip_created') . ' <a id="archv" href="' . $download . '">' . $archName . '</a>. ' . trnslt('zip_added_files') . ' <span id="cntfls">' . $count . '</span>';
+            $_SESSION['history'][] = '===========' . trnslt('zip_created') . ' <a href="' . $download . '">' . $archName . '</a>. ' . trnslt('zip_added_files') . ' ' . $count . '===========';
         } else {
             $_SESSION['message']['NOTICE'][] = 'Виберіть теку' . '<br />';
         }
     }
 
-    # функція перевірки паролю ----------------------------------------------------------------------------------------
+    # - check password ------------------------------------------------------------------------------------------------
     function check_pass($pass)
     {
         if (md5($_POST['pswrd']) == $pass) {
@@ -809,7 +795,7 @@
         }
     }
 
-    # функція відображення повідомлень --------------------------------------------------------------------------------
+    # - show message --------------------------------------------------------------------------------------------------
     function show_log($type, $text)
     {
         $message = array(
@@ -821,7 +807,7 @@
         return $message[$type];
     }
 
-    # функція виводу повідомлень --------------------------------------------------------------------------------------
+    # show all messages -----------------------------------------------------------------------------------------------
     function show_messages()
     {
         if ($_SESSION['message']) {
@@ -858,9 +844,9 @@
             fclose($fp);
             unlink($log_file);
         } else {
-            $dirperm = substr(sprintf('%o', fileperms($pathname)), -4);
+            $dirPermission = substr(sprintf('%o', fileperms($pathname)), -4);
             if (!chmod($pathname, 0777)) {
-                $_SESSION['message']['ERROR'][] = trnslt('permission') . ' ' . $dirperm;
+                $_SESSION['message']['ERROR'][] = trnslt('permission') . ' ' . $dirPermission;
             }
         }
     }
@@ -873,7 +859,7 @@
         unset($_SESSION['log']);
     }
 
-    # ФУНКЦІЇ =========================================================================================================
+    # === FUNCTIONS ===================================================================================================
 
     init();
     $l = set_lang();
@@ -964,7 +950,7 @@
     }
 
     if ($_POST['ajax']) {
-        echo show_messages();
+        show_messages();
         die;
     }
 ?>
@@ -1127,7 +1113,7 @@
             </header>
 
             <div id="form_block">
-                <div class="messages"><?=show_messages();?></div>
+                <div class="messages"><? show_messages(); ?></div>
                 <?php
                 if (!$_GET['section'] || $_GET['section'] == 'createar') {
                     ?>
@@ -1178,8 +1164,7 @@
                                             foreach ($archive_exist as $zzz) {
                                                 if (!is_dir($pathname . '/' . $zzz) && strstr($zzz, 'zip')) {
                                                     ?>
-                                                    <input class="addtozip" type="radio" name="addtozip"
-                                                           value="<?=$zzz?>"/> <?=trnslt('add_to_zip')?>
+                                                    <input class="addtozip" type="radio" name="addtozip" value="<?=$zzz?>"/> <?=trnslt('add_to_zip')?>
                                                     <b><?=$zzz?></b><br/>
                                                     <?php
                                                 }
@@ -1199,8 +1184,7 @@
                                         <?=show_root_dir($pathname . '/', $dirs);?>
                                         <div class="clear"><br/></div>
                                         <b><?=trnslt('enter_subdir')?></b>
-                                        <input type="text" name="dir_write" value="<?=$_POST['dir_write']?>"
-                                               style="width:99%"/> <br/>
+                                        <input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%"/> <br/>
                                     </div>
                                 </div>
                             </section>
@@ -1211,7 +1195,6 @@
                                         <span>
                                             ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span
                                                 onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span
-                                                onclick="addEx(this)">rss</span>|<span
                                                 onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span
                                                 onclick="addEx(this)">cgi-bin</span>")
                                         </span>
@@ -1423,7 +1406,6 @@
                 ?>
                 <header>
                     <a class="logo" href="<?=$url?>">ARCHIVER</a>
-
                     <div class="clear"></div>
                 </header>
                 <?php
@@ -1447,12 +1429,9 @@
                                 <form class="lang_form" action="<?=$url?>" method="GET">
                                     <?=trnslt('language')?>:
                                     <select name="lang" onchange="this.form.submit()">
-                                        <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>Українська
-                                        </option>
-                                        <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>English
-                                        </option>
-                                        <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>Русский
-                                        </option>
+                                        <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>Українська</option>
+                                        <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>English</option>
+                                        <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>Русский</option>
                                     </select>
                                 </form>
                             </div>
@@ -1470,7 +1449,7 @@
     </div>
     <footer class="footer" style='position:absolute'>
         <div class="page_gen">
-            <?=trnslt('page_gen') . ' ' . round(microtime(1) - $timestart, 4) . ' ' . trnslt('sec') . '.<br />'?>
+            <?=trnslt('page_gen') . ' ' . round(microtime(1) - $timeStart, 4) . ' ' . trnslt('sec') . '.<br />'?>
         </div>
         <a class="kamicadze" href="<?=preg_replace("/\?.+/", '', $url)?>?del=itself"
            title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
@@ -1492,50 +1471,16 @@
             var archive = '';
             var intrvl;
 
-            $(document).ready(function () {
-                if ($('body').height() > $(window).height()) {
-                    $('.footer').removeAttr('style');
+            function turn_of(alldir) { // turn off all selected folder ------------------------------------------------
+                if (alldir.checked) {
+                    var f1 = document.getElementsByTagName("input");
+                    for (var i=0; i<f1.length; i++)
+                        if (f1[i].className == "selecteddir")
+                            f1[i].checked = false;
                 }
+            }
 
-                $('.nav li').click(function () {
-                    if (!$(this).hasClass('active')) {
-                        window.location.href = '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>' + $(this).attr('id');
-                    }
-                });
-                    <?php
-                if ($_GET['section'] == 'extractar') {
-                    if ($_SESSION['options']['confirm_delzip']) {
-                            ?>
-                        $('.zip.clear input[name="delzip"]').click(function () {
-                            if (confirm('<?=trnslt('delete_confirm')?>'))
-                                return true;
-                            else
-                                return false;
-                        });
-                            <?php
-                    }
-                    if ($_SESSION['options']['confirm_unzip']) {
-                        ?>
-                        $('.zip.clear input[name="unzip"]').click(function () {
-                            if (confirm('<?=trnslt('extract_confirm')?>'))
-                                startExtraction($(this).parent('form'));
-
-                            return false;
-                        });
-                        <?php
-                    } else {
-                        ?>
-                        $('.zip.clear input[name="unzip"]').click(function () {
-                            startExtraction($(this).parent('form'));
-                        });
-                        <?php
-                    }
-                }
-                ?>
-            });
-
-            // вставлення тек із блоку "наприклад" --------------------------------------
-            function addEx(el) {
+            function addEx(el) { // add exception folder --------------------------------------------------------------
                 var input = document.getElementById('exept');
                 var arr = [];
                 if (input.value.length)
@@ -1751,6 +1696,47 @@
             }
             // /РОЗАРХІВАЦІЯ -----------------------------------------------------------------------\
             //----------------------------------------------------------------------------------------\
+
+            $(document).ready(function () {
+                if ($('body').height() > $(window).height()) {
+                    $('.footer').removeAttr('style');
+                }
+
+                $('.nav li').click(function () {
+                    if (!$(this).hasClass('active')) {
+                        window.location.href = '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>' + $(this).attr('id');
+                    }
+                });
+                    <?php
+                if ($_GET['section'] == 'extractar') {
+                    if ($_SESSION['options']['confirm_delzip']) {
+                        ?>
+                        $('.zip.clear input[name="delzip"]').click(function () {
+                            if (confirm('<?=trnslt('delete_confirm')?>'))
+                                return true;
+                            else
+                                return false;
+                        });
+                        <?php
+                    }
+                    if ($_SESSION['options']['confirm_unzip']) {
+                        ?>
+                        $('.zip.clear input[name="unzip"]').click(function () {
+                            if (confirm('<?=trnslt('extract_confirm')?>'))
+                                startExtraction($(this).parent('form'));
+                            return false;
+                        });
+                        <?php
+                    } else {
+                        ?>
+                        $('.zip.clear input[name="unzip"]').click(function () {
+                            startExtraction($(this).parent('form'));
+                        });
+                        <?php
+                    }
+                }
+                ?>
+            });
         </script>
         <?php
     }
