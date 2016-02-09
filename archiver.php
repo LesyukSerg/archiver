@@ -1,6 +1,6 @@
 <?php
     header('Content-Type: text/html; charset=utf-8');
-    define('VERSION', '201512151035');
+    define('VERSION', '201602091522');
     date_default_timezone_set('Europe/Kiev');
     session_start();
     //set_time_limit(2);
@@ -14,7 +14,7 @@
     $pathname = getcwd();
 
     # --- translations array ------------------------------------------------------------------------------------------
-    $lang = array(
+    $localization = array(
         'ua' => array(
             'language'              => 'Мова',
             'kamikadze_ok'          => 'Самознищення пройшло вдало.',
@@ -351,10 +351,10 @@
     # - translation ---------------------------------------------------------------------------------------------------
     function trnslt($key)
     {
-        global $lang;
+        global $localization;
         $l = $_SESSION['lang'];
-        if ($lang[$l][$key])
-            return $lang[$l][$key];
+        if ($localization[$l][$key])
+            return $localization[$l][$key];
         else
             return $key;
     }
