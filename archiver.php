@@ -1,6 +1,6 @@
 <?php
     header('Content-Type: text/html; charset=utf-8');
-    define('VERSION', '201602091522');
+    define('VERSION', '201603211241');
     date_default_timezone_set('Europe/Kiev');
     session_start();
     //set_time_limit(2);
@@ -24,6 +24,7 @@
             'unzip_ok'              => 'успішно розархівовано в директорію ',
             'unzip_err'             => 'Пошкоджено архів',
             'unzip_not'             => 'Архів не знайдено',
+            'zip_not'               => 'Не зміг відкрити архів',
             'unzip_choose'          => 'Виберіть файл для розархівування',
             'unzip'                 => 'Розархівувати',
             'dell'                  => 'Видалити',
@@ -110,6 +111,7 @@
             'arch'                  => 'Archive',
             'unzip_ok'              => 'Successfully extracted in directory ',
             'unzip_err'             => 'Archive broken',
+            'zip_not'               => 'Can\'t open zip file',
             'unzip_not'             => 'Archive not found',
             'unzip_choose'          => 'Choose file to extract',
             'unzip'                 => 'Extract',
@@ -198,6 +200,7 @@
             'arch'                  => 'Архив',
             'unzip_ok'              => 'успешно извлечен в директорию',
             'unzip_err'             => 'Поврежден архив',
+            'zip_not'               => 'Не получилось открыть архив',
             'unzip_not'             => 'Архив не найден',
             'unzip_choose'          => 'Выберите файл для разархивирования',
             'unzip'                 => 'Разархивировать',
@@ -466,7 +469,7 @@
 
         $zips = array();
         foreach ($dirs as $dir) {
-            if (!is_dir($archiveDir . $dir) && strstr($dir, 'zip') && $dir != $deleted_zip) {
+            if (!is_dir($archiveDir . $dir) && (strstr($dir, 'zip') || strstr($dir, 'ZIP')) && $dir != $deleted_zip) {
                 $zips[] = $dir;
             }
         }
@@ -956,128 +959,703 @@
 ?>
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta content="width=480" name="viewport"/>
-        <meta content="width" name="MobileOptimized"/>
-        <meta content="true" name="HandheldFriendly"/>
-        <meta charset="UTF-8"/>
-        <meta name="Author" CONTENT="Lesyuk Sergiy"/>
-        <style>
-            *{margin:0;padding:0}
-            body{font:13px/18px Verdana, Arial, Tahoma, sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;color:#FFF;width:100%;background:#39404C;overflow-y:scroll}
-            input.archivatorstart{display:block;width:30%}
-            legend{font-weight:bold;font-size:medium}
-            .archivelog div{max-height:394px;overflow:auto}
-            .progress{height:40px;width:100%;transition:all 2s ease}
-            .kamicadze{color:#888888;margin-top:-30px;position:absolute;right:10px;text-decoration:none}
-            .kamicadze:hover{text-decoration:underline}
-            .kamicadze:active{color:#444444}
-            .red{color:red}
-            .green{color:green}
-            .zip.clear{line-height:52px}
-            form.zip:hover{background:#E8E2D2}
-            .right{float:right;margin-left:20px}
-            .clear{clear:both}
-            .logo{color:#888888;display:block;font-size:28px;text-decoration:none;text-shadow:0 0 1px #888888;float:left;padding:20px 10px 10px 0;transition:all 0.3s ease 0s}
-            .logo:hover{color:#F1F1FF;text-shadow:0 0 8px #FFFFFF}
-            h1{line-height:50px}
-            h2{margin-bottom:20px}
-            .section{clear:both;position:relative;box-shadow:0 5px 10px rgba(0, 0, 0, 0.2);margin:0 0 20px}
-            .section__headline{background:#E05C50;background:linear-gradient(#EF705F, #E05C50) repeat scroll 0 0 rgba(0, 0, 0, 0);box-shadow:0 1px #F08C75 inset;font-size:16px;padding:8px 14px;text-shadow:1px 1px 1px rgba(0, 0, 0, 0.2)}
-            .section__inner.exeption > span:hover, .selecteddir + span:hover{cursor:pointer;text-shadow:0 0 0;color:#000000}
-            .section__inner{color:#444444;padding:15px;background:#EFEFEF}
-            .wrapper{max-width:894px;position:relative;margin:0 auto}
-            label{cursor:pointer;display:inline-block;line-height:22px}
-            select, input[type="text"], input[type="password"]{border:1px solid #C4C9D0;color:#646F81;padding:2px 5px}
-            select{padding:2px}
-            select:focus, input[type="text"]:focus, input[type="password"]:focus{border:1px solid #8891A2}
-            input[type="submit"]{height:34px;cursor:pointer;font:16px Verdana, Arial, sans-serif;border:none;color:#FFF;box-shadow:0 5px 10px rgba(0, 0, 0, 0.3);text-shadow:1px 1px 1px rgba(0, 0, 0, 0.2);padding:0 15px;background:#94CF58;background:linear-gradient(#94CF58, #85CA40);margin:10px auto}
-            input[type="submit"]:hover{background:linear-gradient(#A4DF68, #95DA50)}
-            input[type="submit"]:active{box-shadow:0 0 0 !important;background:#85CA40}
-            input[type="submit"][disabled="disabled"]{background:none repeat scroll 0 0 #888888;box-shadow:0 0 0}
-            .nav{float:right;box-shadow:0 5px 10px rgba(0, 0, 0, 0.2);background-color:#646F81;margin-top:10px}
-            .nav li{float:left;list-style:none;cursor:pointer;border-left:1px solid #515D6D;box-shadow:inset -1px 1px #6B7787}
-            .nav li a, .nav li span{display:block;color:#E7EAED;text-decoration:none;padding:8px 12px}
-            .nav li:first-child{border-left:none}
-            .nav li:hover{color:#FFF;box-shadow:inset 0 1px #F08C75;background:#EF705F;background:linear-gradient(#EF705F, #E05C50)}
-            .nav li:active{box-shadow:inset 0 1px #F08C75;background:#E04C40}
-            .nav li.active{box-shadow:inset 0 1px #6B7787;background:#4B525F;background:linear-gradient(#5B6475, #4B525F)}
-            .row:first-child{margin-top:0}
-            .row:last-child{margin-bottom:0}
-            .row{margin:10px 0}
-            .messages{padding-top:20px}
-            .msg.w{background-color:#F13921}
-            .msg.i{background-color:#4FC0E8}
-            .msg.ok{background-color:#94CF58}
-            .msg i{color:#FFF;line-height:15px;font-size:11px;text-align:center;position:absolute;left:12px;top:12px;display:inline-block;width:16px;height:16px;border:1px solid #FFF}
-            .msg{box-shadow:0 5px 10px rgba(0, 0, 0, 0.2);line-height:20px;margin:0 0 20px;padding:10px 0 10px 45px;position:relative;white-space:nowrap}
-            .msg.process{padding:6px;text-align:center}
-            .msg.process > div{background-color:#62C4BF;box-shadow:-1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset}
-            .msg.ok.progress{margin:0;padding:0;transition:all 4s ease 0s;box-shadow:-1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset}
-            .flytext{font-size:13px;margin:-29px auto;position:absolute;width:100%}
-            .tab.createar{padding-bottom:40px}
-            .footer{bottom:0;color:#AEB4BB;font-size:11px;left:0;width:100%;padding:8px 0;background:#2E333D;opacity:0.6}
-            .footer a{color:#AEB4BB}
-            .footer a:hover{color:#FFF}
-            .login{position:absolute;width:300px;margin:10% 0 0 10%}
-            input.inside[type="submit"]{box-shadow:0 1px 1px rgba(0, 0, 0, 0.3);float:right;margin:8px}
-            .page_gen{position:absolute;margin-top:-30px}
-            .section__headline.exeption > span{cursor:pointer}
-            .grey{color:grey}
-            .file_mamger_table{width:100%}
-            .file_mamger_table tr td{padding:2px 4px}
-            .file_mamger_table tr:nth-child(even) td{background-color:#E0E0E0}
-            .file_mamger_table tr:hover td{background-color:#D0D0D0}
-            .file_mamger_table .count, .file_mamger_table .size{width:20%;text-align:right}
-            .working_options{color:#888888;font-size:10px;text-align:center}
-            .working_options a{color:#E7EAED;font-size:13px}
-            .working_options a:hover{text-decoration:none}
-            @media only screen and (max-width:800px){body{font:18px/24px Verdana, Arial, Tahoma, sans-serif;}
-                .nav li a, .nav li span{font-size:0;line-height:0;padding:0;}
-                .nav li{padding:8px 12px;}
-                .nav li#options{padding:13px 24px;}
-                .nav li#filemanager{padding:8px 16px}
-                .nav li a{padding:9px 12px}
-                .msg{white-space:normal}
-                .crt{width:1.500em;height:0.500em;border:0.250em solid #2c2c2c;border-top:none;bottom:0.188em;position:relative;margin-top:1em}
-                .crt:before{content:'';position:absolute;width:0.438em;height:0.625em;background:#2c2c2c;top:-0.875em;left:0.563em}
-                .crt:after{width:0;height:0;content:'';position:absolute;border-style:solid;border-color:#2c2c2c transparent transparent transparent;border-width:0.500em;left:0.250em;top:-0.250em;}
-                .extr{width:1.500em;height:0.500em;border:0.250em solid #2c2c2c;border-top:none;bottom:0.188em;position:relative;margin-top:1em}
-                .extr:before{content:'';position:absolute;width:0.438em;height:0.625em;background:#2c2c2c;top:-0.4em;left:0.55em}
-                .extr:after{width:0;height:0;content:'';position:absolute;border-style:solid;border-color:transparent transparent #2c2c2c transparent;border-width:0.500em;left:0.250em;top:-1.4em}
-                .tls{margin-left:-0.4em;margin-top:-0.3em;font-size:21px;background:#2C2C2C;height:0.3em;width:0.15em;position:relative;-webkit-transform:rotate(-45deg);-moz-transform:rotate(-45deg);-o-transform:rotate(-45deg);-ms-transform:rotate(-45deg);transform:rotate(-45deg);-webkit-box-shadow:0 0.25em 0 0 #2C2C2C, 0 -0.25em 0 0 #2C2C2C, 0 -0.55em 0 0.07em #2C2C2C, 0 0.55em 0 0.1em #2C2C2C, 0 0.9em 0 0.1em #2C2C2C, 0 1.2em 0 0.1em #2C2C2C;box-shadow:0 0.25em 0 0 #2C2C2C, 0 -0.25em 0 0 #2C2C2C, 0 -0.55em 0 0.07em #2C2C2C, 0 0.55em 0 0.1em #2C2C2C, 0 0.9em 0 0.1em #2C2C2C, 0 1.2em 0 0.1em #2C2C2C;}
-                .tls::before{height:1.5em;width:0.3em;-webkit-transform:rotate(90deg);-moz-transform:rotate(90deg);-o-transform:rotate(90deg);-ms-transform:rotate(90deg);transform:rotate(90deg);background:#2C2C2C;position:absolute;content:"";top:-0.2em;left:-0.3em;}
-                .tls::after{height:0.3em;width:0.3em;-webkit-transform:rotate(90deg);-moz-transform:rotate(90deg);-o-transform:rotate(90deg);-ms-transform:rotate(90deg);transform:rotate(90deg);position:absolute;border-left:0.2em solid #2C2C2C;border-bottom:0.4em solid #2C2C2C;border-right:0.2em solid #2C2C2C;border-top:0.05em solid transparent;content:"";top:0.17em;left:0.55em;border-top-right-radius:25% 25%;border-top-left-radius:25% 25%;border-bottom-left-radius:50% 50%;border-bottom-right-radius:50% 50%;}
-                .fm{box-shadow:0 0 0 0.2em #2c2c2c, 0 -0.2em 0 0.2em #2c2c2c;height:1.4em;margin:15% auto 2%;position:relative;width:2em}
-                .fm:after{content:"";position:absolute;left:.23em;top:.3em;width:.35em;height:.35em;background:#2c2c2c;box-shadow:.6em 0 0 #2c2c2c, 1.2em 0 0 #2c2c2c, 0 .5em 0 #2c2c2c, .6em .5em 0 #2c2c2c, 1.2em .5em 0 #2c2c2c;}
-                .sttng{position:relative;width:0.35em;height:0.8em;background:#2C2C2C;-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);font-size:1.4em}
-                .sttng:before{content:"";position:absolute;top:-0.35em;left:0;width:0.35em;height:0.3em;background:#2C2C2C;border-radius:0.1em}
-                .sttng:after{content:"";position:absolute;width:0;height:0;top:0.85em;left:0;border:solid 0.2em #2C2C2C;border-bottom-color:transparent;border-left-color:transparent;border-right-color:transparent;border-top:solid 0.45em #2C2C2C;}
-                .ext{background:#2C2C2C;font-size:12px;position:relative;width:1em;height:1em;margin-left:-0.7em}
-                .ext::before{bottom:-0.666em;left:0.8em;position:absolute;border-left:1.2em solid #2C2C2C;border-top:1.2em solid rgba(44, 44, 44, 0);border-bottom:1.2em solid rgba(44, 44, 44, 0);content:"";}
-                input.archivatorstart{width:50%;}
-                .section__inner.exeption > span{display:block;overflow:scroll;}
+<head>
+    <meta content="width=480" name="viewport"/>
+    <meta content="width" name="MobileOptimized"/>
+    <meta content="true" name="HandheldFriendly"/>
+    <meta charset="UTF-8"/>
+    <meta name="Author" CONTENT="Lesyuk Sergiy"/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font: 13px/18px Verdana, Arial, Tahoma, sans-serif;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            color: #FFF;
+            width: 100%;
+            background: #39404C;
+            overflow-y: scroll
+        }
+
+        input.archivatorstart {
+            display: block;
+            width: 30%
+        }
+
+        legend {
+            font-weight: bold;
+            font-size: medium
+        }
+
+        .archivelog div {
+            max-height: 394px;
+            overflow: auto
+        }
+
+        .progress {
+            height: 40px;
+            width: 100%;
+            transition: all 2s ease
+        }
+
+        .kamicadze {
+            color: #888888;
+            margin-top: -30px;
+            position: absolute;
+            right: 10px;
+            text-decoration: none
+        }
+
+        .kamicadze:hover {
+            text-decoration: underline
+        }
+
+        .kamicadze:active {
+            color: #444444
+        }
+
+        .red {
+            color: red
+        }
+
+        .green {
+            color: green
+        }
+
+        .zip.clear {
+            line-height: 52px
+        }
+
+        form.zip:hover {
+            background: #E8E2D2
+        }
+
+        .right {
+            float: right;
+            margin-left: 20px
+        }
+
+        .clear {
+            clear: both
+        }
+
+        .logo {
+            color: #888888;
+            display: block;
+            font-size: 28px;
+            text-decoration: none;
+            text-shadow: 0 0 1px #888888;
+            float: left;
+            padding: 20px 10px 10px 0;
+            transition: all 0.3s ease 0s
+        }
+
+        .logo:hover {
+            color: #F1F1FF;
+            text-shadow: 0 0 8px #FFFFFF
+        }
+
+        h1 {
+            line-height: 50px
+        }
+
+        h2 {
+            margin-bottom: 20px
+        }
+
+        .section {
+            clear: both;
+            position: relative;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            margin: 0 0 20px
+        }
+
+        .section__headline {
+            background: #E05C50;
+            background: linear-gradient(#EF705F, #E05C50) repeat scroll 0 0 rgba(0, 0, 0, 0);
+            box-shadow: 0 1px #F08C75 inset;
+            font-size: 16px;
+            padding: 8px 14px;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2)
+        }
+
+        .section__inner.exeption > span:hover, .selecteddir + span:hover {
+            cursor: pointer;
+            text-shadow: 0 0 0;
+            color: #000000
+        }
+
+        .section__inner {
+            color: #444444;
+            padding: 15px;
+            background: #EFEFEF
+        }
+
+        .wrapper {
+            max-width: 894px;
+            position: relative;
+            margin: 0 auto
+        }
+
+        label {
+            cursor: pointer;
+            display: inline-block;
+            line-height: 22px
+        }
+
+        select, input[type="text"], input[type="password"] {
+            border: 1px solid #C4C9D0;
+            color: #646F81;
+            padding: 2px 5px
+        }
+
+        select {
+            padding: 2px
+        }
+
+        select:focus, input[type="text"]:focus, input[type="password"]:focus {
+            border: 1px solid #8891A2
+        }
+
+        input[type="submit"] {
+            height: 34px;
+            cursor: pointer;
+            font: 16px Verdana, Arial, sans-serif;
+            border: none;
+            color: #FFF;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+            padding: 0 15px;
+            background: #94CF58;
+            background: linear-gradient(#94CF58, #85CA40);
+            margin: 10px auto
+        }
+
+        input[type="submit"]:hover {
+            background: linear-gradient(#A4DF68, #95DA50)
+        }
+
+        input[type="submit"]:active {
+            box-shadow: 0 0 0 !important;
+            background: #85CA40
+        }
+
+        input[type="submit"][disabled="disabled"] {
+            background: none repeat scroll 0 0 #888888;
+            box-shadow: 0 0 0
+        }
+
+        .nav {
+            float: right;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            background-color: #646F81;
+            margin-top: 10px
+        }
+
+        .nav li {
+            float: left;
+            list-style: none;
+            cursor: pointer;
+            border-left: 1px solid #515D6D;
+            box-shadow: inset -1px 1px #6B7787
+        }
+
+        .nav li a, .nav li span {
+            display: block;
+            color: #E7EAED;
+            text-decoration: none;
+            padding: 8px 12px
+        }
+
+        .nav li:first-child {
+            border-left: none
+        }
+
+        .nav li:hover {
+            color: #FFF;
+            box-shadow: inset 0 1px #F08C75;
+            background: #EF705F;
+            background: linear-gradient(#EF705F, #E05C50)
+        }
+
+        .nav li:active {
+            box-shadow: inset 0 1px #F08C75;
+            background: #E04C40
+        }
+
+        .nav li.active {
+            box-shadow: inset 0 1px #6B7787;
+            background: #4B525F;
+            background: linear-gradient(#5B6475, #4B525F)
+        }
+
+        .row:first-child {
+            margin-top: 0
+        }
+
+        .row:last-child {
+            margin-bottom: 0
+        }
+
+        .row {
+            margin: 10px 0
+        }
+
+        .messages {
+            padding-top: 20px
+        }
+
+        .msg.w {
+            background-color: #F13921
+        }
+
+        .msg.i {
+            background-color: #4FC0E8
+        }
+
+        .msg.ok {
+            background-color: #94CF58
+        }
+
+        .msg i {
+            color: #FFF;
+            line-height: 15px;
+            font-size: 11px;
+            text-align: center;
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 1px solid #FFF
+        }
+
+        .msg {
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            line-height: 20px;
+            margin: 0 0 20px;
+            padding: 10px 0 10px 45px;
+            position: relative;
+            white-space: nowrap
+        }
+
+        .msg.process {
+            padding: 6px;
+            text-align: center
+        }
+
+        .msg.process > div {
+            background-color: #62C4BF;
+            box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset
+        }
+
+        .msg.ok.progress {
+            margin: 0;
+            padding: 0;
+            transition: all 4s ease 0s;
+            box-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1) inset, 2px 2px 1px rgba(0, 0, 0, 0.4) inset
+        }
+
+        .flytext {
+            font-size: 13px;
+            margin: -29px auto;
+            position: absolute;
+            width: 100%
+        }
+
+        .tab.createar {
+            padding-bottom: 40px
+        }
+
+        .footer {
+            bottom: 0;
+            color: #AEB4BB;
+            font-size: 11px;
+            left: 0;
+            width: 100%;
+            padding: 8px 0;
+            background: #2E333D;
+            opacity: 0.6
+        }
+
+        .footer a {
+            color: #AEB4BB
+        }
+
+        .footer a:hover {
+            color: #FFF
+        }
+
+        .login {
+            position: absolute;
+            width: 300px;
+            margin: 10% 0 0 10%
+        }
+
+        input.inside[type="submit"] {
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+            float: right;
+            margin: 8px
+        }
+
+        .page_gen {
+            position: absolute;
+            margin-top: -30px
+        }
+
+        .section__headline.exeption > span {
+            cursor: pointer
+        }
+
+        .grey {
+            color: grey
+        }
+
+        .file_mamger_table {
+            width: 100%
+        }
+
+        .file_mamger_table tr td {
+            padding: 2px 4px
+        }
+
+        .file_mamger_table tr:nth-child(even) td {
+            background-color: #E0E0E0
+        }
+
+        .file_mamger_table tr:hover td {
+            background-color: #D0D0D0
+        }
+
+        .file_mamger_table .count, .file_mamger_table .size {
+            width: 20%;
+            text-align: right
+        }
+
+        .working_options {
+            color: #888888;
+            font-size: 10px;
+            text-align: center
+        }
+
+        .working_options a {
+            color: #E7EAED;
+            font-size: 13px
+        }
+
+        .working_options a:hover {
+            text-decoration: none
+        }
+
+        @media only screen and (max-width: 800px) {
+            body {
+                font: 18px/24px Verdana, Arial, Tahoma, sans-serif;
             }
-            @media only screen and (max-width:474px){.nav li{padding:2px 4px;}
-                .nav li#filemanager{padding:6px 8px;}
-                .nav li#options{padding:7px 8px;transform:scale(0.8, 0.8);}
-                .nav li a{padding:9px 6px;transform:scale(0.8, 0.8);}
-                .fm:after{box-shadow:0.4em 0 0 #2c2c2c, 0 0.4em 0 #2c2c2c, 0.4em 0.4em 0 #2c2c2c;width:0.3em;}
-                .fm{box-shadow:0 0 0 0.2em #2c2c2c, 0 -0.2em 0 0.1em #2c2c2c;height:1.2em;margin:0 auto;width:1.15em;}
-                .extr{width:1em;}
-                .extr:before{left:0.28em;top:-0.3em;}
-                .extr:after{left:-0.01em;top:-1.2em;}
-                .crt{width:1em;}
-                .crt:before{left:0.27em;top:-0.7em;}
-                .crt:after{left:-0.01em;top:-0.2em;}
-                input.archivatorstart{width:70%}
+
+            .nav li a, .nav li span {
+                font-size: 0;
+                line-height: 0;
+                padding: 0;
             }
-        </style>
-        <title>Archiver</title>
-    </head>
-    <body>
-    <div class="wrapper">
-        <?php
+
+            .nav li {
+                padding: 8px 12px;
+            }
+
+            .nav li#options {
+                padding: 13px 24px;
+            }
+
+            .nav li#filemanager {
+                padding: 8px 16px
+            }
+
+            .nav li a {
+                padding: 9px 12px
+            }
+
+            .msg {
+                white-space: normal
+            }
+
+            .crt {
+                width: 1.500em;
+                height: 0.500em;
+                border: 0.250em solid #2c2c2c;
+                border-top: none;
+                bottom: 0.188em;
+                position: relative;
+                margin-top: 1em
+            }
+
+            .crt:before {
+                content: '';
+                position: absolute;
+                width: 0.438em;
+                height: 0.625em;
+                background: #2c2c2c;
+                top: -0.875em;
+                left: 0.563em
+            }
+
+            .crt:after {
+                width: 0;
+                height: 0;
+                content: '';
+                position: absolute;
+                border-style: solid;
+                border-color: #2c2c2c transparent transparent transparent;
+                border-width: 0.500em;
+                left: 0.250em;
+                top: -0.250em;
+            }
+
+            .extr {
+                width: 1.500em;
+                height: 0.500em;
+                border: 0.250em solid #2c2c2c;
+                border-top: none;
+                bottom: 0.188em;
+                position: relative;
+                margin-top: 1em
+            }
+
+            .extr:before {
+                content: '';
+                position: absolute;
+                width: 0.438em;
+                height: 0.625em;
+                background: #2c2c2c;
+                top: -0.4em;
+                left: 0.55em
+            }
+
+            .extr:after {
+                width: 0;
+                height: 0;
+                content: '';
+                position: absolute;
+                border-style: solid;
+                border-color: transparent transparent #2c2c2c transparent;
+                border-width: 0.500em;
+                left: 0.250em;
+                top: -1.4em
+            }
+
+            .tls {
+                margin-left: -0.4em;
+                margin-top: -0.3em;
+                font-size: 21px;
+                background: #2C2C2C;
+                height: 0.3em;
+                width: 0.15em;
+                position: relative;
+                -webkit-transform: rotate(-45deg);
+                -moz-transform: rotate(-45deg);
+                -o-transform: rotate(-45deg);
+                -ms-transform: rotate(-45deg);
+                transform: rotate(-45deg);
+                -webkit-box-shadow: 0 0.25em 0 0 #2C2C2C, 0 -0.25em 0 0 #2C2C2C, 0 -0.55em 0 0.07em #2C2C2C, 0 0.55em 0 0.1em #2C2C2C, 0 0.9em 0 0.1em #2C2C2C, 0 1.2em 0 0.1em #2C2C2C;
+                box-shadow: 0 0.25em 0 0 #2C2C2C, 0 -0.25em 0 0 #2C2C2C, 0 -0.55em 0 0.07em #2C2C2C, 0 0.55em 0 0.1em #2C2C2C, 0 0.9em 0 0.1em #2C2C2C, 0 1.2em 0 0.1em #2C2C2C;
+            }
+
+            .tls::before {
+                height: 1.5em;
+                width: 0.3em;
+                -webkit-transform: rotate(90deg);
+                -moz-transform: rotate(90deg);
+                -o-transform: rotate(90deg);
+                -ms-transform: rotate(90deg);
+                transform: rotate(90deg);
+                background: #2C2C2C;
+                position: absolute;
+                content: "";
+                top: -0.2em;
+                left: -0.3em;
+            }
+
+            .tls::after {
+                height: 0.3em;
+                width: 0.3em;
+                -webkit-transform: rotate(90deg);
+                -moz-transform: rotate(90deg);
+                -o-transform: rotate(90deg);
+                -ms-transform: rotate(90deg);
+                transform: rotate(90deg);
+                position: absolute;
+                border-left: 0.2em solid #2C2C2C;
+                border-bottom: 0.4em solid #2C2C2C;
+                border-right: 0.2em solid #2C2C2C;
+                border-top: 0.05em solid transparent;
+                content: "";
+                top: 0.17em;
+                left: 0.55em;
+                border-top-right-radius: 25% 25%;
+                border-top-left-radius: 25% 25%;
+                border-bottom-left-radius: 50% 50%;
+                border-bottom-right-radius: 50% 50%;
+            }
+
+            .fm {
+                box-shadow: 0 0 0 0.2em #2c2c2c, 0 -0.2em 0 0.2em #2c2c2c;
+                height: 1.4em;
+                margin: 15% auto 2%;
+                position: relative;
+                width: 2em
+            }
+
+            .fm:after {
+                content: "";
+                position: absolute;
+                left: .23em;
+                top: .3em;
+                width: .35em;
+                height: .35em;
+                background: #2c2c2c;
+                box-shadow: .6em 0 0 #2c2c2c, 1.2em 0 0 #2c2c2c, 0 .5em 0 #2c2c2c, .6em .5em 0 #2c2c2c, 1.2em .5em 0 #2c2c2c;
+            }
+
+            .sttng {
+                position: relative;
+                width: 0.35em;
+                height: 0.8em;
+                background: #2C2C2C;
+                -webkit-transform: rotate(45deg);
+                -moz-transform: rotate(45deg);
+                -o-transform: rotate(45deg);
+                -ms-transform: rotate(45deg);
+                transform: rotate(45deg);
+                font-size: 1.4em
+            }
+
+            .sttng:before {
+                content: "";
+                position: absolute;
+                top: -0.35em;
+                left: 0;
+                width: 0.35em;
+                height: 0.3em;
+                background: #2C2C2C;
+                border-radius: 0.1em
+            }
+
+            .sttng:after {
+                content: "";
+                position: absolute;
+                width: 0;
+                height: 0;
+                top: 0.85em;
+                left: 0;
+                border: solid 0.2em #2C2C2C;
+                border-bottom-color: transparent;
+                border-left-color: transparent;
+                border-right-color: transparent;
+                border-top: solid 0.45em #2C2C2C;
+            }
+
+            .ext {
+                background: #2C2C2C;
+                font-size: 12px;
+                position: relative;
+                width: 1em;
+                height: 1em;
+                margin-left: -0.7em
+            }
+
+            .ext::before {
+                bottom: -0.666em;
+                left: 0.8em;
+                position: absolute;
+                border-left: 1.2em solid #2C2C2C;
+                border-top: 1.2em solid rgba(44, 44, 44, 0);
+                border-bottom: 1.2em solid rgba(44, 44, 44, 0);
+                content: "";
+            }
+
+            input.archivatorstart {
+                width: 50%;
+            }
+
+            .section__inner.exeption > span {
+                display: block;
+                overflow: scroll;
+            }
+        }
+
+        @media only screen and (max-width: 474px) {
+            .nav li {
+                padding: 2px 4px;
+            }
+
+            .nav li#filemanager {
+                padding: 6px 8px;
+            }
+
+            .nav li#options {
+                padding: 7px 8px;
+                transform: scale(0.8, 0.8);
+            }
+
+            .nav li a {
+                padding: 9px 6px;
+                transform: scale(0.8, 0.8);
+            }
+
+            .fm:after {
+                box-shadow: 0.4em 0 0 #2c2c2c, 0 0.4em 0 #2c2c2c, 0.4em 0.4em 0 #2c2c2c;
+                width: 0.3em;
+            }
+
+            .fm {
+                box-shadow: 0 0 0 0.2em #2c2c2c, 0 -0.2em 0 0.1em #2c2c2c;
+                height: 1.2em;
+                margin: 0 auto;
+                width: 1.15em;
+            }
+
+            .extr {
+                width: 1em;
+            }
+
+            .extr:before {
+                left: 0.28em;
+                top: -0.3em;
+            }
+
+            .extr:after {
+                left: -0.01em;
+                top: -1.2em;
+            }
+
+            .crt {
+                width: 1em;
+            }
+
+            .crt:before {
+                left: 0.27em;
+                top: -0.7em;
+            }
+
+            .crt:after {
+                left: -0.01em;
+                top: -0.2em;
+            }
+
+            input.archivatorstart {
+                width: 70%
+            }
+        }
+    </style>
+    <title>Archiver</title>
+</head>
+<body>
+<div class="wrapper">
+    <?php
         if ($_SESSION['psswrd'] == $pass) {
             check_permission($pathname, $log_file);
             check_new_vers(VERSION);
@@ -1105,7 +1683,7 @@
                             <span><?=trnslt('settings')?></span>
                         </li>
                         <li id="exit"><a href="<?=$url?>?logout=ok">
-                            <div class="ext"></div><?=trnslt('exit')?></a>
+                                <div class="ext"></div><?=trnslt('exit')?></a>
                         </li>
                     </menu>
                 </nav>
@@ -1115,289 +1693,305 @@
             <div id="form_block">
                 <div class="messages"><? show_messages(); ?></div>
                 <?php
-                if (!$_GET['section'] || $_GET['section'] == 'createar') {
-                    ?>
-                    <div class="tab createar">
-                        <h2><?=trnslt('zipsite')?></h2>
-                        <?php
-                        if (count($_SESSION['history'])) {
-                            ?>
-                            <section class="section las_archive_log">
-                                <div class="section__headline"><?=trnslt('zip_log')?>:</div>
-                                <div class="section__inner">
-                                    <div class="row archivelog">
-                                        <div>
-                                            <?php
-                                                foreach ($_SESSION['history'] as $line) {
-                                                    echo $line . '<br />';
-                                                }
-                                                $_SESSION['history'] = array();
-                                            ?>
+                    if (!$_GET['section'] || $_GET['section'] == 'createar') {
+                        ?>
+                        <div class="tab createar">
+                            <h2><?=trnslt('zipsite')?></h2>
+                            <?php
+                                if (count($_SESSION['history'])) {
+                                    ?>
+                                    <section class="section las_archive_log">
+                                        <div class="section__headline"><?=trnslt('zip_log')?>:</div>
+                                        <div class="section__inner">
+                                            <div class="row archivelog">
+                                                <div>
+                                                    <?php
+                                                        foreach ($_SESSION['history'] as $line) {
+                                                            echo $line . '<br />';
+                                                        }
+                                                        $_SESSION['history'] = array();
+                                                    ?>
+                                                </div>
+                                            </div>
                                         </div>
+                                    </section>
+                                    <?php
+                                }
+                            ?>
+                            <section class="section count_files">
+                                <div class="section__headline"><?=trnslt('count_files')?>:</div>
+                                <div class="section__inner">
+                                    <div class="row">
+                                        <?=trnslt('full_files')?> <b><?=$all_count?></b>
+                                        <input type="checkbox" id="get_count" name="get_count"
+                                               value='1' <?=(!$_POST['submit']) ? 'checked="checked"' : ''?>
+                                               onclick="if(get_count.checked)window.location='<?='//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section'] . '&get_count=1'?>'; else window.location='<?='//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section']?>'"/>
+                                        <?=trnslt('show_full_count_files')?>
                                     </div>
                                 </div>
                             </section>
-                            <?php
-                        }
-                        ?>
-                        <section class="section count_files">
-                            <div class="section__headline"><?=trnslt('count_files')?>:</div>
-                            <div class="section__inner">
-                                <div class="row">
-                                    <?=trnslt('full_files')?> <b><?=$all_count?></b>
-                                    <input type="checkbox" id="get_count" name="get_count"
-                                           value='1' <?=(!$_POST['submit']) ? 'checked="checked"' : ''?>
-                                           onclick="if(get_count.checked)window.location='<?='//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section'] . '&get_count=1'?>'; else window.location='<?='//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section']?>'"/>
-                                    <?=trnslt('show_full_count_files')?>
-                                </div>
-                            </div>
-                        </section>
 
-                        <form class="create_archive" action="<?=$url?>" method="POST">
-                            <section class="section choose_zip">
-                                <div class="section__headline"><?=trnslt('choose_zip')?>:</div>
+                            <form class="create_archive" action="<?=$url?>" method="POST">
+                                <section class="section choose_zip">
+                                    <div class="section__headline"><?=trnslt('choose_zip')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <input class="addtozip" type="radio" name="addtozip" value="new"
+                                                   checked="checked"/> <?=trnslt('create_new_zip')?><br/>
+                                            <?php
+                                                if (count($archive_exist)) {
+                                                    foreach ($archive_exist as $zzz) {
+                                                        if (!is_dir($pathname . '/' . $zzz) && strstr($zzz, 'zip')) {
+                                                            ?>
+                                                            <input class="addtozip" type="radio" name="addtozip"
+                                                                   value="<?=$zzz?>"/> <?=trnslt('add_to_zip')?>
+                                                            <b><?=$zzz?></b><br/>
+                                                            <?php
+                                                        }
+                                                    }
+                                                }
+
+                                                unset($_POST['exept'][array_search('.', $_POST['exept'])], $_POST['exept'][array_search('..', $_POST['exept'])]);
+                                            ?>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="section choose_dir">
+                                    <div class="section__headline"><?=trnslt('choose_dir')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <?=show_root_dir($pathname . '/', $dirs);?>
+                                            <div class="clear"><br/></div>
+                                            <b><?=trnslt('enter_subdir')?></b>
+                                            <input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%"/> <br/>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="section dir_exeption">
+                                    <div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
+                                    <div class="section__inner exeption">
+                                        <span>
+                                            ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span
+                                                onclick="addEx(this)">images</span>|<span
+                                                onclick="addEx(this)">image_db</span>|<span
+                                                onclick="addEx(this)">gallery</span>|<span
+                                                onclick="addEx(this)">uploads</span>|<span
+                                                onclick="addEx(this)">cgi-bin</span>")
+                                        </span>
+
+                                        <div class="row">
+                                            <input id="exept" type="text" name="exept" value="<?=implode('|', $_POST['exept'])?>" style="width:99%"/>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <div class="clear"></div>
+
+                                <!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
+                                <input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>"
+                                       onclick="startAarchivation(); return false;"/>
+
+                                <div class="working_options">
+                                    <div class="optns"><?=trnslt('dont_zip_more')?>
+                                        <b><?=$_SESSION['options']['max_size']?></b> kb
+                                    </div>
+                                    <div class="optns"><?=trnslt('zip_max_files_count')?>:
+                                        <b><?=$_SESSION['options']['files_for_iteration']?></b> <?=trnslt('ajax_load_step')?>
+                                    </div>
+                                    <a href="//<?=$_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=options'?>"
+                                       title="<?=trnslt('change_options')?>"><?=trnslt('change_options')?></a>
+                                </div>
+                            </form>
+                        </div>
+                        <?php
+                    } elseif ($_GET['section'] == 'extractar') {
+                        ?>
+                        <div class="tab extractar">
+                            <h2><?=trnslt('unziper')?></h2>
+                            <section class="section extractar zip_found">
+                                <div class="section__headline"><?=trnslt('zip_found')?>:</div>
                                 <div class="section__inner">
                                     <div class="row">
-                                        <input class="addtozip" type="radio" name="addtozip" value="new" checked="checked"/> <?=trnslt('create_new_zip')?><br/>
                                         <?php
-                                        if (count($archive_exist)) {
-                                            foreach ($archive_exist as $zzz) {
-                                                if (!is_dir($pathname . '/' . $zzz) && strstr($zzz, 'zip')) {
+                                            if (count($archive_exist)) {
+                                                foreach ($archive_exist as $dir) {
                                                     ?>
-                                                    <input class="addtozip" type="radio" name="addtozip" value="<?=$zzz?>"/> <?=trnslt('add_to_zip')?>
-                                                    <b><?=$zzz?></b><br/>
+                                                    <form class="zip clear" enctype="multipart/form-data"
+                                                          action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+                                                        <input class="selectedzip" type="hidden" name="zipfile"
+                                                               value="<?=$dir?>" checked="checked"/>
+                                                        <span title="<?=number_format(filesize($pathname . '/' . $dir) / 1024, 2, '.', ' ')?> кб"><b><?=$dir?></b></span>
+                                                        <input class="right inside" type="submit" name="delzip"
+                                                               value="<?=trnslt('dell')?>"/>
+                                                        <input class="right inside" type="submit" name="unzip"
+                                                               value="<?=trnslt('unzip')?>"/>
+
+                                                        <div class="clear"></div>
+                                                    </form>
                                                     <?php
                                                 }
+                                            } else {
+                                                echo trnslt('zip_not_found');
                                             }
-                                        }
-
-                                        unset($_POST['exept'][array_search('.', $_POST['exept'])], $_POST['exept'][array_search('..', $_POST['exept'])]);
                                         ?>
                                     </div>
                                 </div>
                             </section>
+                        </div>
+                        <?php
+                    } elseif ($_GET['section'] == 'filemanager') {
+                        ?>
+                        <div class="tab filemanager">
+                            <h2><?=trnslt('file_manager')?></h2>
 
-                            <section class="section choose_dir">
-                                <div class="section__headline"><?=trnslt('choose_dir')?>:</div>
+                            <section class="section size_files">
+                                <div class="section__headline"><?=trnslt('size_files')?>:</div>
                                 <div class="section__inner">
                                     <div class="row">
-                                        <?=show_root_dir($pathname . '/', $dirs);?>
-                                        <div class="clear"><br/></div>
-                                        <b><?=trnslt('enter_subdir')?></b>
-                                        <input type="text" name="dir_write" value="<?=$_POST['dir_write']?>" style="width:99%"/> <br/>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section class="section dir_exeption">
-                                <div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
-                                <div class="section__inner exeption">
-                                        <span>
-                                            ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span
-                                                onclick="addEx(this)">images</span>|<span onclick="addEx(this)">image_db</span>|<span
-                                                onclick="addEx(this)">gallery</span>|<span onclick="addEx(this)">uploads</span>|<span
-                                                onclick="addEx(this)">cgi-bin</span>")
-                                        </span>
-
-                                    <div class="row">
-                                        <input id="exept" type="text" name="exept" value="<?=implode('|', $_POST['exept'])?>" style="width:99%"/>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <div class="clear"></div>
-
-                            <!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
-                            <input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" onclick="startAarchivation(); return false;"/>
-
-                            <div class="working_options">
-                                <div class="optns"><?=trnslt('dont_zip_more')?>
-                                    <b><?=$_SESSION['options']['max_size']?></b> kb
-                                </div>
-                                <div class="optns"><?=trnslt('zip_max_files_count')?>:
-                                    <b><?=$_SESSION['options']['files_for_iteration']?></b> <?=trnslt('ajax_load_step')?>
-                                </div>
-                                <a href="//<?=$_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=options'?>" title="<?=trnslt('change_options')?>"><?=trnslt('change_options')?></a>
-                            </div>
-                        </form>
-                    </div>
-                    <?php
-                } elseif ($_GET['section'] == 'extractar') {
-                    ?>
-                    <div class="tab extractar">
-                        <h2><?=trnslt('unziper')?></h2>
-                        <section class="section extractar zip_found">
-                            <div class="section__headline"><?=trnslt('zip_found')?>:</div>
-                            <div class="section__inner">
-                                <div class="row">
-                                    <?php
-                                        if (count($archive_exist)) {
-                                            foreach ($archive_exist as $dir) {
-                                                ?>
-                                                <form class="zip clear" enctype="multipart/form-data"
-                                                      action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-                                                    <input class="selectedzip" type="hidden" name="zipfile"
-                                                           value="<?=$dir?>" checked="checked"/>
-                                                    <span
-                                                        title="<?=number_format(filesize($pathname . '/' . $dir) / 1024, 2, '.', ' ')?> кб"><b><?=$dir?></b></span>
-                                                    <input class="right inside" type="submit" name="delzip"
-                                                           value="<?=trnslt('dell')?>"/>
-                                                    <input class="right inside" type="submit" name="unzip"
-                                                           value="<?=trnslt('unzip')?>"/>
-
-                                                    <div class="clear"></div>
-                                                </form>
-                                                <?php
+                                        <?php
+                                            if (!isset($_GET['perpage']) && !isset($_GET['page'])) {
+                                                $perpage = 50;
+                                                $page = 1;
+                                            } else {
+                                                $perpage = $_GET['perpage'];
+                                                $page = $_GET['page'];
                                             }
-                                        } else {
-                                            echo trnslt('zip_not_found');
-                                        }
-                                    ?>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-                    <?php
-                } elseif ($_GET['section'] == 'filemanager') {
-                    ?>
-                    <div class="tab filemanager">
-                        <h2><?=trnslt('file_manager')?></h2>
 
-                        <section class="section size_files">
-                            <div class="section__headline"><?=trnslt('size_files')?>:</div>
-                            <div class="section__inner">
-                                <div class="row">
-                                    <?php
-                                        if (!isset($_GET['perpage']) && !isset($_GET['page'])) {
-                                            $perpage = 50;
-                                            $page = 1;
-                                        } else {
-                                            $perpage = $_GET['perpage'];
-                                            $page = $_GET['page'];
-                                        }
+                                            $set_count = '//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section'] . '&fmdir=' . $_GET['fmdir'] . '&get_size=1';
+                                            $no_count = '//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section'] . '&fmdir=' . $_GET['fmdir'];
 
-                                        $set_count = '//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section'] . '&fmdir=' . $_GET['fmdir'] . '&get_size=1';
-                                        $no_count = '//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section'] . '&fmdir=' . $_GET['fmdir'];
-
-                                        $free_space = number_format(round(disk_free_space($pathname) / (1024 * 1024 * 1024)), 0, ',', ' ');
-                                        $total_space = number_format(round(disk_total_space($pathname) / (1024 * 1024 * 1024)), 0, ',', ' ');
-                                    ?>
-                                    <input type="checkbox" id="get_size" name="get_size"
-                                           value='1' <?=(!$_POST['submit']) ? 'checked="checked"' : ''?>
-                                           onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'"/>
-                                    <?=trnslt('show_full_size_dir')?>
-                                    <?=(!$_GET['get_size']) ? '<script>document.getElementById("get_size").checked = false;</script>' : ''?>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="section file_manager">
-                            <div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?=$pathname . '/' . $_GET['fmdir']?>:</div>
-                            <div class="section__inner">
-                                <div class="row">
-                                    <?=show_root_dir_and_files($pathname . ($_GET['fmdir'] ? ('/' . $_GET['fmdir']) : '') . '/', $_GET['fmdir'], $perpage, $page);?>
-                                </div>
-                                <?=$free_space . 'mb / ' . $total_space . 'mb';?>
-                            </div>
-                        </section>
-                    </div>
-                    <?php
-                } elseif ($_GET['section'] == 'options') {
-                    ?>
-                    <div class="tab options">
-                        <h2><?=trnslt('settings')?></h2>
-                        <section class="section language">
-                            <div class="section__headline"><?=trnslt('language')?>:</div>
-                            <div class="section__inner">
-                                <div class="row">
-                                    <form class="lang_form" action="<?=$url?>" method="GET">
-                                        <?=trnslt('language')?>:
-                                        <select name="lang" onchange="this.form.submit()">
-                                            <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>Українська</option>
-                                            <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>English</option>
-                                            <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>Русский</option>
-                                        </select>
-                                    </form>
-                                </div>
-                            </div>
-                        </section>
-
-                        <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-                            <section class="section show_log_options">
-                                <div class="section__headline"><?=trnslt('show_log')?>:</div>
-                                <div class="section__inner">
-                                    <div class="row">
-                                        <input type="checkbox" name="show_ok" value='1'
-                                               <? if ($_SESSION['hist']['OK']): ?>checked="checked"<?endif; ?> /> <?=trnslt('show_log_ok')?>
-                                        |
-                                        <input type="checkbox" name="show_notice" value='1'
-                                               <? if ($_SESSION['hist']['NOTICE']): ?>checked="checked"<?endif; ?> /> <?=trnslt('show_log_notice')?>
-                                        |
-                                        <input type="checkbox" name="show_error" value='1'
-                                               <? if ($_SESSION['hist']['ERROR']): ?>checked="checked"<?endif; ?> /> <?=trnslt('show_log_error')?>
-                                        <div class="clear"></div>
+                                            $free_space = number_format(round(disk_free_space($pathname) / (1024 * 1024 * 1024)), 0, ',', ' ');
+                                            $total_space = number_format(round(disk_total_space($pathname) / (1024 * 1024 * 1024)), 0, ',', ' ');
+                                        ?>
+                                        <input type="checkbox" id="get_size" name="get_size"
+                                               value='1' <?=(!$_POST['submit']) ? 'checked="checked"' : ''?>
+                                               onclick="if(get_size.checked)window.location='<?=$set_count?>'; else window.location='<?=$no_count?>'"/>
+                                        <?=trnslt('show_full_size_dir')?>
+                                        <?=(!$_GET['get_size']) ? '<script>document.getElementById("get_size").checked = false;</script>' : ''?>
                                     </div>
                                 </div>
                             </section>
 
-                            <section class="section confirm_window_options">
-                                <div class="section__headline"><?=trnslt('show_confirm_window')?>:</div>
+                            <section class="section file_manager">
+                                <div
+                                    class="section__headline"><?=trnslt('files_&_dirs_in')?> <?=$pathname . '/' . $_GET['fmdir']?>
+                                    :
+                                </div>
                                 <div class="section__inner">
                                     <div class="row">
-                                        <input type="checkbox" name="confirm_unzip" value='1'
-                                               <? if ($_SESSION['options']['confirm_unzip']): ?>checked="checked"<?endif; ?> /> <?=trnslt('unziping_arch')?>
-                                        |
-                                        <input type="checkbox" name="confirm_delzip" value='1'
-                                               <? if ($_SESSION['options']['confirm_delzip']): ?>checked="checked"<?endif; ?> /> <?=trnslt('deleting_arch')?>
-                                        <div class="clear"></div>
+                                        <?=show_root_dir_and_files($pathname . ($_GET['fmdir'] ? ('/' . $_GET['fmdir']) : '') . '/', $_GET['fmdir'], $perpage, $page);?>
+                                    </div>
+                                    <?=$free_space . 'mb / ' . $total_space . 'mb';?>
+                                </div>
+                            </section>
+                        </div>
+                        <?php
+                    } elseif ($_GET['section'] == 'options') {
+                        ?>
+                        <div class="tab options">
+                            <h2><?=trnslt('settings')?></h2>
+                            <section class="section language">
+                                <div class="section__headline"><?=trnslt('language')?>:</div>
+                                <div class="section__inner">
+                                    <div class="row">
+                                        <form class="lang_form" action="<?=$url?>" method="GET">
+                                            <?=trnslt('language')?>:
+                                            <select name="lang" onchange="this.form.submit()">
+                                                <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>
+                                                    Українська
+                                                </option>
+                                                <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>
+                                                    English
+                                                </option>
+                                                <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>
+                                                    Русский
+                                                </option>
+                                            </select>
+                                        </form>
                                     </div>
                                 </div>
                             </section>
 
-                            <section class="section dont_zip_file_more_than">
-                                <div class="section__headline"><?=trnslt('dont_zip_more')?>:</div>
-                                <div class="section__inner">
-                                    <div class="row">
-                                        <input type="number" min="1" max="512000" name="max_size" value="<?=$_SESSION['options']['max_size']?>" required/> kb
+                            <form action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+                                <section class="section show_log_options">
+                                    <div class="section__headline"><?=trnslt('show_log')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <input type="checkbox" name="show_ok" value='1'
+                                                   <? if ($_SESSION['hist']['OK']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_ok')?>
+                                            |
+                                            <input type="checkbox" name="show_notice" value='1'
+                                                   <? if ($_SESSION['hist']['NOTICE']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_notice')?>
+                                            |
+                                            <input type="checkbox" name="show_error" value='1'
+                                                   <? if ($_SESSION['hist']['ERROR']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_error')?>
+                                            <div class="clear"></div>
+                                        </div>
                                     </div>
-                                </div>
-                            </section>
+                                </section>
 
-                            <section class="section zip_max_files_count">
-                                <div class="section__headline"><?=trnslt('zip_max_files_count')?>:</div>
-                                <div class="section__inner">
-                                    <div class="row">
-                                        <?=trnslt('limit')?>
-                                        <input type="number" min="1" max="20000"
-                                                name="files_for_iteration"
-                                                value="<?=$_SESSION['options']['files_for_iteration']?>"
-                                                required/>
-                                        <?=trnslt('ajax_load_step')?>
+                                <section class="section confirm_window_options">
+                                    <div class="section__headline"><?=trnslt('show_confirm_window')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <input type="checkbox" name="confirm_unzip" value='1'
+                                                   <? if ($_SESSION['options']['confirm_unzip']): ?>checked="checked"<? endif; ?> /> <?=trnslt('unziping_arch')?>
+                                            |
+                                            <input type="checkbox" name="confirm_delzip" value='1'
+                                                   <? if ($_SESSION['options']['confirm_delzip']): ?>checked="checked"<? endif; ?> /> <?=trnslt('deleting_arch')?>
+                                            <div class="clear"></div>
+                                        </div>
                                     </div>
-                                </div>
-                            </section>
+                                </section>
 
-                            <section class="section zip_part_files_count">
-                                <div class="section__headline"><?=trnslt('zip_part_files_count')?>:</div>
-                                <div class="section__inner">
-                                    <div class="row">
-                                        <?=trnslt('limit')?>
-                                        <input type="number" min="1" max="200000"
-                                                name="zip_part_files"
-                                                value="<?=$_SESSION['options']['zip_part_files']?>"
-                                                required/>
-                                        <?=trnslt('files')?>
+                                <section class="section dont_zip_file_more_than">
+                                    <div class="section__headline"><?=trnslt('dont_zip_more')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <input type="number" min="1" max="512000" name="max_size"
+                                                   value="<?=$_SESSION['options']['max_size']?>" required/> kb
+                                        </div>
                                     </div>
-                                </div>
-                            </section>
+                                </section>
 
-                            <input class="right " type="submit" name="log_submit" value='<?=trnslt('show_log_save')?>'/>
+                                <section class="section zip_max_files_count">
+                                    <div class="section__headline"><?=trnslt('zip_max_files_count')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <?=trnslt('limit')?>
+                                            <input type="number" min="1" max="20000"
+                                                   name="files_for_iteration"
+                                                   value="<?=$_SESSION['options']['files_for_iteration']?>"
+                                                   required/>
+                                            <?=trnslt('ajax_load_step')?>
+                                        </div>
+                                    </div>
+                                </section>
 
-                            <div class="clear"></div>
-                        </form>
-                    </div>
-                    <?php
-                }
+                                <section class="section zip_part_files_count">
+                                    <div class="section__headline"><?=trnslt('zip_part_files_count')?>:</div>
+                                    <div class="section__inner">
+                                        <div class="row">
+                                            <?=trnslt('limit')?>
+                                            <input type="number" min="1" max="200000"
+                                                   name="zip_part_files"
+                                                   value="<?=$_SESSION['options']['zip_part_files']?>"
+                                                   required/>
+                                            <?=trnslt('files')?>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <input class="right " type="submit" name="log_submit"
+                                       value='<?=trnslt('show_log_save')?>'/>
+
+                                <div class="clear"></div>
+                            </form>
+                        </div>
+                        <?php
+                    }
                 ?>
             </div>
             <?php
@@ -1406,6 +2000,7 @@
                 ?>
                 <header>
                     <a class="logo" href="<?=$url?>">ARCHIVER</a>
+
                     <div class="clear"></div>
                 </header>
                 <?php
@@ -1429,9 +2024,12 @@
                                 <form class="lang_form" action="<?=$url?>" method="GET">
                                     <?=trnslt('language')?>:
                                     <select name="lang" onchange="this.form.submit()">
-                                        <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>Українська</option>
-                                        <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>English</option>
-                                        <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>Русский</option>
+                                        <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>Українська
+                                        </option>
+                                        <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>English
+                                        </option>
+                                        <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>Русский
+                                        </option>
                                     </select>
                                 </form>
                             </div>
@@ -1445,24 +2043,24 @@
                 echo '<h1 align="center">' . trnslt('zip_sorry') . '</h1>';
             }
         }
-        ?>
+    ?>
+</div>
+<footer class="footer" style='position:absolute'>
+    <div class="page_gen">
+        <?=trnslt('page_gen') . ' ' . round(microtime(1) - $timeStart, 4) . ' ' . trnslt('sec') . '.<br />'?>
     </div>
-    <footer class="footer" style='position:absolute'>
-        <div class="page_gen">
-            <?=trnslt('page_gen') . ' ' . round(microtime(1) - $timeStart, 4) . ' ' . trnslt('sec') . '.<br />'?>
-        </div>
-        <a class="kamicadze" href="<?=preg_replace("/\?.+/", '', $url)?>?del=itself"
-           title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
+    <a class="kamicadze" href="<?=preg_replace("/\?.+/", '', $url)?>?del=itself"
+       title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
 
-        <div class="wrapper">
-            <span style="float: left;">&copy; <?=date('Y')?> <b>ARCHIVER</b> <?=trnslt('develop')?> <em>Lesyuk Sergiy</em>. All Right Reserved.</span>
-            <span style="float: right;"><?=trnslt('your_vers')?> <?=VERSION?></span>
+    <div class="wrapper">
+        <span style="float: left;">&copy; <?=date('Y')?> <b>ARCHIVER</b> <?=trnslt('develop')?> <em>Lesyuk Sergiy</em>. All Right Reserved.</span>
+        <span style="float: right;"><?=trnslt('your_vers')?> <?=VERSION?></span>
 
-            <div class="clear"></div>
-        </div>
-    </footer>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-        <?php
+        <div class="clear"></div>
+    </div>
+</footer>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<?php
     if ($_SESSION['psswrd'] == $pass) {
         ?>
         <script>
@@ -1474,7 +2072,7 @@
             function turn_of(alldir) { // turn off all selected folder ------------------------------------------------
                 if (alldir.checked) {
                     var f1 = document.getElementsByTagName("input");
-                    for (var i=0; i<f1.length; i++)
+                    for (var i = 0; i < f1.length; i++)
                         if (f1[i].className == "selecteddir")
                             f1[i].checked = false;
                 }
@@ -1707,39 +2305,61 @@
                         window.location.href = '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>' + $(this).attr('id');
                     }
                 });
-                    <?php
-                if ($_GET['section'] == 'extractar') {
-                    if ($_SESSION['options']['confirm_delzip']) {
-                        ?>
-                        $('.zip.clear input[name="delzip"]').click(function () {
-                            if (confirm('<?=trnslt('delete_confirm')?>'))
-                                return true;
-                            else
-                                return false;
-                        });
-                        <?php
-                    }
-                    if ($_SESSION['options']['confirm_unzip']) {
-                        ?>
-                        $('.zip.clear input[name="unzip"]').click(function () {
-                            if (confirm('<?=trnslt('extract_confirm')?>'))
-                                startExtraction($(this).parent('form'));
-                            return false;
-                        });
-                        <?php
-                    } else {
-                        ?>
-                        $('.zip.clear input[name="unzip"]').click(function () {
-                            startExtraction($(this).parent('form'));
-                        });
-                        <?php
-                    }
-                }
+                <?php
+            if ($_GET['section'] == 'extractar') {
+                if ($_SESSION['options']['confirm_delzip']) {
+                    ?>
+                $('.zip.clear input[name="delzip"]').click(function () {
+                    if (confirm('<?=trnslt('delete_confirm')?>'))
+                        return true;
+                    else
+                        return false;
+                });
+                <?php
+            }
+            if ($_SESSION['options']['confirm_unzip']) {
                 ?>
+                $('.zip.clear input[name="unzip"]').click(function () {
+                    if (confirm('<?=trnslt('extract_confirm')?>'))
+                        startExtraction($(this).parent('form'));
+                    return false;
+                });
+                <?php
+            } else {
+                ?>
+                $('.zip.clear input[name="unzip"]').click(function () {
+                    startExtraction($(this).parent('form'));
+                });
+                <?php
+            }
+        }
+        ?>
             });
         </script>
         <?php
     }
-    ?>
-    </body>
+?>
+<script>
+    var reformalOptions = {
+        project_id: 973061,
+        project_host: "archiver.reformal.ru",
+        tab_orientation: "left",
+        tab_indent: "50%",
+        tab_bg_color: "#F05A00",
+        tab_border_color: "#FFFFFF",
+        tab_image_url: "http://tab.reformal.ru/T9GC0LfRi9Cy0Ysg0Lgg0L%252FRgNC10LTQu9C%252B0LbQtdC90LjRjw==/FFFFFF/2a94cfe6511106e7a48d0af3904e3090/left/1/tab.png",
+        tab_border_width: 1
+    };
+
+    (function () {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.async = true;
+        script.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'media.reformal.ru/widgets/v3/reformal.js';
+        document.getElementsByTagName('head')[0].appendChild(script);
+    })();
+</script>
+<noscript><a href="http://reformal.ru"><img src="http://media.reformal.ru/reformal.png"/></a><a
+        href="http://archiver.reformal.ru">Oтзывы и предложения для Archiver</a></noscript>
+</body>
 </html>
