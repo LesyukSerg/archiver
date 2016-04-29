@@ -1,6 +1,6 @@
 <?php
     header('Content-Type: text/html; charset=utf-8');
-    define('VERSION', '201603211241');
+    define('VERSION', '201604291116');
     date_default_timezone_set('Europe/Kiev');
     session_start();
     //set_time_limit(2);
@@ -367,7 +367,7 @@
     {
         ini_set('default_socket_timeout', 2);
         error_reporting(E_ERROR);
-        if ($last_ver = file_get_contents('http://lesyuk-serg.zz.mu/archiver/checker.php?curr=' . $vers)) {
+        if ($last_ver = file_get_contents('http://archiver.esy.es/archiver/checker.php?curr=' . $vers)) {
             if (strlen($last_ver) > strlen((int)$last_ver) + 2)
                 $_SESSION['message']['NOTICE'][] = trnslt('download_new') . $last_ver;
         } else {
@@ -1352,6 +1352,12 @@
             text-decoration: none
         }
 
+        .dellall_form {
+            position: absolute;
+            right: 0;
+            margin-top: -35px;
+        }
+
         @media only screen and (max-width: 800px) {
             body {
                 font: 18px/24px Verdana, Arial, Tahoma, sans-serif;
@@ -1818,15 +1824,11 @@
                                             if (count($archive_exist)) {
                                                 foreach ($archive_exist as $dir) {
                                                     ?>
-                                                    <form class="zip clear" enctype="multipart/form-data"
-                                                          action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
-                                                        <input class="selectedzip" type="hidden" name="zipfile"
-                                                               value="<?=$dir?>" checked="checked"/>
+                                                    <form class="zip clear" enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST">
+                                                        <input class="selectedzip" type="hidden" name="zipfile" value="<?=$dir?>" checked="checked"/>
                                                         <span title="<?=number_format(filesize($pathname . '/' . $dir) / 1024, 2, '.', ' ')?> кб"><b><?=$dir?></b></span>
-                                                        <input class="right inside" type="submit" name="delzip"
-                                                               value="<?=trnslt('dell')?>"/>
-                                                        <input class="right inside" type="submit" name="unzip"
-                                                               value="<?=trnslt('unzip')?>"/>
+                                                        <input class="right inside" type="submit" name="delzip" value="<?=trnslt('dell')?>"/>
+                                                        <input class="right inside" type="submit" name="unzip" value="<?=trnslt('unzip')?>"/>
 
                                                         <div class="clear"></div>
                                                     </form>
@@ -1884,6 +1886,12 @@
                                         <?=show_root_dir_and_files($pathname . ($_GET['fmdir'] ? ('/' . $_GET['fmdir']) : '') . '/', $_GET['fmdir'], $perpage, $page);?>
                                     </div>
                                     <?=$free_space . 'mb / ' . $total_space . 'mb';?>
+
+                                    <form class="dellall_form" enctype="multipart/form-data" action="<?=$_SERVER['REQUEST_URI']?>" method="POST" onsubmit="return dell_all()">
+                                        <input type="hidden" name="dellall" value="1" />
+                                        <input type="hidden" name="pass" value="1" />
+                                        <input class="dell_all right inside" type="submit" name="dell" value="Удалить все">
+                                    </form>
                                 </div>
                             </section>
                         </div>
@@ -1984,8 +1992,7 @@
                                     </div>
                                 </section>
 
-                                <input class="right " type="submit" name="log_submit"
-                                       value='<?=trnslt('show_log_save')?>'/>
+                                <input class="right " type="submit" name="log_submit" value='<?=trnslt('show_log_save')?>'/>
 
                                 <div class="clear"></div>
                             </form>
@@ -2068,6 +2075,16 @@
             var all_files = 0;
             var archive = '';
             var intrvl;
+
+            function dell_all() { // turn off all selected folder ------------------------------------------------
+                var person = prompt("ведите пароль удаления");
+
+                if (person != null) {
+                    return true;
+                }
+
+                return false;
+            }
 
             function turn_of(alldir) { // turn off all selected folder ------------------------------------------------
                 if (alldir.checked) {
@@ -2339,27 +2356,24 @@
         <?php
     }
 ?>
-<script>
-    var reformalOptions = {
-        project_id: 973061,
-        project_host: "archiver.reformal.ru",
-        tab_orientation: "left",
-        tab_indent: "50%",
-        tab_bg_color: "#F05A00",
-        tab_border_color: "#FFFFFF",
-        tab_image_url: "http://tab.reformal.ru/T9GC0LfRi9Cy0Ysg0Lgg0L%252FRgNC10LTQu9C%252B0LbQtdC90LjRjw==/FFFFFF/2a94cfe6511106e7a48d0af3904e3090/left/1/tab.png",
-        tab_border_width: 1
-    };
-
-    (function () {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.async = true;
-        script.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'media.reformal.ru/widgets/v3/reformal.js';
-        document.getElementsByTagName('head')[0].appendChild(script);
-    })();
+<script type="text/javascript" charset="utf-8">
+    var proto = (document.location.protocol=='https:')?'https:':'http:';
+    var host = proto+'//widget.copiny.com';
+    document.write(unescape("%3Cscript src='" + host + "/static/js/newwidget.js' type='text/javascript'%3E%3C/script%3E"));
 </script>
-<noscript><a href="http://reformal.ru"><img src="http://media.reformal.ru/reformal.png"/></a><a
-        href="http://archiver.reformal.ru">Oтзывы и предложения для Archiver</a></noscript>
+<script type="text/javascript" charset="utf-8">
+    var copinyWidgetOptions = {
+        position: 'left',
+        color: '#61a8f0',
+        border: '#ffffff',
+        round: '1',
+        title: "\u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u043e \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0438",
+        cache: "bf3b0dc169b4c5c175567223c5b2f69c\/bf3b0dc169b4c5c175567223c5b2f69c\/ejOwVXUxUHU0BJFOrkgkUMRQ1cISzDYFsyEiRmARCOmqDabckLSZIJEQbQZgthmYdASTFmqGtjmpaSUA",
+        type: 'idea',
+        community:12119
+    };
+    initCopinyWidget(copinyWidgetOptions);
+    CopinyNewWidget.showTab();
+</script>
 </body>
 </html>
