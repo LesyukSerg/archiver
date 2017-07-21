@@ -1,9 +1,9 @@
-<?php
+<?
     header('Content-Type: text/html; charset=utf-8');
-    define('VERSION', '201604291116');
+    define('VERSION', '201707211413');
     date_default_timezone_set('Europe/Kiev');
     session_start();
-    //set_time_limit(2);
+    #set_time_limit(2);
     ini_set('memory_limit', '-1');
     $timeStart = microtime(1);
     $pass = 'b59c67bf196a4758191e42f76670ceba';
@@ -53,7 +53,7 @@
             'add_to_zip'            => 'Доповнити архів',
             'choose_dir'            => 'Виберіть директорію для архівування',
             'enter_subdir'          => 'Або впишіть шлях до вкладеної теки: (Наприклад: "bitrix/upload")',
-            'dir_exeption'          => 'Які теки слід виключити: вводити через "|"',
+            'dir_exception'          => 'Які теки слід виключити: вводити через "|"',
             'dont_zip_more'         => 'Не архівувати файли більше ніж',
             'zip_max_files_count'   => 'Обмеження за кількістю файлів',
             'start'                 => 'РОЗПОЧАТИ АРХІВАЦІЮ',
@@ -101,6 +101,8 @@
             'extracting_archive'    => 'Розархівація архіву ',
             'change_options'        => 'змінити',
             'files'                 => 'файлів',
+            'add_exception'         => 'додати виключення',
+            'sure_to_dell'          => 'Ви дійсно хочете видалити "Archiver"?',
             'zip_part_files_count'  => 'Розбивати архів на частини'
         ),
         'en' => array(
@@ -141,7 +143,7 @@
             'add_to_zip'            => 'Archive supplement',
             'choose_dir'            => 'Choose dir to archivation',
             'enter_subdir'          => 'Or enter path to subdir: (Example: "bitrix/upload")',
-            'dir_exeption'          => 'Skiped dir: enter with delimiter "|"',
+            'dir_exception'          => 'Skiped dir: enter with delimiter "|"',
             'dont_zip_more'         => 'Do not archive files bigger more than',
             'zip_max_files_count'   => 'Limit on the number of files',
             'start'                 => 'START ARCHIVATION',
@@ -189,6 +191,8 @@
             'extracting_archive'    => 'Extracting archive ',
             'change_options'        => 'edit',
             'files'                 => 'files',
+            'add_exception'         => 'add_exception',
+            'sure_to_dell'          => 'Are you sure want to delete "Archiver"?',
             'zip_part_files_count'  => 'Split the archive into parts'
 
         ),
@@ -230,7 +234,7 @@
             'add_to_zip'            => 'Дополнить архив',
             'choose_dir'            => 'Выберите директорию для архивирования',
             'enter_subdir'          => 'Или впишите путь к вложенной папки (Например: "bitrix / upload")',
-            'dir_exeption'          => 'Какие папки следует исключить: вводить через "|"',
+            'dir_exception'          => 'Какие папки следует исключить: вводить через "|"',
             'dont_zip_more'         => 'Не архивировать файлы более',
             'zip_max_files_count'   => 'Ограничения по количеству файлов',
             'start'                 => 'НАЧАТЬ АРХИВАЦИЮ',
@@ -278,6 +282,8 @@
             'extracting_archive'    => 'Разархивация архива ',
             'change_options'        => 'изменить',
             'files'                 => 'файлов',
+            'add_exception'         => 'добавить исключение',
+            'sure_to_dell'          => 'Ви действительно хотите удалить "Archiver"?',
             'zip_part_files_count'  => 'Разбивать архив на части'
         )
     );
@@ -367,7 +373,7 @@
     {
         ini_set('default_socket_timeout', 2);
         error_reporting(E_ERROR);
-        if ($last_ver = file_get_contents('http://archiver.esy.es/archiver/checker.php?curr=' . $vers)) {
+        if ($last_ver = file_get_contents('//archiver.esy.es/archiver/checker.php?curr=' . $vers)) {
             if (strlen($last_ver) > strlen((int)$last_ver) + 2)
                 $_SESSION['message']['NOTICE'][] = trnslt('download_new') . $last_ver;
         } else {
@@ -487,7 +493,7 @@
                 $zip = new ZipArchive;
                 $res = $zip->open($zipFile);
                 if ($res === true) {
-                    //$num = $zip->numFiles;
+                    #$num = $zip->numFiles;
                     $zip->extractTo($archiveDir);
                     $zip->close();
 
@@ -540,7 +546,7 @@
                     $all_count = getFolderCount($src_dir . $dir . '/');
                 }
                 $dir = iconv('cp1251', 'UTF-8', $dir);
-                $out .= '<input class="selecteddir" type="checkbox" name="dir[' . $dir . ']" value="' . $dir . '" onclick="alldir.checked=false" /> <span onclick="addEx(this)">' . $dir . '</span> (' . (($all_count > 1000 && $_GET['get_count'] != 'all') ? trnslt('more_999') : $all_count) . ')<br />';
+                $out .= '<input class="selecteddir" type="checkbox" name="dir[' . $dir . ']" value="' . $dir . '" onclick="alldir.checked=false" /> <span title="' . trnslt('add_exception') . '" onclick="addEx(this)">' . $dir . '</span> (' . (($all_count > 1000 && $_GET['get_count'] != 'all') ? trnslt('more_999') : $all_count) . ')<br />';
             }
         }
 
@@ -624,7 +630,7 @@
     }
 
     # Рекурсивна функція архівації вкладених файлів і тек -------------------------------------------------------------
-    function addFolderToZip($dir, &$zipArchive, $zipdir = '', &$cnt, &$fp)
+    function addFolderToZip($dir, &$zipArchive, $zipDir = '', &$cnt, &$fp)
     {
         if (is_dir($dir)) {
             fwrite($fp, $dir . '\n');
@@ -632,14 +638,14 @@
             if ($dh = opendir($dir)) {
                 if ($cnt > $_SESSION['options']['min']) {
                     # Додаємо порожню директорію
-                    if (!empty($zipdir)) {
-                        $zdir = $zipdir;
-                        if ($zipArchive->addEmptyDir($zdir) === false) {
+                    if (!empty($zipDir)) {
+                        $zDir = $zipDir;
+                        if ($zipArchive->addEmptyDir($zDir) === false) {
                             if ($_SESSION['hist']['ERROR'])
-                                $_SESSION['history'][] = '<span class="red">' . trnslt('add_folder_err') . ' - ' . $zdir . '</span><br />\n';
+                                $_SESSION['history'][] = '<span class="red">' . trnslt('add_folder_err') . ' - ' . $zDir . '</span><br />\n';
                         } else {
                             if ($_SESSION['hist']['OK'])
-                                $_SESSION['history'][] = '<b>' . $zdir . '</b><br />';
+                                $_SESSION['history'][] = '<b>' . $zDir . '</b><br />';
                         }
                     }
                 }
@@ -650,12 +656,12 @@
                         # пропуск директорій '.' і '..'
                         if (!in_array($file, $_POST['exept']) && $file != '.git') {
                             $zfile = $file;
-                            //$zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
+                            #$zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
                             /* if (preg_match('/[А-Яа-я]+/', $file)) {
                             } else {
                                 $zfile = $file;
                             } */
-                            addFolderToZip($dir . $file . '/', $zipArchive, $zipdir . $zfile . '/', $cnt, $fp);
+                            addFolderToZip($dir . $file . '/', $zipArchive, $zipDir . $zfile . '/', $cnt, $fp);
                         }
                     } else {
                         # якщо cnt більше max то зупинка 
@@ -667,15 +673,15 @@
                         if ($cnt > $_SESSION['options']['min']) {
                             if (filesize($dir . $file) < $_SESSION['options']['max_size'] * 1024 && $file != 'archive.log') {
                                 $zfile = $file;
-                                //$zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
-                                //$zfile = iconv('utf-8', 'CP866//TRANSLIT//IGNORE', $file);
+                                #$zfile = iconv('cp1251', 'CP866//TRANSLIT//IGNORE', $file);
+                                #$zfile = iconv('utf-8', 'CP866//TRANSLIT//IGNORE', $file);
                                 /* if (preg_match('/[А-Яа-я]+/', $file)) {
                                 } else {
                                     $zfile = $file;
                                 } */
-                                //$zfile = iconv(mb_detect_encoding($file), );
+                                #$zfile = iconv(mb_detect_encoding($file), );
 
-                                if ($zipArchive->addFile($dir . $file, $zipdir . $zfile)) {
+                                if ($zipArchive->addFile($dir . $file, $zipDir . $zfile)) {
                                     if ($_SESSION['hist']['OK'])
                                         $_SESSION['history'][] = '<span class="green">' . (1000000 + $cnt) . ' - ' . $dir . $file . ' OK</span><br />\n';
                                 } else {
@@ -683,12 +689,12 @@
                                         $_SESSION['history'][] = '<span class="red">' . trnslt('add_file_err') . ' ' . $dir . $file . '</span><br />\n';
                                 }
 
-                                //fwrite($fp, (1000000+$cnt).' - '.$dir.$file.' OK\n');
+                                #fwrite($fp, (1000000+$cnt).' - '.$dir.$file.' OK\n');
                             } else {
                                 if ($_SESSION['hist']['NOTICE'])
                                     $_SESSION['history'][] = '<span class="grey">' . $dir . $file . ' - ' . trnslt('skip') . '</span><br />\n';
 
-                                //fwrite($fp, $dir.$file.' - '.trnslt('skip').'\n');
+                                #fwrite($fp, $dir.$file.' - '.trnslt('skip').'\n');
                             }
                         }
                         $cnt++;
@@ -874,7 +880,7 @@
         kamikadze();
     } elseif ($_GET['logout']) {
         logout();
-    } elseif (md5($_POST['pswrd']) == $pass || true) {
+    } elseif (md5($_POST['pswrd']) == $pass) {
         $_SESSION['psswrd'] = $pass;
     }
 
@@ -883,7 +889,8 @@
         unset(
             $dirs[array_search('.', $dirs)],
             $dirs[array_search('..', $dirs)],
-            $dirs[array_search('.git', $dirs)]
+            $dirs[array_search('.git', $dirs)],
+            $dirs[array_search('.idea', $dirs)]
         );
 
         if ($_POST['log_submit']) {
@@ -1086,10 +1093,20 @@
             text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2)
         }
 
-        .section__inner.exeption > span:hover, .selecteddir + span:hover {
+        .section__inner.exception span span:hover, .selecteddir + span:hover {
             cursor: pointer;
             text-shadow: 0 0 0;
             color: #000000
+        }
+
+        .dir_exception span span {
+            padding-left: 4px;
+            border-left: 2px solid #333;
+        }
+
+        .dir_exception span span:first-child {
+            padding: 0;
+            border: 0;
         }
 
         .section__inner {
@@ -1311,7 +1328,7 @@
             margin-top: -30px
         }
 
-        .section__headline.exeption > span {
+        .section__headline.exception > span {
             cursor: pointer
         }
 
@@ -1590,7 +1607,7 @@
                 width: 50%;
             }
 
-            .section__inner.exeption > span {
+            .section__inner.exception > span {
                 display: block;
                 overflow: scroll;
             }
@@ -1664,7 +1681,7 @@
 </head>
 <body>
 <div class="wrapper">
-    <?php
+    <?
         if ($_SESSION['psswrd'] == $pass) {
             check_permission($pathname, $log_file);
             check_new_vers(VERSION);
@@ -1691,8 +1708,8 @@
                             <div class="sttng"></div>
                             <span><?=trnslt('settings')?></span>
                         </li>
-                        <li id="exit"><a href="<?=$url?>?logout=ok">
-                                <div class="ext"></div><?=trnslt('exit')?></a>
+                        <li id="exit">
+                            <a href="<?=$url?>?logout=ok"><div class="ext"></div><?=trnslt('exit')?></a>
                         </li>
                     </menu>
                 </nav>
@@ -1701,12 +1718,12 @@
 
             <div id="form_block">
                 <div class="messages"><? show_messages(); ?></div>
-                <?php
+                <?
                     if (!$_GET['section'] || $_GET['section'] == 'createar') {
                         ?>
                         <div class="tab createar">
                             <h2><?=trnslt('zipsite')?></h2>
-                            <?php
+                            <?
                                 if (count($_SESSION['history'])) {
                                     $_SESSION['history'] = array();
                                     ?>
@@ -1715,7 +1732,7 @@
                                         <div class="section__inner">
                                             <div class="row archivelog">
                                                 <div>
-                                                    <?php
+                                                    <?
 /*                                                        foreach ($_SESSION['history'] as $line) {
                                                             echo $line . '<br />';
                                                         }
@@ -1724,7 +1741,7 @@
                                             </div>
                                         </div>
                                     </section>-->
-                                    <?php
+                                    <?
                                 }
                             ?>
                             <section class="section count_files">
@@ -1735,7 +1752,7 @@
                                         <input type="checkbox" id="get_count" name="get_count"
                                                value='1' <?=(!$_POST['submit']) ? 'checked="checked"' : ''?>
                                                onclick="if(get_count.checked)window.location='<?='//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section'] . '&get_count=1'?>'; else window.location='<?='//' . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=' . $_GET['section']?>'"/>
-                                        <?=trnslt('show_full_count_files')?>
+                                        <label for="get_count"><?=trnslt('show_full_count_files')?></label>
                                     </div>
                                 </div>
                             </section>
@@ -1745,17 +1762,15 @@
                                     <div class="section__headline"><?=trnslt('choose_zip')?>:</div>
                                     <div class="section__inner">
                                         <div class="row">
-                                            <input class="addtozip" type="radio" name="addtozip" value="new"
-                                                   checked="checked"/> <?=trnslt('create_new_zip')?><br/>
-                                            <?php
+                                            <input class="addtozip" type="radio" name="addtozip" value="new" checked="checked"/> <?=trnslt('create_new_zip')?><br/>
+                                            <?
                                                 if (count($archive_exist)) {
                                                     foreach ($archive_exist as $zzz) {
                                                         if (!is_dir($pathname . '/' . $zzz) && strstr($zzz, 'zip')) {
                                                             ?>
-                                                            <input class="addtozip" type="radio" name="addtozip"
-                                                                   value="<?=$zzz?>"/> <?=trnslt('add_to_zip')?>
+                                                            <input class="addtozip" type="radio" name="addtozip" value="<?=$zzz?>"/> <?=trnslt('add_to_zip')?>
                                                             <b><?=$zzz?></b><br/>
-                                                            <?php
+                                                            <?
                                                         }
                                                     }
                                                 }
@@ -1778,16 +1793,19 @@
                                     </div>
                                 </section>
 
-                                <section class="section dir_exeption">
-                                    <div class="section__headline exeption"><?=trnslt('dir_exeption')?></div>
-                                    <div class="section__inner exeption">
+                                <section class="section dir_exception">
+                                    <div class="section__headline exception"><?=trnslt('dir_exception')?></div>
+                                    <div class="section__inner exception">
                                         <span>
-                                            ("<span onclick="addEx(this)">upload</span>|<span onclick="addEx(this)">products_pictures</span>|<span
-                                                onclick="addEx(this)">images</span>|<span
-                                                onclick="addEx(this)">image_db</span>|<span
-                                                onclick="addEx(this)">gallery</span>|<span
-                                                onclick="addEx(this)">uploads</span>|<span
-                                                onclick="addEx(this)">cgi-bin</span>")
+                                            ("
+                                                <span title="<?=trnslt('add_exception')?>" onclick="addEx(this)">upload</span>
+                                                <span title="<?=trnslt('add_exception')?>" onclick="addEx(this)">products_pictures</span>
+                                                <span title="<?=trnslt('add_exception')?>" onclick="addEx(this)">images</span>
+                                                <span title="<?=trnslt('add_exception')?>" onclick="addEx(this)">image_db</span>
+                                                <span title="<?=trnslt('add_exception')?>" onclick="addEx(this)">gallery</span>
+                                                <span title="<?=trnslt('add_exception')?>" onclick="addEx(this)">uploads</span>
+                                                <span title="<?=trnslt('add_exception')?>" onclick="addEx(this)">cgi-bin</span>
+                                            ")
                                         </span>
 
                                         <div class="row">
@@ -1799,8 +1817,7 @@
                                 <div class="clear"></div>
 
                                 <!-- input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" -->
-                                <input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>"
-                                       onclick="startAarchivation(); return false;"/>
+                                <input class="archivatorstart" type="submit" name="submit" value="<?=trnslt('start')?>" onclick="startAarchivation(); return false"/>
 
                                 <div class="working_options">
                                     <div class="optns"><?=trnslt('dont_zip_more')?>
@@ -1809,12 +1826,11 @@
                                     <div class="optns"><?=trnslt('zip_max_files_count')?>:
                                         <b><?=$_SESSION['options']['files_for_iteration']?></b> <?=trnslt('ajax_load_step')?>
                                     </div>
-                                    <a href="//<?=$_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=options'?>"
-                                       title="<?=trnslt('change_options')?>"><?=trnslt('change_options')?></a>
+                                    <a href="//<?=$_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'] . '?section=options'?>" title="<?=trnslt('change_options')?>"><?=trnslt('change_options')?></a>
                                 </div>
                             </form>
                         </div>
-                        <?php
+                        <?
                     } elseif ($_GET['section'] == 'extractar') {
                         ?>
                         <div class="tab extractar">
@@ -1823,7 +1839,7 @@
                                 <div class="section__headline"><?=trnslt('zip_found')?>:</div>
                                 <div class="section__inner">
                                     <div class="row">
-                                        <?php
+                                        <?
                                             if (count($archive_exist)) {
                                                 foreach ($archive_exist as $dir) {
                                                     ?>
@@ -1835,7 +1851,7 @@
 
                                                         <div class="clear"></div>
                                                     </form>
-                                                    <?php
+                                                    <?
                                                 }
                                             } else {
                                                 echo trnslt('zip_not_found');
@@ -1845,7 +1861,7 @@
                                 </div>
                             </section>
                         </div>
-                        <?php
+                        <?
                     } elseif ($_GET['section'] == 'filemanager') {
                         ?>
                         <div class="tab filemanager">
@@ -1855,7 +1871,7 @@
                                 <div class="section__headline"><?=trnslt('size_files')?>:</div>
                                 <div class="section__inner">
                                     <div class="row">
-                                        <?php
+                                        <?
                                             if (!isset($_GET['perpage']) && !isset($_GET['page'])) {
                                                 $perpage = 50;
                                                 $page = 1;
@@ -1880,10 +1896,7 @@
                             </section>
 
                             <section class="section file_manager">
-                                <div
-                                    class="section__headline"><?=trnslt('files_&_dirs_in')?> <?=$pathname . '/' . $_GET['fmdir']?>
-                                    :
-                                </div>
+                                <div class="section__headline"><?=trnslt('files_&_dirs_in')?> <?=$pathname . '/' . $_GET['fmdir']?>:</div>
                                 <div class="section__inner">
                                     <div class="row">
                                         <?=show_root_dir_and_files($pathname . ($_GET['fmdir'] ? ('/' . $_GET['fmdir']) : '') . '/', $_GET['fmdir'], $perpage, $page);?>
@@ -1898,7 +1911,7 @@
                                 </div>
                             </section>
                         </div>
-                        <?php
+                        <?
                     } elseif ($_GET['section'] == 'options') {
                         ?>
                         <div class="tab options">
@@ -1930,14 +1943,11 @@
                                     <div class="section__headline"><?=trnslt('show_log')?>:</div>
                                     <div class="section__inner">
                                         <div class="row">
-                                            <input type="checkbox" name="show_ok" value='1'
-                                                   <? if ($_SESSION['hist']['OK']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_ok')?>
+                                            <input type="checkbox" name="show_ok" value='1' <? if ($_SESSION['hist']['OK']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_ok')?>
                                             |
-                                            <input type="checkbox" name="show_notice" value='1'
-                                                   <? if ($_SESSION['hist']['NOTICE']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_notice')?>
+                                            <input type="checkbox" name="show_notice" value='1' <? if ($_SESSION['hist']['NOTICE']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_notice')?>
                                             |
-                                            <input type="checkbox" name="show_error" value='1'
-                                                   <? if ($_SESSION['hist']['ERROR']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_error')?>
+                                            <input type="checkbox" name="show_error" value='1' <? if ($_SESSION['hist']['ERROR']): ?>checked="checked"<? endif; ?> /> <?=trnslt('show_log_error')?>
                                             <div class="clear"></div>
                                         </div>
                                     </div>
@@ -1947,11 +1957,9 @@
                                     <div class="section__headline"><?=trnslt('show_confirm_window')?>:</div>
                                     <div class="section__inner">
                                         <div class="row">
-                                            <input type="checkbox" name="confirm_unzip" value='1'
-                                                   <? if ($_SESSION['options']['confirm_unzip']): ?>checked="checked"<? endif; ?> /> <?=trnslt('unziping_arch')?>
+                                            <input type="checkbox" name="confirm_unzip" value='1' <? if ($_SESSION['options']['confirm_unzip']): ?>checked="checked"<? endif; ?> /> <?=trnslt('unziping_arch')?>
                                             |
-                                            <input type="checkbox" name="confirm_delzip" value='1'
-                                                   <? if ($_SESSION['options']['confirm_delzip']): ?>checked="checked"<? endif; ?> /> <?=trnslt('deleting_arch')?>
+                                            <input type="checkbox" name="confirm_delzip" value='1' <? if ($_SESSION['options']['confirm_delzip']): ?>checked="checked"<? endif; ?> /> <?=trnslt('deleting_arch')?>
                                             <div class="clear"></div>
                                         </div>
                                     </div>
@@ -1961,8 +1969,7 @@
                                     <div class="section__headline"><?=trnslt('dont_zip_more')?>:</div>
                                     <div class="section__inner">
                                         <div class="row">
-                                            <input type="number" min="1" max="512000" name="max_size"
-                                                   value="<?=$_SESSION['options']['max_size']?>" required/> kb
+                                            <input type="number" min="1" max="512000" name="max_size" value="<?=$_SESSION['options']['max_size']?>" required/> kb
                                         </div>
                                     </div>
                                 </section>
@@ -1972,10 +1979,7 @@
                                     <div class="section__inner">
                                         <div class="row">
                                             <?=trnslt('limit')?>
-                                            <input type="number" min="1" max="20000"
-                                                   name="files_for_iteration"
-                                                   value="<?=$_SESSION['options']['files_for_iteration']?>"
-                                                   required/>
+                                            <input type="number" min="1" max="20000" name="files_for_iteration" value="<?=$_SESSION['options']['files_for_iteration']?>" required/>
                                             <?=trnslt('ajax_load_step')?>
                                         </div>
                                     </div>
@@ -1986,10 +1990,7 @@
                                     <div class="section__inner">
                                         <div class="row">
                                             <?=trnslt('limit')?>
-                                            <input type="number" min="1" max="200000"
-                                                   name="zip_part_files"
-                                                   value="<?=$_SESSION['options']['zip_part_files']?>"
-                                                   required/>
+                                            <input type="number" min="1" max="200000" name="zip_part_files" value="<?=$_SESSION['options']['zip_part_files']?>" required/>
                                             <?=trnslt('files')?>
                                         </div>
                                     </div>
@@ -2000,11 +2001,11 @@
                                 <div class="clear"></div>
                             </form>
                         </div>
-                        <?php
+                        <?
                     }
                 ?>
             </div>
-            <?php
+            <?
         } else {
             if (class_exists('ZipArchive')) {
                 ?>
@@ -2013,7 +2014,7 @@
 
                     <div class="clear"></div>
                 </header>
-                <?php
+                <?
                 if ($_SESSION['pass_count'] > 0) {
                     check_new_vers(VERSION);
                     if ($_POST['pswrd'])
@@ -2034,18 +2035,21 @@
                                 <form class="lang_form" action="<?=$url?>" method="GET">
                                     <?=trnslt('language')?>:
                                     <select name="lang" onchange="this.form.submit()">
-                                        <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>Українська
+                                        <option value="ua" <?=($l == 'ua') ? 'selected="selected"' : ''?>>
+                                            Українська
                                         </option>
-                                        <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>English
+                                        <option value="en" <?=($l == 'en') ? 'selected="selected"' : ''?>>
+                                            English
                                         </option>
-                                        <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>Русский
+                                        <option value="ru" <?=($l == 'ru') ? 'selected="selected"' : ''?>>
+                                            Русский
                                         </option>
                                     </select>
                                 </form>
                             </div>
                         </div>
                     </section>
-                    <?php
+                    <?
                 } else {
                     echo show_log('ERROR', trnslt('access_denied'));
                 }
@@ -2059,8 +2063,7 @@
     <div class="page_gen">
         <?=trnslt('page_gen') . ' ' . round(microtime(1) - $timeStart, 4) . ' ' . trnslt('sec') . '.<br />'?>
     </div>
-    <a class="kamicadze" href="<?=preg_replace("/\?.+/", '', $url)?>?del=itself"
-       title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
+    <a class="kamicadze" href="<?=preg_replace("/\?.+/", '', $url)?>?del=itself" onclick="return confirm('<?=trnslt('sure_to_dell')?>')" title="<?=trnslt('kamikadze')?>"><?=trnslt('kamikadze')?></a>
 
     <div class="wrapper">
         <span style="float: left;">&copy; <?=date('Y')?> <b>ARCHIVER</b> <?=trnslt('develop')?> <em>Lesyuk Sergiy</em>. All Right Reserved.</span>
@@ -2070,7 +2073,7 @@
     </div>
 </footer>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<?php
+<?
     if ($_SESSION['psswrd'] == $pass) {
         ?>
         <script>
@@ -2325,7 +2328,7 @@
                         window.location.href = '//<?=$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME'].'?section='?>' + $(this).attr('id');
                     }
                 });
-                <?php
+                <?
             if ($_GET['section'] == 'extractar') {
                 if ($_SESSION['options']['confirm_delzip']) {
                     ?>
@@ -2335,7 +2338,7 @@
                     else
                         return false;
                 });
-                <?php
+                <?
             }
             if ($_SESSION['options']['confirm_unzip']) {
                 ?>
@@ -2344,19 +2347,19 @@
                         startExtraction($(this).parent('form'));
                     return false;
                 });
-                <?php
+                <?
             } else {
                 ?>
                 $('.zip.clear input[name="unzip"]').click(function () {
                     startExtraction($(this).parent('form'));
                 });
-                <?php
+                <?
             }
         }
         ?>
             });
         </script>
-        <?php
+        <?
     }
 ?>
 <script type="text/javascript" charset="utf-8">
